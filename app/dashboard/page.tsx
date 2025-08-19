@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import TaskForm from './TaskForm';
+import TaskList from './TaskList';
 
 const DashboardPage = () => {
   const router = useRouter();
@@ -25,6 +27,20 @@ const DashboardPage = () => {
     return () => unsubscribe();
   }, [router]);
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      // Redirect to login page after successful logout
+      router.push('/login');
+    } catch (error) {
+      if (error instanceof Error) {
+        alert('Error logging out: ' + error.message);
+      } else {
+        alert('An unknown error occurred.');
+      }
+    }
+  };
+
   // Show a loading screen while checking authentication status
   if (loading) {
     return (
@@ -37,20 +53,23 @@ const DashboardPage = () => {
   // Once authenticated, display the dashboard content
   return (
     <div className="flex min-h-screen bg-gray-100 p-8">
-      <div className="w-full">
+      <div className="w-full max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-4xl font-bold text-gray-800">Field Service Dashboard</h1>
           <button
-            // You will add a logout function here later
+            onClick={handleLogout}
             className="bg-red-500 text-white font-bold py-2 px-4 rounded-md shadow-md hover:bg-red-600 transition-colors"
           >
             Logout
           </button>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-xl">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Hello, you are logged in!</h2>
-          <p className="text-gray-600">This is your main dashboard. We'll build out the task management features here in the next step.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Task Form */}
+          <TaskForm />
+
+          {/* Task List */}
+          <TaskList />
         </div>
       </div>
     </div>
