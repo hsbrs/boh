@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import React from 'react';
 
 const TaskForm = () => {
   const [project, setProject] = useState('');
@@ -11,7 +12,7 @@ const TaskForm = () => {
   const [plannedDate, setPlannedDate] = useState('');
   const [status, setStatus] = useState('Planned');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       // Add a new document with the task data to the 'tasks' collection
@@ -47,7 +48,7 @@ const TaskForm = () => {
         <input
           type="text"
           value={project}
-          onChange={(e) => setProject(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProject(e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           required
         />
@@ -57,7 +58,7 @@ const TaskForm = () => {
         <input
           type="text"
           value={assignee}
-          onChange={(e) => setAssignee(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAssignee(e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           required
         />
@@ -67,7 +68,7 @@ const TaskForm = () => {
         <input
           type="text"
           value={customer}
-          onChange={(e) => setCustomer(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomer(e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           required
         />
@@ -77,7 +78,7 @@ const TaskForm = () => {
         <input
           type="date"
           value={plannedDate}
-          onChange={(e) => setPlannedDate(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlannedDate(e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           required
         />
