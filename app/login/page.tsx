@@ -13,7 +13,11 @@ const LoginPage = () => {
       await createUserWithEmailAndPassword(auth, email, password);
       alert('Sign up successful!');
     } catch (error) {
-      alert('Error signing up: ' + error.message);
+      if (error instanceof Error) {
+        alert('Error signing up: ' + error.message);
+      } else {
+        alert('An unknown error occurred.');
+      }
     }
   };
 
@@ -22,7 +26,11 @@ const LoginPage = () => {
       await signInWithEmailAndPassword(auth, email, password);
       alert('Login successful!');
     } catch (error) {
-      alert('Error logging in: ' + error.message);
+      if (error instanceof Error) {
+        alert('Error logging in: ' + error.message);
+      } else {
+        alert('An unknown error occurred.');
+      }
     }
   };
 
