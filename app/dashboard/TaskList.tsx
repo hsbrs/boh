@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, DocumentData } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import React from 'react';
 
 // Define the type for a task to provide type safety
-// We are making the properties optional because of the doc.data() spread operator
-// and to be flexible for future changes.
 type Task = {
   id: string;
   project?: string;
@@ -20,6 +19,47 @@ const TaskList = () => {
   // Explicitly tell useState that the array will hold Task objects
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Function to handle status updates
+  const handleUpdateStatus = async (taskId: string, currentStatus: string) => {
+    const taskDocRef = doc(db, 'tasks', taskId);
+    let newStatus = 'In Progress';
+    if (currentStatus === 'In Progress') {
+      newStatus = 'Done';
+    } else if (currentStatus === 'Done') {
+      newStatus = 'Planned';
+    }
+    
+    try {
+      await updateDoc(taskDocRef, { status: newStatus });
+      alert('Task status updated!');
+    } catch (error) {
+      console.error("Error updating status: ", error);
+      if (error instanceof Error) {
+        alert('Error updating status: ' + error.message);
+      } else {
+        alert('An unknown error occurred.');
+      }
+    }
+  };
+
+  // Function to handle task deletion
+  const handleDeleteTask = async (taskId: string) => {
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      const taskDocRef = doc(db, 'tasks', taskId);
+      try {
+        await deleteDoc(taskDocRef);
+        alert('Task deleted successfully!');
+      } catch (error) {
+        console.error("Error deleting task: ", error);
+        if (error instanceof Error) {
+          alert('Error deleting task: ' + error.message);
+        } else {
+          alert('An unknown error occurred.');
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     // Set up a real-time listener for the 'tasks' collection
@@ -58,9 +98,23 @@ const TaskList = () => {
               <p className="text-gray-600">Assignee: {task.assignee}</p>
               <p className="text-gray-600">Customer: {task.customer}</p>
               <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
-              <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : 'text-green-500'}`}>
+              <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
                 Status: {task.status}
               </p>
+              <div className="flex mt-2 space-x-2">
+                <button
+                  onClick={() => handleUpdateStatus(task.id, task.status as string)}
+                  className="bg-gray-200 text-gray-800 text-sm font-semibold py-1 px-3 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Change Status
+                </button>
+                <button
+                  onClick={() => handleDeleteTask(task.id)}
+                  className="bg-red-500 text-white text-sm font-semibold py-1 px-3 rounded-md hover:bg-red-600 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
