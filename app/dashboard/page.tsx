@@ -136,20 +136,20 @@ const DashboardPage = () => {
                             </Tooltip>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Link href="#" className={cn(
-                                        buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                        isCollapsed ? 'w-full' : 'w-full justify-start',
-                                        'text-gray-700 hover:bg-gray-200'
-                                    )}>
-                                        <MessageSquare className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                        {!isCollapsed && 'Discuss'}
-                                    </Link>
-                                </TooltipTrigger>
-                                {isCollapsed && <TooltipContent side="right">Discuss</TooltipContent>}
-                            </Tooltip>
+                                        <Link href="#" className={cn(
+                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                            isCollapsed ? 'w-full' : 'w-full justify-start',
+                                            'text-gray-700 hover:bg-gray-200'
+                                        )}>
+                                            <MessageSquare className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                            {!isCollapsed && 'Discuss'}
+                                        </Link>
+                                    </TooltipTrigger>
+                                    {isCollapsed && <TooltipContent side="right">Discuss</TooltipContent>}
+                                </Tooltip>
+                            </TooltipProvider>
                         </nav>
                     </div>
-
                     <div className="mt-auto">
                         <Separator />
                         <Button onClick={handleLogout} variant="destructive" className="w-full mt-4">
