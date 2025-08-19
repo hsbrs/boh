@@ -27,6 +27,8 @@ type GroupedTasks = {
 };
 
 const TaskList = () => {
+  // Original state to hold all tasks fetched from Firestore
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>({});
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
@@ -78,6 +80,7 @@ const TaskList = () => {
         ...(doc.data() as DocumentData),
       }));
 
+      // Sort the tasks locally by plannedDate and startTime
       tasksArray.sort((a, b) => {
         const dateA = a.plannedDate || '';
         const dateB = b.plannedDate || '';
@@ -90,6 +93,7 @@ const TaskList = () => {
         return timeA.localeCompare(timeB);
       });
 
+      // We now set the 'tasks' state, which holds the full, sorted list
       setTasks(tasksArray);
       setLoading(false);
     }, (error) => {
@@ -100,6 +104,7 @@ const TaskList = () => {
     return () => unsubscribe();
   }, []);
 
+  // This useEffect now handles filtering and grouping based on the 'tasks' state
   useEffect(() => {
     let newFilteredTasks = tasks;
     const today = new Date();
@@ -127,7 +132,6 @@ const TaskList = () => {
     }, {} as GroupedTasks);
 
     setGroupedTasks(newGroupedTasks);
-    setFilteredTasks(newFilteredTasks);
   }, [filter, tasks]);
 
   if (loading) {
@@ -155,7 +159,7 @@ const TaskList = () => {
           </select>
         </div>
         
-        {filteredTasks.length === 0 ? (
+        {Object.keys(groupedTasks).length === 0 ? (
           <p className="text-gray-500 text-center">No tasks found for this view.</p>
         ) : (
           <div className="space-y-6">
