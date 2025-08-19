@@ -18,6 +18,11 @@ import { CalendarIcon } from "@radix-ui/react-icons";
 
 const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
 const assignees = ["Hady", "Kevin", "Maik", "Rene", "Andre"];
+const timeOptions = Array.from({ length: 24 * 4 }, (_, i) => {
+  const hours = Math.floor(i / 4).toString().padStart(2, '0');
+  const minutes = (i % 4 * 15).toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+});
 
 const TaskForm = () => {
   const [project, setProject] = useState('');
@@ -132,23 +137,29 @@ const TaskForm = () => {
         <div className="flex space-x-4">
           <div className="flex-1 space-y-1">
             <Label htmlFor="startTime">Start Time</Label>
-            <Input
-              id="startTime"
-              type="time"
-              value={startTime}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
-              required
-            />
+            <Select onValueChange={setStartTime} value={startTime}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a time" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeOptions.map((time) => (
+                  <SelectItem key={time} value={time}>{time}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex-1 space-y-1">
             <Label htmlFor="endTime">End Time</Label>
-            <Input
-              id="endTime"
-              type="time"
-              value={endTime}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndTime(e.target.value)}
-              required
-            />
+            <Select onValueChange={setEndTime} value={endTime}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a time" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeOptions.map((time) => (
+                  <SelectItem key={time} value={time}>{time}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <div className="space-y-1">
