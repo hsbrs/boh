@@ -14,7 +14,9 @@ type Task = {
   plannedDate?: string;
   startTime?: string;
   endTime?: string;
-  city?: string; // Changed from location to city
+  city?: string;
+  location?: string; // New field
+  locationUrl?: string; // New field
   status?: string;
 };
 
@@ -102,7 +104,23 @@ const TaskList = () => {
                 <p className="text-gray-600">Task: {task.taskName}</p>
                 <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
                 <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p>
-                <p className="text-gray-600">City: {task.city}</p> {/* Changed from Location to City */}
+                <p className="text-gray-600">City: {task.city}</p>
+                {/* Conditionally render location details */}
+                {task.location && (
+                  <p className="text-gray-600">
+                    Location: {task.location}{' '}
+                    {task.locationUrl && (
+                      <a
+                        href={task.locationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline font-semibold"
+                      >
+                        
+                      </a>
+                    )}
+                  </p>
+                )}
                 <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
                   Status: {task.status}
                 </p>

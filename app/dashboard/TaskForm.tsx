@@ -14,7 +14,9 @@ const TaskForm = () => {
   const [plannedDate, setPlannedDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [city, setCity] = useState(cities[0]); // Changed from location to city
+  const [city, setCity] = useState(cities[0]);
+  const [location, setLocation] = useState(''); // New state for location
+  const [locationUrl, setLocationUrl] = useState(''); // New state for location URL
   const [status, setStatus] = useState('Planned');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -28,7 +30,9 @@ const TaskForm = () => {
         plannedDate,
         startTime,
         endTime,
-        city, // Changed from location to city
+        city,
+        location, // New field
+        locationUrl, // New field
         status,
         createdAt: new Date(),
       });
@@ -40,6 +44,8 @@ const TaskForm = () => {
       setStartTime('');
       setEndTime('');
       setCity(cities[0]);
+      setLocation('');
+      setLocationUrl('');
       setStatus('Planned');
       alert('Task added successfully!');
     } catch (error) {
@@ -128,6 +134,27 @@ const TaskForm = () => {
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Location Address</label>
+        <input
+          type="text"
+          value={location}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="e.g., 123 Main St"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Google Maps URL</label>
+        <input
+          type="url"
+          value={locationUrl}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocationUrl(e.target.value)}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="https://maps.app.goo.gl/..."
+        />
       </div>
       <button
         type="submit"
