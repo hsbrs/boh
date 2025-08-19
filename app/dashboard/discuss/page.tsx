@@ -29,7 +29,7 @@ const DiscussPage = () => {
       const messagesArray: Message[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as DocumentData),
-      }));
+      })) as Message[]; // Correctly cast the result to Message[]
       setMessages(messagesArray);
       setLoading(false);
     }, (error) => {
