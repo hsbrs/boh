@@ -18,10 +18,10 @@ import { CalendarIcon } from "@radix-ui/react-icons";
 
 const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
 const assignees = ["Hady", "Kevin", "Maik", "Rene", "Andre"];
-const timeOptions = Array.from({ length: 24 * 4 }, (_, i) => {
-  const hours = Math.floor(i / 4).toString().padStart(2, '0');
-  const minutes = (i % 4 * 15).toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
+// New logic to generate time options from 06:00 to 18:00 in one-hour intervals
+const timeOptions = Array.from({ length: 13 }, (_, i) => {
+  const hour = (6 + i).toString().padStart(2, '0');
+  return `${hour}:00`;
 });
 
 const TaskForm = () => {

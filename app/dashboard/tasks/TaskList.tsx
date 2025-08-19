@@ -6,6 +6,8 @@ import { db } from '@/lib/firebase';
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+// Import shadcn/ui Select components for the filter
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Define the type for a task to provide type safety
 type Task = {
@@ -144,17 +146,18 @@ const TaskList = () => {
       <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold text-gray-800">Current Tasks</h3>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          >
-            {filterOptions.map(option => (
-              <option key={option} value={option}>
-                {option.startsWith('H') || option.startsWith('K') || option.startsWith('M') || option.startsWith('R') || option.startsWith('A') ? `Tasks for ${option}` : option}
-              </option>
-            ))}
-          </select>
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Tasks for All" />
+            </SelectTrigger>
+            <SelectContent>
+              {filterOptions.map(option => (
+                <SelectItem key={option} value={option}>
+                  {option.startsWith('H') || option.startsWith('K') || option.startsWith('M') || option.startsWith('R') || option.startsWith('A') ? `Tasks for ${option}` : option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         {Object.keys(groupedTasks).length === 0 ? (
