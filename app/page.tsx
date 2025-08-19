@@ -39,7 +39,7 @@ const LandingPage = () => {
               </linearGradient>
             </defs>
           </svg>
-          <span className="text-2xl font-bold">Field Service</span>
+          <span className="text-2xl font-bold">Broos Project</span>
         </div>
         <nav>
           <Button variant="ghost" asChild>
@@ -54,11 +54,10 @@ const LandingPage = () => {
       <main className="flex-grow flex items-center justify-center p-4 text-center">
         <div className="max-w-3xl space-y-6">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-red-800 animate-pulse">
-            Your Field Service, Optimized.
+            Broos Field Service
           </h1>
           <p className="text-lg md:text-xl text-gray-400 max-w-xl mx-auto">
-            Manage your projects, track your team, and streamline your workflow with our powerful,
-            easy-to-use platform.
+            Manage your projects, track your team, and streamline your workflow.
           </p>
           <Button asChild className="mt-8 px-8 py-6 rounded-full text-lg shadow-md hover:shadow-lg transition-shadow">
             <Link href={isLoggedIn ? '/dashboard' : '/login'}>
@@ -70,7 +69,7 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="py-4 text-center text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} Field Service. All rights reserved.
+        &copy; {new Date().getFullYear()} Broos Project. All rights reserved.
       </footer>
     </div>
   );

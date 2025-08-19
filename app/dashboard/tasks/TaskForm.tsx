@@ -65,104 +65,106 @@ const TaskForm = () => {
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-4">
       <h3 className="text-xl font-semibold text-gray-800">Add New Task</h3>
-      <div>
-        <Label htmlFor="project">Project</Label>
-        <Input
-          id="project"
-          type="text"
-          value={project}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProject(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="assignee">Assignee</Label>
-        <Select value={assignee} onValueChange={setAssignee} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select an assignee" />
-          </SelectTrigger>
-          <SelectContent>
-            {assignees.map((a) => (
-              <SelectItem key={a} value={a}>{a}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="taskName">Task</Label>
-        <Input
-          id="taskName"
-          type="text"
-          value={taskName}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTaskName(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="plannedDate">Planned Date</Label>
-        <Input
-          id="plannedDate"
-          type="date"
-          value={plannedDate}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlannedDate(e.target.value)}
-          required
-        />
-      </div>
-      <div className="flex space-x-4">
-        <div className="flex-1">
-          <Label htmlFor="startTime">Start Time</Label>
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="project">Project</Label>
           <Input
-            id="startTime"
-            type="time"
-            value={startTime}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
+            id="project"
+            type="text"
+            value={project}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProject(e.target.value)}
             required
           />
         </div>
-        <div className="flex-1">
-          <Label htmlFor="endTime">End Time</Label>
+        <div>
+          <Label htmlFor="assignee">Assignee</Label>
+          <Select value={assignee} onValueChange={setAssignee} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Select an assignee" />
+            </SelectTrigger>
+            <SelectContent>
+              {assignees.map((a) => (
+                <SelectItem key={a} value={a}>{a}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="taskName">Task</Label>
           <Input
-            id="endTime"
-            type="time"
-            value={endTime}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndTime(e.target.value)}
+            id="taskName"
+            type="text"
+            value={taskName}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTaskName(e.target.value)}
             required
           />
         </div>
-      </div>
-      <div>
-        <Label htmlFor="city">City</Label>
-        <Select value={city} onValueChange={setCity} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a city" />
-          </SelectTrigger>
-          <SelectContent>
-            {cities.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="location">Location Address</Label>
-        <Input
-          id="location"
-          type="text"
-          value={location}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
-          placeholder="e.g., 123 Main St"
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="locationUrl">Google Maps URL</Label>
-        <Input
-          id="locationUrl"
-          type="url"
-          value={locationUrl}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocationUrl(e.target.value)}
-          placeholder="https://maps.app.goo.gl/..."
-        />
+        <div>
+          <Label htmlFor="plannedDate">Planned Date</Label>
+          <Input
+            id="plannedDate"
+            type="date"
+            value={plannedDate}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlannedDate(e.target.value)}
+            required
+          />
+        </div>
+        <div className="flex space-x-4">
+          <div className="flex-1">
+            <Label htmlFor="startTime">Start Time</Label>
+            <Input
+              id="startTime"
+              type="time"
+              value={startTime}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex-1">
+            <Label htmlFor="endTime">End Time</Label>
+            <Input
+              id="endTime"
+              type="time"
+              value={endTime}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndTime(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="city">City</Label>
+          <Select value={city} onValueChange={setCity} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a city" />
+            </SelectTrigger>
+            <SelectContent>
+              {cities.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="location">Location Address</Label>
+          <Input
+            id="location"
+            type="text"
+            value={location}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
+            placeholder="e.g., 123 Main St"
+            required
+          />
+        </div>
+        <div>
+          <Label htmlFor="locationUrl">Google Maps URL</Label>
+          <Input
+            id="locationUrl"
+            type="url"
+            value={locationUrl}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocationUrl(e.target.value)}
+            placeholder="https://maps.app.goo.gl/..."
+          />
+        </div>
       </div>
       <Button type="submit" className="w-full">
         Add Task
