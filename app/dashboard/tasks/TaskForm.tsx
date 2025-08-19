@@ -4,12 +4,17 @@ import { useState } from 'react';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
+import { format } from 'date-fns';
 
 // Import shadcn/ui components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "@radix-ui/react-icons";
 
 const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
 const assignees = ["Hady", "Kevin", "Maik", "Rene", "Andre"];
@@ -18,7 +23,7 @@ const TaskForm = () => {
   const [project, setProject] = useState('');
   const [assignee, setAssignee] = useState(assignees[0]);
   const [taskName, setTaskName] = useState('');
-  const [plannedDate, setPlannedDate] = useState('');
+  const [plannedDate, setPlannedDate] = useState<Date | undefined>(undefined);
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [city, setCity] = useState(cities[0]);
@@ -33,7 +38,7 @@ const TaskForm = () => {
         project,
         assignee,
         taskName,
-        plannedDate,
+        plannedDate: plannedDate ? format(plannedDate, 'yyyy-MM-dd') : '',
         startTime,
         endTime,
         city,
@@ -45,7 +50,7 @@ const TaskForm = () => {
       setProject('');
       setAssignee(assignees[0]);
       setTaskName('');
-      setPlannedDate('');
+      setPlannedDate(undefined);
       setStartTime('');
       setEndTime('');
       setCity(cities[0]);
@@ -66,7 +71,7 @@ const TaskForm = () => {
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-4">
       <h3 className="text-xl font-semibold text-gray-800">Add New Task</h3>
       <div className="space-y-4">
-        <div>
+        <div className="space-y-1">
           <Label htmlFor="project">Project</Label>
           <Input
             id="project"
@@ -76,7 +81,7 @@ const TaskForm = () => {
             required
           />
         </div>
-        <div>
+        <div className="space-y-1">
           <Label htmlFor="assignee">Assignee</Label>
           <Select value={assignee} onValueChange={setAssignee} required>
             <SelectTrigger>
@@ -89,7 +94,7 @@ const TaskForm = () => {
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="space-y-1">
           <Label htmlFor="taskName">Task</Label>
           <Input
             id="taskName"
@@ -99,18 +104,33 @@ const TaskForm = () => {
             required
           />
         </div>
-        <div>
+        <div className="space-y-1">
           <Label htmlFor="plannedDate">Planned Date</Label>
-          <Input
-            id="plannedDate"
-            type="date"
-            value={plannedDate}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlannedDate(e.target.value)}
-            required
-          />
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !plannedDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {plannedDate ? format(plannedDate, "PPP") : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={plannedDate}
+                onSelect={setPlannedDate}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="flex space-x-4">
-          <div className="flex-1">
+          <div className="flex-1 space-y-1">
             <Label htmlFor="startTime">Start Time</Label>
             <Input
               id="startTime"
@@ -120,7 +140,7 @@ const TaskForm = () => {
               required
             />
           </div>
-          <div className="flex-1">
+          <div className="flex-1 space-y-1">
             <Label htmlFor="endTime">End Time</Label>
             <Input
               id="endTime"
@@ -131,7 +151,7 @@ const TaskForm = () => {
             />
           </div>
         </div>
-        <div>
+        <div className="space-y-1">
           <Label htmlFor="city">City</Label>
           <Select value={city} onValueChange={setCity} required>
             <SelectTrigger>
@@ -144,7 +164,7 @@ const TaskForm = () => {
             </SelectContent>
           </Select>
         </div>
-        <div>
+        <div className="space-y-1">
           <Label htmlFor="location">Location Address</Label>
           <Input
             id="location"
@@ -155,7 +175,7 @@ const TaskForm = () => {
             required
           />
         </div>
-        <div>
+        <div className="space-y-1">
           <Label htmlFor="locationUrl">Google Maps URL</Label>
           <Input
             id="locationUrl"
