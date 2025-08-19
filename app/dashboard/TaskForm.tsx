@@ -8,8 +8,11 @@ import React from 'react';
 const TaskForm = () => {
   const [project, setProject] = useState('');
   const [assignee, setAssignee] = useState('');
-  const [customer, setCustomer] = useState('');
+  const [taskName, setTaskName] = useState(''); // Updated to 'taskName'
   const [plannedDate, setPlannedDate] = useState('');
+  const [startTime, setStartTime] = useState(''); // New state for start time
+  const [endTime, setEndTime] = useState(''); // New state for end time
+  const [location, setLocation] = useState(''); // New state for location
   const [status, setStatus] = useState('Planned');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -19,16 +22,22 @@ const TaskForm = () => {
       await addDoc(collection(db, 'tasks'), {
         project,
         assignee,
-        customer,
+        taskName, // Changed from customer to taskName
         plannedDate,
+        startTime, // New field
+        endTime,   // New field
+        location,  // New field
         status,
         createdAt: new Date(),
       });
       // Clear the form fields after successful submission
       setProject('');
       setAssignee('');
-      setCustomer('');
+      setTaskName('');
       setPlannedDate('');
+      setStartTime('');
+      setEndTime('');
+      setLocation('');
       setStatus('Planned');
       alert('Task added successfully!');
     } catch (error) {
@@ -63,12 +72,13 @@ const TaskForm = () => {
           required
         />
       </div>
+      {/* Updated field to 'Task' */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Customer</label>
+        <label className="block text-sm font-medium text-gray-700">Task</label>
         <input
           type="text"
-          value={customer}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCustomer(e.target.value)}
+          value={taskName}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTaskName(e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           required
         />
@@ -80,6 +90,40 @@ const TaskForm = () => {
           value={plannedDate}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlannedDate(e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+          required
+        />
+      </div>
+      {/* New Time and Location Fields */}
+      <div className="flex space-x-4">
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700">Start Time</label>
+          <input
+            type="time"
+            value={startTime}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-gray-700">End Time</label>
+          <input
+            type="time"
+            value={endTime}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEndTime(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+            required
+          />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Location</label>
+        <input
+          type="text"
+          value={location}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="e.g., 123 Main St, Anytown"
           required
         />
       </div>

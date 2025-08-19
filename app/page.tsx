@@ -51,7 +51,7 @@ const LandingPage = () => {
       <main className="flex-grow flex items-center justify-center p-4">
         <div className="text-center max-w-2xl">
           <h1 className="text-5xl md:text-6xl font-extrabold leading-tight tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-red-800 animate-pulse">
-            Broos Project Field Service
+            Broos Field Service
           </h1>
           <p className="text-lg md:text-xl text-gray-400 mb-8">
             Manage your projects, track your team, and streamline your workflow.
