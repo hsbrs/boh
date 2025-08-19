@@ -6,23 +6,23 @@ import { db } from '@/lib/firebase';
 import React from 'react';
 
 const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
+const assignees = ["Hady", "Kevin", "Maik", "Rene", "Andre"]; // New array for assignees
 
 const TaskForm = () => {
   const [project, setProject] = useState('');
-  const [assignee, setAssignee] = useState('');
+  const [assignee, setAssignee] = useState(assignees[0]); // Changed to a pre-defined list
   const [taskName, setTaskName] = useState('');
   const [plannedDate, setPlannedDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [city, setCity] = useState(cities[0]);
-  const [location, setLocation] = useState(''); // New state for location
-  const [locationUrl, setLocationUrl] = useState(''); // New state for location URL
+  const [location, setLocation] = useState('');
+  const [locationUrl, setLocationUrl] = useState('');
   const [status, setStatus] = useState('Planned');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      // Add a new document with the task data to the 'tasks' collection
       await addDoc(collection(db, 'tasks'), {
         project,
         assignee,
@@ -31,14 +31,13 @@ const TaskForm = () => {
         startTime,
         endTime,
         city,
-        location, // New field
-        locationUrl, // New field
+        location,
+        locationUrl,
         status,
         createdAt: new Date(),
       });
-      // Clear the form fields after successful submission
       setProject('');
-      setAssignee('');
+      setAssignee(assignees[0]); // Reset to the first assignee
       setTaskName('');
       setPlannedDate('');
       setStartTime('');
@@ -72,13 +71,16 @@ const TaskForm = () => {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700">Assignee</label>
-        <input
-          type="text"
+        <select
           value={assignee}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAssignee(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setAssignee(e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
           required
-        />
+        >
+          {assignees.map((a) => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700">Task</label>
