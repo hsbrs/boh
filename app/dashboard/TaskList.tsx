@@ -26,9 +26,12 @@ type GroupedTasks = {
 };
 
 const TaskList = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>({});
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
+  const [filter, setFilter] = useState('All'); // New state for filter
 
   const showNotification = (message: string, type: string) => {
     setNotification({ message, type });
@@ -69,10 +72,9 @@ const TaskList = () => {
   };
 
   useEffect(() => {
-    // We are no longer using orderBy() here
     const q = query(collection(db, 'tasks'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      let tasksArray: Task[] = snapshot.docs.map(doc => ({
+      const tasksArray: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as DocumentData),
       }));
@@ -90,17 +92,7 @@ const TaskList = () => {
         return timeA.localeCompare(timeB);
       });
 
-      // Group the sorted tasks by date
-      const newGroupedTasks: GroupedTasks = tasksArray.reduce((groups, task) => {
-        const date = task.plannedDate || 'No Date';
-        if (!groups[date]) {
-          groups[date] = [];
-        }
-        groups[date].push(task);
-        return groups;
-      }, {} as GroupedTasks);
-
-      setGroupedTasks(newGroupedTasks);
+      setTasks(tasksArray);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching tasks: ", error);
@@ -110,16 +102,65 @@ const TaskList = () => {
     return () => unsubscribe();
   }, []);
 
+  // New useEffect to handle filtering whenever tasks or filter state changes
+  useEffect(() => {
+    let newFilteredTasks = tasks;
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    const todayDate = today.toISOString().split('T')[0];
+    const tomorrowDate = tomorrow.toISOString().split('T')[0];
+
+    if (filter === 'Today') {
+      newFilteredTasks = tasks.filter(task => task.plannedDate === todayDate);
+    } else if (filter === 'Tomorrow') {
+      newFilteredTasks = tasks.filter(task => task.plannedDate === tomorrowDate);
+    } else if (filter !== 'All') {
+      newFilteredTasks = tasks.filter(task => task.assignee === filter);
+    }
+
+    // Group the filtered tasks
+    const newGroupedTasks: GroupedTasks = newFilteredTasks.reduce((groups, task) => {
+      const date = task.plannedDate || 'No Date';
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(task);
+      return groups;
+    }, {} as GroupedTasks);
+
+    setGroupedTasks(newGroupedTasks);
+    setFilteredTasks(newFilteredTasks);
+  }, [filter, tasks]);
+
   if (loading) {
     return <div className="text-center text-gray-500">Loading tasks...</div>;
   }
 
+  const assignees = ["Hady", "Kevin", "Maik", "Rene", "Andre"];
+  const filterOptions = ['All', 'Today', 'Tomorrow', ...assignees];
+
   return (
     <>
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Current Tasks</h3>
-        {Object.keys(groupedTasks).length === 0 ? (
-          <p className="text-gray-500 text-center">No tasks found. Add a new one!</p>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold text-gray-800">Current Tasks</h3>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          >
+            {filterOptions.map(option => (
+              <option key={option} value={option}>
+                {option.startsWith('H') || option.startsWith('K') || option.startsWith('M') || option.startsWith('R') || option.startsWith('A') ? `Tasks for ${option}` : option}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        {filteredTasks.length === 0 ? (
+          <p className="text-gray-500 text-center">No tasks found for this view.</p>
         ) : (
           <div className="space-y-6">
             {Object.keys(groupedTasks).map(date => (
