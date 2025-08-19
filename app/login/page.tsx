@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [isLoginMode, setIsLoginMode] = useState(true);
   const router = useRouter();
   
-  const handleAuthAction = async (e) => {
+  const handleAuthAction = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (isLoginMode) {
