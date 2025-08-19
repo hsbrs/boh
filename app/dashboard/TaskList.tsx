@@ -85,45 +85,47 @@ const TaskList = () => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
+    <>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">Current Tasks</h3>
+        {tasks.length === 0 ? (
+          <p className="text-gray-500 text-center">No tasks found. Add a new one!</p>
+        ) : (
+          <div className="space-y-4">
+            {tasks.map((task) => (
+              <div key={task.id} className="p-4 border border-gray-200 rounded-md shadow-sm">
+                <p className="text-lg font-bold text-gray-900">{task.project}</p>
+                <p className="text-gray-600">Assignee: {task.assignee}</p>
+                <p className="text-gray-600">Customer: {task.customer}</p>
+                <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
+                <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
+                  Status: {task.status}
+                </p>
+                <div className="flex mt-2 space-x-2">
+                  <button
+                    onClick={() => handleUpdateStatus(task.id, task.status as string)}
+                    className="bg-gray-200 text-gray-800 text-sm font-semibold py-1 px-3 rounded-md hover:bg-gray-300 transition-colors"
+                  >
+                    Change Status
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTask(task.id)}
+                    className="bg-red-500 text-white text-sm font-semibold py-1 px-3 rounded-md hover:bg-red-600 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       {notification && (
-        <div className={`p-4 mb-4 rounded-md ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+        <div className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50 ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white transition-all duration-300 ease-in-out`}>
           {notification.message}
         </div>
       )}
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">Current Tasks</h3>
-      {tasks.length === 0 ? (
-        <p className="text-gray-500 text-center">No tasks found. Add a new one!</p>
-      ) : (
-        <div className="space-y-4">
-          {tasks.map((task) => (
-            <div key={task.id} className="p-4 border border-gray-200 rounded-md shadow-sm">
-              <p className="text-lg font-bold text-gray-900">{task.project}</p>
-              <p className="text-gray-600">Assignee: {task.assignee}</p>
-              <p className="text-gray-600">Customer: {task.customer}</p>
-              <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
-              <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
-                Status: {task.status}
-              </p>
-              <div className="flex mt-2 space-x-2">
-                <button
-                  onClick={() => handleUpdateStatus(task.id, task.status as string)}
-                  className="bg-gray-200 text-gray-800 text-sm font-semibold py-1 px-3 rounded-md hover:bg-gray-300 transition-colors"
-                >
-                  Change Status
-                </button>
-                <button
-                  onClick={() => handleDeleteTask(task.id)}
-                  className="bg-red-500 text-white text-sm font-semibold py-1 px-3 rounded-md hover:bg-red-600 transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
