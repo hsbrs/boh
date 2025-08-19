@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
 
@@ -69,14 +69,28 @@ const TaskList = () => {
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'tasks'), orderBy('plannedDate', 'asc'), orderBy('startTime', 'asc'));
+    // We are no longer using orderBy() here
+    const q = query(collection(db, 'tasks'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const tasksArray: Task[] = snapshot.docs.map(doc => ({
+      let tasksArray: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as DocumentData),
       }));
 
-      // Group the tasks by date
+      // Sort the tasks locally by plannedDate and startTime
+      tasksArray.sort((a, b) => {
+        const dateA = a.plannedDate || '';
+        const dateB = b.plannedDate || '';
+        const timeA = a.startTime || '00:00';
+        const timeB = b.startTime || '00:00';
+
+        if (dateA !== dateB) {
+          return dateA.localeCompare(dateB);
+        }
+        return timeA.localeCompare(timeB);
+      });
+
+      // Group the sorted tasks by date
       const newGroupedTasks: GroupedTasks = tasksArray.reduce((groups, task) => {
         const date = task.plannedDate || 'No Date';
         if (!groups[date]) {
