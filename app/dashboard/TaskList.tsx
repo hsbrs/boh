@@ -1,11 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
+// Define the type for a task to provide type safety
+// We are making the properties optional because of the doc.data() spread operator
+// and to be flexible for future changes.
+type Task = {
+  id: string;
+  project?: string;
+  assignee?: string;
+  customer?: string;
+  plannedDate?: string;
+  status?: string;
+};
+
 const TaskList = () => {
-  const [tasks, setTasks] = useState([]);
+  // Explicitly tell useState that the array will hold Task objects
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -14,9 +27,10 @@ const TaskList = () => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const tasksArray = snapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data(),
+        // The spread operator correctly pulls all other fields from the document data
+        ...(doc.data() as DocumentData),
       }));
-      setTasks(tasksArray);
+      setTasks(tasksArray as Task[]);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching tasks: ", error);
@@ -47,7 +61,6 @@ const TaskList = () => {
               <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : 'text-green-500'}`}>
                 Status: {task.status}
               </p>
-              {/* You will add update and delete buttons here later */}
             </div>
           ))}
         </div>
