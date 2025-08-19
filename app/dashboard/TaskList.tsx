@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
 
@@ -20,9 +20,13 @@ type Task = {
   status?: string;
 };
 
+// Define the type for the grouped tasks object
+type GroupedTasks = {
+  [key: string]: Task[];
+};
+
 const TaskList = () => {
-  // Explicitly tell useState that the array will hold Task objects
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>({});
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
 
@@ -30,10 +34,9 @@ const TaskList = () => {
     setNotification({ message, type });
     setTimeout(() => {
       setNotification(null);
-    }, 3000); // Hides the notification after 3 seconds
+    }, 3000);
   };
 
-  // Function to handle status updates
   const handleUpdateStatus = async (taskId: string, currentStatus: string) => {
     const taskDocRef = doc(db, 'tasks', taskId);
     let newStatus = 'In Progress';
@@ -52,7 +55,6 @@ const TaskList = () => {
     }
   };
 
-  // Function to handle task deletion
   const handleDeleteTask = async (taskId: string) => {
     if (window.confirm("Are you sure you want to delete this task?")) {
       const taskDocRef = doc(db, 'tasks', taskId);
@@ -67,21 +69,30 @@ const TaskList = () => {
   };
 
   useEffect(() => {
-    // Set up a real-time listener for the 'tasks' collection
-    const q = query(collection(db, 'tasks'));
+    const q = query(collection(db, 'tasks'), orderBy('plannedDate', 'asc'), orderBy('startTime', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const tasksArray = snapshot.docs.map(doc => ({
+      const tasksArray: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as DocumentData),
       }));
-      setTasks(tasksArray as Task[]);
+
+      // Group the tasks by date
+      const newGroupedTasks: GroupedTasks = tasksArray.reduce((groups, task) => {
+        const date = task.plannedDate || 'No Date';
+        if (!groups[date]) {
+          groups[date] = [];
+        }
+        groups[date].push(task);
+        return groups;
+      }, {} as GroupedTasks);
+
+      setGroupedTasks(newGroupedTasks);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching tasks: ", error);
       setLoading(false);
     });
 
-    // Clean up the listener on component unmount
     return () => unsubscribe();
   }, []);
 
@@ -93,52 +104,58 @@ const TaskList = () => {
     <>
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Current Tasks</h3>
-        {tasks.length === 0 ? (
+        {Object.keys(groupedTasks).length === 0 ? (
           <p className="text-gray-500 text-center">No tasks found. Add a new one!</p>
         ) : (
-          <div className="space-y-4">
-            {tasks.map((task) => (
-              <div key={task.id} className="p-4 border border-gray-200 rounded-md shadow-sm">
-                <p className="text-lg font-bold text-gray-900">{task.project}</p>
-                <p className="text-gray-600">Assignee: {task.assignee}</p>
-                <p className="text-gray-600">Task: {task.taskName}</p>
-                <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
-                <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p>
-                <p className="text-gray-600">City: {task.city}</p>
-                {/* Conditionally render location details and map button */}
-                {task.location && (
-                  <p className="text-gray-600 flex items-center">
-                    Location: {task.location}
-                    {task.locationUrl && (
-                      <a
-                        href={task.locationUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-2 text-blue-500 hover:text-blue-700 transition-colors"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                        </svg>
-                      </a>
-                    )}
-                  </p>
-                )}
-                <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
-                  Status: {task.status}
-                </p>
-                <div className="flex mt-2 space-x-2">
-                  <button
-                    onClick={() => handleUpdateStatus(task.id, task.status as string)}
-                    className="bg-gray-200 text-gray-800 text-sm font-semibold py-1 px-3 rounded-md hover:bg-gray-300 transition-colors"
-                  >
-                    Change Status
-                  </button>
-                  <button
-                    onClick={() => handleDeleteTask(task.id)}
-                    className="bg-red-500 text-white text-sm font-semibold py-1 px-3 rounded-md hover:bg-red-600 transition-colors"
-                  >
-                    Delete
-                  </button>
+          <div className="space-y-6">
+            {Object.keys(groupedTasks).map(date => (
+              <div key={date}>
+                <h4 className="text-xl font-bold text-gray-700 mb-2">{date}</h4>
+                <div className="space-y-4">
+                  {groupedTasks[date].map(task => (
+                    <div key={task.id} className="p-4 border border-gray-200 rounded-md shadow-sm">
+                      <p className="text-lg font-bold text-gray-900">{task.project}</p>
+                      <p className="text-gray-600">Assignee: {task.assignee}</p>
+                      <p className="text-gray-600">Task: {task.taskName}</p>
+                      <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
+                      <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p>
+                      <p className="text-gray-600">City: {task.city}</p>
+                      {task.location && (
+                        <p className="text-gray-600 flex items-center">
+                          Location: {task.location}
+                          {task.locationUrl && (
+                            <a
+                              href={task.locationUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-2 text-blue-500 hover:text-blue-700 transition-colors"
+                            >
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                            </a>
+                          )}
+                        </p>
+                      )}
+                      <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
+                        Status: {task.status}
+                      </p>
+                      <div className="flex mt-2 space-x-2">
+                        <button
+                          onClick={() => handleUpdateStatus(task.id, task.status as string)}
+                          className="bg-gray-200 text-gray-800 text-sm font-semibold py-1 px-3 rounded-md hover:bg-gray-300 transition-colors"
+                        >
+                          Change Status
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTask(task.id)}
+                          className="bg-red-500 text-white text-sm font-semibold py-1 px-3 rounded-md hover:bg-red-600 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
