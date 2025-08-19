@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
+import { Button } from '@/components/ui/button';
 
 // Define the type for a task to provide type safety
 type Task = {
@@ -26,12 +27,10 @@ type GroupedTasks = {
 };
 
 const TaskList = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>({});
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
-  const [filter, setFilter] = useState('All'); // New state for filter
+  const [filter, setFilter] = useState('All');
 
   const showNotification = (message: string, type: string) => {
     setNotification({ message, type });
@@ -74,12 +73,11 @@ const TaskList = () => {
   useEffect(() => {
     const q = query(collection(db, 'tasks'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const tasksArray: Task[] = snapshot.docs.map(doc => ({
+      let tasksArray: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as DocumentData),
       }));
 
-      // Sort the tasks locally by plannedDate and startTime
       tasksArray.sort((a, b) => {
         const dateA = a.plannedDate || '';
         const dateB = b.plannedDate || '';
@@ -102,7 +100,6 @@ const TaskList = () => {
     return () => unsubscribe();
   }, []);
 
-  // New useEffect to handle filtering whenever tasks or filter state changes
   useEffect(() => {
     let newFilteredTasks = tasks;
     const today = new Date();
@@ -120,7 +117,6 @@ const TaskList = () => {
       newFilteredTasks = tasks.filter(task => task.assignee === filter);
     }
 
-    // Group the filtered tasks
     const newGroupedTasks: GroupedTasks = newFilteredTasks.reduce((groups, task) => {
       const date = task.plannedDate || 'No Date';
       if (!groups[date]) {
@@ -196,18 +192,20 @@ const TaskList = () => {
                         Status: {task.status}
                       </p>
                       <div className="flex mt-2 space-x-2">
-                        <button
+                        <Button
                           onClick={() => handleUpdateStatus(task.id, task.status as string)}
-                          className="bg-gray-200 text-gray-800 text-sm font-semibold py-1 px-3 rounded-md hover:bg-gray-300 transition-colors"
+                          variant="outline"
+                          size="sm"
                         >
                           Change Status
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={() => handleDeleteTask(task.id)}
-                          className="bg-red-500 text-white text-sm font-semibold py-1 px-3 rounded-md hover:bg-red-600 transition-colors"
+                          variant="destructive"
+                          size="sm"
                         >
                           Delete
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ))}
