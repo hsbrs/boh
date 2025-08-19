@@ -15,8 +15,8 @@ type Task = {
   startTime?: string;
   endTime?: string;
   city?: string;
-  location?: string; // New field
-  locationUrl?: string; // New field
+  location?: string;
+  locationUrl?: string;
   status?: string;
 };
 
@@ -105,18 +105,20 @@ const TaskList = () => {
                 <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
                 <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p>
                 <p className="text-gray-600">City: {task.city}</p>
-                {/* Conditionally render location details */}
+                {/* Conditionally render location details and map button */}
                 {task.location && (
-                  <p className="text-gray-600">
-                    Location: {task.location}{' '}
+                  <p className="text-gray-600 flex items-center">
+                    Location: {task.location}
                     {task.locationUrl && (
                       <a
                         href={task.locationUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline font-semibold"
+                        className="ml-2 text-blue-500 hover:text-blue-700 transition-colors"
                       >
-                        
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                        </svg>
                       </a>
                     )}
                   </p>
