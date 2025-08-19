@@ -5,6 +5,7 @@ import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc 
 import { db } from '@/lib/firebase';
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 // Define the type for a task to provide type safety
 type Task = {
@@ -80,7 +81,6 @@ const TaskList = () => {
         ...(doc.data() as DocumentData),
       }));
 
-      // Sort the tasks locally by plannedDate and startTime
       tasksArray.sort((a, b) => {
         const dateA = a.plannedDate || '';
         const dateB = b.plannedDate || '';
@@ -93,7 +93,6 @@ const TaskList = () => {
         return timeA.localeCompare(timeB);
       });
 
-      // We now set the 'tasks' state, which holds the full, sorted list
       setTasks(tasksArray);
       setLoading(false);
     }, (error) => {
@@ -104,7 +103,6 @@ const TaskList = () => {
     return () => unsubscribe();
   }, []);
 
-  // This useEffect now handles filtering and grouping based on the 'tasks' state
   useEffect(() => {
     let newFilteredTasks = tasks;
     const today = new Date();
@@ -168,50 +166,52 @@ const TaskList = () => {
                 <h4 className="text-xl font-bold text-gray-700 mb-2">{date}</h4>
                 <div className="space-y-4">
                   {groupedTasks[date].map(task => (
-                    <div key={task.id} className="p-4 border border-gray-200 rounded-md shadow-sm">
-                      <p className="text-lg font-bold text-gray-900">{task.project}</p>
-                      <p className="text-gray-600">Assignee: {task.assignee}</p>
-                      <p className="text-gray-600">Task: {task.taskName}</p>
-                      <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
-                      <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p>
-                      <p className="text-gray-600">City: {task.city}</p>
-                      {task.location && (
-                        <p className="text-gray-600 flex items-center">
-                          Location: {task.location}
-                          {task.locationUrl && (
-                            <a
-                              href={task.locationUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="ml-2 text-blue-500 hover:text-blue-700 transition-colors"
-                            >
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                              </svg>
-                            </a>
-                          )}
+                    <Card key={task.id} className="p-4 shadow-sm">
+                      <CardContent className="p-0">
+                        <p className="text-lg font-bold text-gray-900">{task.project}</p>
+                        <p className="text-gray-600">Assignee: {task.assignee}</p>
+                        <p className="text-gray-600">Task: {task.taskName}</p>
+                        <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
+                        <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p>
+                        <p className="text-gray-600">City: {task.city}</p>
+                        {task.location && (
+                          <p className="text-gray-600 flex items-center">
+                            Location: {task.location}
+                            {task.locationUrl && (
+                              <a
+                                href={task.locationUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="ml-2 text-blue-500 hover:text-blue-700 transition-colors"
+                              >
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                </svg>
+                              </a>
+                            )}
+                          </p>
+                        )}
+                        <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
+                          Status: {task.status}
                         </p>
-                      )}
-                      <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
-                        Status: {task.status}
-                      </p>
-                      <div className="flex mt-2 space-x-2">
-                        <Button
-                          onClick={() => handleUpdateStatus(task.id, task.status as string)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Change Status
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteTask(task.id)}
-                          variant="destructive"
-                          size="sm"
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
+                        <div className="flex mt-2 space-x-2">
+                          <Button
+                            onClick={() => handleUpdateStatus(task.id, task.status as string)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Change Status
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteTask(task.id)}
+                            variant="destructive"
+                            size="sm"
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </div>
