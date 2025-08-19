@@ -36,6 +36,20 @@ const ReportsPage = () => {
         id: doc.id,
         ...(doc.data() as DocumentData),
       }));
+
+      // Sort the tasks locally by plannedDate and then by startTime
+      tasksArray.sort((a, b) => {
+        const dateA = a.plannedDate || '';
+        const dateB = b.plannedDate || '';
+        const timeA = a.startTime || '00:00';
+        const timeB = b.startTime || '00:00';
+
+        if (dateA !== dateB) {
+          return dateA.localeCompare(dateB);
+        }
+        return timeA.localeCompare(timeB);
+      });
+
       setTasks(tasksArray);
       setLoading(false);
     }, (error) => {

@@ -60,7 +60,7 @@ const DashboardPage = () => {
             <Link href="/dashboard/tasks">Tasks</Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start text-gray-700">
-            <Link href="#">Reports</Link>
+            <Link href="/dashboard/reports">Reports</Link>
           </Button>
           <Button variant="ghost" className="w-full justify-start text-gray-700">
             <Link href="#">Discuss</Link>
@@ -95,15 +95,17 @@ const DashboardPage = () => {
             </Card>
           </Link>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Reports</CardTitle>
-              <CardDescription>Access detailed reports on your team's performance.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">Coming Soon</p>
-            </CardContent>
-          </Card>
+          <Link href="/dashboard/reports">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle>Reports</CardTitle>
+                <CardDescription>Access detailed reports on your team's performance.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-blue-600">Go to Reports →</p>
+              </CardContent>
+            </Card>
+          </Link>
 
           <Card>
             <CardHeader>
