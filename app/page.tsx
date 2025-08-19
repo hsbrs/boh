@@ -54,8 +54,7 @@ const LandingPage = () => {
             Broos Project Field Service
           </h1>
           <p className="text-lg md:text-xl text-gray-400 mb-8">
-            Manage your projects, track your team, and streamline your workflow with our powerful,
-            easy-to-use platform.
+            Manage your projects, track your team, and streamline your workflow.
           </p>
           <Link href={isLoggedIn ? '/dashboard' : '/login'}
             className="inline-block bg-red-600 text-white font-bold py-3 px-8 rounded-full shadow-lg
@@ -69,7 +68,7 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="py-4 text-center text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} Field Service. All rights reserved.
+        &copy; {new Date().getFullYear()} Broos Project. All rights reserved.
       </footer>
     </div>
   );

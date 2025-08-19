@@ -19,6 +19,14 @@ const TaskList = () => {
   // Explicitly tell useState that the array will hold Task objects
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
+
+  const showNotification = (message: string, type: string) => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000); // Hides the notification after 3 seconds
+  };
 
   // Function to handle status updates
   const handleUpdateStatus = async (taskId: string, currentStatus: string) => {
@@ -32,14 +40,10 @@ const TaskList = () => {
     
     try {
       await updateDoc(taskDocRef, { status: newStatus });
-      alert('Task status updated!');
+      showNotification('Task status updated successfully!', 'success');
     } catch (error) {
       console.error("Error updating status: ", error);
-      if (error instanceof Error) {
-        alert('Error updating status: ' + error.message);
-      } else {
-        alert('An unknown error occurred.');
-      }
+      showNotification('Error updating status.', 'error');
     }
   };
 
@@ -49,14 +53,10 @@ const TaskList = () => {
       const taskDocRef = doc(db, 'tasks', taskId);
       try {
         await deleteDoc(taskDocRef);
-        alert('Task deleted successfully!');
+        showNotification('Task deleted successfully!', 'success');
       } catch (error) {
         console.error("Error deleting task: ", error);
-        if (error instanceof Error) {
-          alert('Error deleting task: ' + error.message);
-        } else {
-          alert('An unknown error occurred.');
-        }
+        showNotification('Error deleting task.', 'error');
       }
     }
   };
@@ -67,7 +67,6 @@ const TaskList = () => {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const tasksArray = snapshot.docs.map(doc => ({
         id: doc.id,
-        // The spread operator correctly pulls all other fields from the document data
         ...(doc.data() as DocumentData),
       }));
       setTasks(tasksArray as Task[]);
@@ -87,6 +86,11 @@ const TaskList = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
+      {notification && (
+        <div className={`p-4 mb-4 rounded-md ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+          {notification.message}
+        </div>
+      )}
       <h3 className="text-xl font-semibold text-gray-800 mb-4">Current Tasks</h3>
       {tasks.length === 0 ? (
         <p className="text-gray-500 text-center">No tasks found. Add a new one!</p>
