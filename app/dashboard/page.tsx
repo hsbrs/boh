@@ -8,12 +8,19 @@ import Link from 'next/link';
 import React from 'react';
 
 // Import shadcn/ui components
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from '@/components/ui/resizable';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
+
+import { cn } from '@/lib/utils';
+import { LayoutDashboard, ListTodo, FileText, MessageSquare } from 'lucide-react';
 
 const DashboardPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -45,81 +52,147 @@ const DashboardPage = () => {
         <div className="text-xl font-semibold text-gray-700">Loading...</div>
       </div>
     );
-  }
+    }
+    
+    return (
+        <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel
+                defaultSize={20}
+                minSize={15}
+                maxSize={25}
+                collapsedSize={5}
+                collapsible={true}
+                onCollapse={() => setIsCollapsed(true)}
+                onExpand={() => setIsCollapsed(false)}
+                className={cn('min-w-[50px] transition-all duration-300 ease-in-out bg-white p-4 shadow-lg', isCollapsed && 'p-2')}
+            >
+                <div className="flex flex-col h-full">
+                    <div className="flex-1 space-y-4">
+                        {!isCollapsed && (
+                            <>
+                                <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+                                <Separator />
+                            </>
+                        )}
+                        <nav className="flex flex-col space-y-2">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link href="/dashboard" className={cn(
+                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                            isCollapsed ? 'w-full' : 'w-full justify-start',
+                                            'text-gray-700 hover:bg-gray-200'
+                                        )}>
+                                            <LayoutDashboard className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                            {!isCollapsed && 'Home'}
+                                        </Link>
+                                    </TooltipTrigger>
+                                    {isCollapsed && <TooltipContent side="right">Home</TooltipContent>}
+                                </Tooltip>
 
-  return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar for navigation */}
-      <div className="w-64 bg-white p-6 shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
-        <nav className="space-y-4">
-          <Button variant="ghost" className="w-full justify-start font-semibold">
-            <Link href="/dashboard">Home</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-gray-700">
-            <Link href="/dashboard/tasks">Tasks</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-gray-700">
-            <Link href="/dashboard/reports">Reports</Link>
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-gray-700">
-            <Link href="#">Discuss</Link>
-          </Button>
-        </nav>
-      </div>
-
-      {/* Main content area */}
-      <div className="flex-1 p-8">
-        <div className="flex justify-end mb-6">
-          <Button
-            onClick={handleLogout}
-            variant="destructive"
-          >
-            Logout
-          </Button>
-        </div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link href="/dashboard/tasks" className={cn(
+                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                            isCollapsed ? 'w-full' : 'w-full justify-start',
+                                            'text-gray-700 hover:bg-gray-200'
+                                        )}>
+                                            <ListTodo className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                            {!isCollapsed && 'Tasks'}
+                                        </Link>
+                                    </TooltipTrigger>
+                                    {isCollapsed && <TooltipContent side="right">Tasks</TooltipContent>}
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link href="/dashboard/reports" className={cn(
+                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                            isCollapsed ? 'w-full' : 'w-full justify-start',
+                                            'text-gray-700 hover:bg-gray-200'
+                                        )}>
+                                            <FileText className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                            {!isCollapsed && 'Reports'}
+                                        </Link>
+                                    </TooltipTrigger>
+                                    {isCollapsed && <TooltipContent side="right">Reports</TooltipContent>}
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link href="#" className={cn(
+                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                            isCollapsed ? 'w-full' : 'w-full justify-start',
+                                            'text-gray-700 hover:bg-gray-200'
+                                        )}>
+                                            <MessageSquare className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                            {!isCollapsed && 'Discuss'}
+                                        </Link>
+                                    </TooltipTrigger>
+                                    {isCollapsed && <TooltipContent side="right">Discuss</TooltipContent>}
+                                </Tooltip>
+                            </TooltipProvider>
+                        </nav>
+                    </div>
+                    {!isCollapsed && (
+                        <div className="mt-auto">
+                            <Separator />
+                            <Button onClick={handleLogout} variant="destructive" className="w-full mt-4">
+                                Logout
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={80} className="p-8">
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-4xl font-bold text-gray-800">Welcome to your Dashboard!</h1>
+                    {isCollapsed && (
+                        <Button onClick={handleLogout} variant="destructive">
+                            Logout
+                        </Button>
+                    )}
+                </div>
+                
+                <p className="text-gray-600 mb-8">Select an option from the sidebar to get started.</p>
         
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">Welcome to your Dashboard!</h1>
-        <p className="text-gray-600 mb-8">Select an option from the sidebar to get started.</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Link href="/dashboard/tasks">
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle>Tasks</CardTitle>
-                <CardDescription>View, create, and manage all your field service tasks.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-blue-600">Go to Tasks →</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Link href="/dashboard/reports">
-            <Card className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle>Reports</CardTitle>
-                <CardDescription>Access detailed reports on your team's performance.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-blue-600">Go to Reports →</p>
-              </CardContent>
-            </Card>
-          </Link>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Discuss</CardTitle>
-              <CardDescription>Communicate and collaborate with your team.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-500">Coming Soon</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <Link href="/dashboard/tasks">
+                        <Card className="hover:shadow-lg transition-shadow">
+                            <CardHeader>
+                                <CardTitle>Tasks</CardTitle>
+                                <CardDescription>View, create, and manage all your field service tasks.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-blue-600">Go to Tasks →</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
+        
+                    <Link href="/dashboard/reports">
+                        <Card className="hover:shadow-lg transition-shadow">
+                            <CardHeader>
+                                <CardTitle>Reports</CardTitle>
+                                <CardDescription>Access detailed reports on your team's performance.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-blue-600">Go to Reports →</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
+        
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Discuss</CardTitle>
+                            <CardDescription>Communicate and collaborate with your team.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-gray-500">Coming Soon</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            </ResizablePanel>
+        </ResizablePanelGroup>
+    );
 };
 
 export default DashboardPage;
