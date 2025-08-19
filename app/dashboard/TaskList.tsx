@@ -10,11 +10,11 @@ type Task = {
   id: string;
   project?: string;
   assignee?: string;
-  taskName?: string; // Updated to taskName
+  taskName?: string;
   plannedDate?: string;
-  startTime?: string; // New field
-  endTime?: string;   // New field
-  location?: string;  // New field
+  startTime?: string;
+  endTime?: string;
+  city?: string; // Changed from location to city
   status?: string;
 };
 
@@ -99,10 +99,10 @@ const TaskList = () => {
               <div key={task.id} className="p-4 border border-gray-200 rounded-md shadow-sm">
                 <p className="text-lg font-bold text-gray-900">{task.project}</p>
                 <p className="text-gray-600">Assignee: {task.assignee}</p>
-                <p className="text-gray-600">Task: {task.taskName}</p> {/* Changed from Customer to Task */}
+                <p className="text-gray-600">Task: {task.taskName}</p>
                 <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
-                <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p> {/* New time display */}
-                <p className="text-gray-600">Location: {task.location}</p> {/* New location display */}
+                <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p>
+                <p className="text-gray-600">City: {task.city}</p> {/* Changed from Location to City */}
                 <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
                   Status: {task.status}
                 </p>

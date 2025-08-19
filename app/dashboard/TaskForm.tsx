@@ -5,14 +5,16 @@ import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
 
+const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
+
 const TaskForm = () => {
   const [project, setProject] = useState('');
   const [assignee, setAssignee] = useState('');
-  const [taskName, setTaskName] = useState(''); // Updated to 'taskName'
+  const [taskName, setTaskName] = useState('');
   const [plannedDate, setPlannedDate] = useState('');
-  const [startTime, setStartTime] = useState(''); // New state for start time
-  const [endTime, setEndTime] = useState(''); // New state for end time
-  const [location, setLocation] = useState(''); // New state for location
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [city, setCity] = useState(cities[0]); // Changed from location to city
   const [status, setStatus] = useState('Planned');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -22,11 +24,11 @@ const TaskForm = () => {
       await addDoc(collection(db, 'tasks'), {
         project,
         assignee,
-        taskName, // Changed from customer to taskName
+        taskName,
         plannedDate,
-        startTime, // New field
-        endTime,   // New field
-        location,  // New field
+        startTime,
+        endTime,
+        city, // Changed from location to city
         status,
         createdAt: new Date(),
       });
@@ -37,7 +39,7 @@ const TaskForm = () => {
       setPlannedDate('');
       setStartTime('');
       setEndTime('');
-      setLocation('');
+      setCity(cities[0]);
       setStatus('Planned');
       alert('Task added successfully!');
     } catch (error) {
@@ -72,7 +74,6 @@ const TaskForm = () => {
           required
         />
       </div>
-      {/* Updated field to 'Task' */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Task</label>
         <input
@@ -93,7 +94,6 @@ const TaskForm = () => {
           required
         />
       </div>
-      {/* New Time and Location Fields */}
       <div className="flex space-x-4">
         <div className="flex-1">
           <label className="block text-sm font-medium text-gray-700">Start Time</label>
@@ -117,15 +117,17 @@ const TaskForm = () => {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Location</label>
-        <input
-          type="text"
-          value={location}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
+        <label className="block text-sm font-medium text-gray-700">City</label>
+        <select
+          value={city}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCity(e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="e.g., 123 Main St, Anytown"
           required
-        />
+        >
+          {cities.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </div>
       <button
         type="submit"
