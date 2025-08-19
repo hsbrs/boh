@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
+import Link from 'next/link';
 
 // Import shadcn/ui components
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,6 +69,13 @@ const ReportsPage = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4">
+      <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
+        <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
+          Dashboard
+        </Link>
+        <span>/</span>
+        <span>Task Reports</span>
+      </div>
       <h1 className="text-4xl font-bold text-gray-800 mb-6">Task Reports</h1>
       <Card>
         <CardHeader>

@@ -10,147 +10,163 @@ import React from 'react';
 // Import shadcn/ui components
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ResizablePanel, ResizablePanelGroup, ResizableHandle } from '@/components/ui/resizable';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, ListTodo, FileText, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, ListTodo, FileText, MessageSquare, Menu } from 'lucide-react';
 
 const DashboardPage = () => {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+    const router = useRouter();
+    const [loading, setLoading] = useState(true);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        router.push('/login');
-      } else {
-        setLoading(false);
-      }
-    });
-    return () => unsubscribe();
-  }, [router]);
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                router.push('/login');
+            } else {
+                setLoading(false);
+            }
+        });
+        return () => unsubscribe();
+    }, [router]);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      router.push('/login');
-    } catch (error) {
-      if (error instanceof Error) {
-        alert('Error logging out: ' + error.message);
-      } else {
-        alert('An unknown error occurred.');
-      }
+    // Effect to handle initial state for mobile and window resizing
+    useEffect(() => {
+        const handleResize = () => {
+            // Set to collapsed if the window width is less than a certain threshold (e.g., 768px for md)
+            if (window.innerWidth < 768) {
+                setIsCollapsed(true);
+            } else {
+                setIsCollapsed(false);
+            }
+        };
+
+        // Set initial state
+        handleResize();
+
+        // Add event listener for window resize
+        window.addEventListener('resize', handleResize);
+
+        // Clean up event listener
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            router.push('/login');
+        } catch (error) {
+            if (error instanceof Error) {
+                alert('Error logging out: ' + error.message);
+            } else {
+                alert('An unknown error occurred.');
+            }
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-gray-100">
+                <div className="text-xl font-semibold text-gray-700">Loading...</div>
+            </div>
+        );
     }
-  };
 
-  if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading...</div>
-      </div>
-    );
-    }
-    
-    return (
-        <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel
-                defaultSize={20}
-                minSize={15}
-                maxSize={25}
-                collapsedSize={5}
-                collapsible={true}
-                onCollapse={() => setIsCollapsed(true)}
-                onExpand={() => setIsCollapsed(false)}
-                className={cn('min-w-[50px] transition-all duration-300 ease-in-out bg-white p-4 shadow-lg', isCollapsed && 'p-2')}
-            >
-                <div className="flex flex-col h-full">
-                    <div className="flex-1 space-y-4">
-                        {!isCollapsed && (
-                            <>
-                                <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
-                                <Separator />
-                            </>
-                        )}
-                        <nav className="flex flex-col space-y-2">
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Link href="/dashboard" className={cn(
-                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                            isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
-                                        )}>
-                                            <LayoutDashboard className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Home'}
-                                        </Link>
-                                    </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">Home</TooltipContent>}
-                                </Tooltip>
+        <div className="flex min-h-screen bg-gray-100">
+            {/* Sidebar */}
+            <div className={cn(
+                'flex flex-col h-full min-h-screen bg-white shadow-lg transition-all duration-300 ease-in-out',
+                isCollapsed ? 'w-20 p-2' : 'w-64 p-6'
+            )}>
+                <div className="flex justify-between items-center mb-6">
+                    {!isCollapsed && (
+                        <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+                    )}
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className={isCollapsed ? 'w-full' : ''}
+                    >
+                        <Menu className="h-5 w-5" />
+                    </Button>
+                </div>
+                <Separator />
+                
+                <div className="flex-1 mt-6">
+                    <nav className="flex flex-col space-y-2">
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link href="/dashboard" className={cn(
+                                        buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                        isCollapsed ? 'w-full' : 'w-full justify-start',
+                                        'text-gray-700 hover:bg-gray-200'
+                                    )}>
+                                        <LayoutDashboard className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                        {!isCollapsed && 'Home'}
+                                    </Link>
+                                </TooltipTrigger>
+                                {isCollapsed && <TooltipContent side="right">Home</TooltipContent>}
+                            </Tooltip>
 
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Link href="/dashboard/tasks" className={cn(
-                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                            isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
-                                        )}>
-                                            <ListTodo className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Tasks'}
-                                        </Link>
-                                    </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">Tasks</TooltipContent>}
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Link href="/dashboard/reports" className={cn(
-                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                            isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
-                                        )}>
-                                            <FileText className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Reports'}
-                                        </Link>
-                                    </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">Reports</TooltipContent>}
-                                </Tooltip>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Link href="#" className={cn(
-                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                            isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
-                                        )}>
-                                            <MessageSquare className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Discuss'}
-                                        </Link>
-                                    </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">Discuss</TooltipContent>}
-                                </Tooltip>
-                            </TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link href="/dashboard/tasks" className={cn(
+                                        buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                        isCollapsed ? 'w-full' : 'w-full justify-start',
+                                        'text-gray-700 hover:bg-gray-200'
+                                    )}>
+                                        <ListTodo className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                        {!isCollapsed && 'Tasks'}
+                                    </Link>
+                                </TooltipTrigger>
+                                {isCollapsed && <TooltipContent side="right">Tasks</TooltipContent>}
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link href="/dashboard/reports" className={cn(
+                                        buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                        isCollapsed ? 'w-full' : 'w-full justify-start',
+                                        'text-gray-700 hover:bg-gray-200'
+                                    )}>
+                                        <FileText className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                        {!isCollapsed && 'Reports'}
+                                    </Link>
+                                </TooltipTrigger>
+                                {isCollapsed && <TooltipContent side="right">Reports</TooltipContent>}
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link href="#" className={cn(
+                                        buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                        isCollapsed ? 'w-full' : 'w-full justify-start',
+                                        'text-gray-700 hover:bg-gray-200'
+                                    )}>
+                                        <MessageSquare className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                        {!isCollapsed && 'Discuss'}
+                                    </Link>
+                                </TooltipTrigger>
+                                {isCollapsed && <TooltipContent side="right">Discuss</TooltipContent>}
+                            </Tooltip>
                         </nav>
                     </div>
-                    {!isCollapsed && (
-                        <div className="mt-auto">
-                            <Separator />
-                            <Button onClick={handleLogout} variant="destructive" className="w-full mt-4">
-                                Logout
-                            </Button>
-                        </div>
-                    )}
+
+                    <div className="mt-auto">
+                        <Separator />
+                        <Button onClick={handleLogout} variant="destructive" className="w-full mt-4">
+                            {!isCollapsed && 'Logout'}
+                            {isCollapsed && <FileText className="h-5 w-5" />}
+                        </Button>
+                    </div>
                 </div>
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={80} className="p-8">
+            {/* Main content area */}
+            <div className="flex-1 p-8">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-4xl font-bold text-gray-800">Welcome to your Dashboard!</h1>
-                    {isCollapsed && (
-                        <Button onClick={handleLogout} variant="destructive">
-                            Logout
-                        </Button>
-                    )}
                 </div>
                 
                 <p className="text-gray-600 mb-8">Select an option from the sidebar to get started.</p>
@@ -190,8 +206,8 @@ const DashboardPage = () => {
                         </CardContent>
                     </Card>
                 </div>
-            </ResizablePanel>
-        </ResizablePanelGroup>
+            </div>
+        </div>
     );
 };
 
