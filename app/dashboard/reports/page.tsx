@@ -5,10 +5,10 @@ import { collection, onSnapshot, query, DocumentData } from 'firebase/firestore'
 import { db } from '@/lib/firebase';
 import React from 'react';
 import Link from 'next/link';
-import { format, parseISO, addDays, getDay, isSameDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { format, parseISO, addDays, isSameDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 
 // Import shadcn/ui components
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -126,18 +126,6 @@ const ReportsPage = () => {
     }
   };
 
-  const calculatePosition = (task: ProcessedTask, dayStart: Date) => {
-    const dayStartMinutes = dayStart.getHours() * 60 + dayStart.getMinutes();
-    const taskStartMinutes = task.start.getHours() * 60 + task.start.getMinutes();
-    const taskEndMinutes = task.end.getHours() * 60 + task.end.getMinutes();
-    const totalMinutesInDay = 24 * 60;
-    
-    const top = (taskStartMinutes / totalMinutesInDay) * 100;
-    const height = ((taskEndMinutes - taskStartMinutes) / totalMinutesInDay) * 100;
-    
-    return { top, height };
-  };
-
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
       <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
@@ -159,58 +147,45 @@ const ReportsPage = () => {
             </div>
         </CardHeader>
         <CardContent className="flex-1 p-0 overflow-hidden">
-            <div className="grid grid-cols-[200px_1fr] h-full">
-                {/* Left Panel: Assignee List */}
-                <div className="border-r bg-gray-50">
-                    <div className="h-16 flex items-center justify-center border-b">
-                        <span className="font-bold">Assignees</span>
+            <div className="grid grid-cols-[200px_repeat(7,minmax(0,1fr))] grid-rows-[64px_repeat(5,1fr)] h-full">
+                {/* Header row with weekdays */}
+                <div className="border-b border-r bg-gray-50 flex items-center justify-center">
+                    <span className="font-bold">Assignees</span>
+                </div>
+                {weekDays.map((day, index) => (
+                    <div key={index} className="border-b border-r bg-gray-50 flex items-center justify-center">
+                        <span className="font-semibold text-sm">{format(day, 'EEE d')}</span>
                     </div>
-                    <ScrollArea className="h-[calc(80vh-64px-64px)]">
-                        {assigneesWithTasks.map(assignee => (
-                            <div key={assignee.name} className="flex items-center p-4 border-b">
-                                <div className="h-10 w-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
-                                    {assignee.name.charAt(0)}
-                                </div>
-                                <div className="ml-4">
-                                    <span className="font-semibold">{assignee.name}</span>
-                                    <p className="text-sm text-gray-500">{assignee.totalHours.toFixed(1)}h</p>
-                                </div>
+                ))}
+                
+                {/* Assignee rows and tasks */}
+                {assigneesWithTasks.map((assignee, assigneeIndex) => (
+                    <React.Fragment key={assignee.name}>
+                        <div className="border-r border-b flex items-center p-4">
+                            <div className="h-10 w-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
+                                {assignee.name.charAt(0)}
+                            </div>
+                            <div className="ml-4">
+                                <span className="font-semibold">{assignee.name}</span>
+                                <p className="text-sm text-gray-500">{assignee.totalHours.toFixed(1)}h</p>
+                            </div>
+                        </div>
+                        {weekDays.map((day, dayIndex) => (
+                            <div key={`${assignee.name}-${dayIndex}`} className="border-b border-r p-1">
+                                {assignee.tasks.filter(task => isSameDay(task.start, day)).map(task => (
+                                    <div
+                                        key={task.id}
+                                        className={`p-1 rounded-md text-xs border cursor-pointer my-1 ${getStatusColor(task.status || '')}`}
+                                        onClick={() => setSelectedTask(task)}
+                                    >
+                                        <p className="font-bold truncate">{task.project}</p>
+                                        <p className="truncate">{task.startTime} - {task.endTime}</p>
+                                    </div>
+                                ))}
                             </div>
                         ))}
-                    </ScrollArea>
-                </div>
-                {/* Right Panel: Schedule Grid */}
-                <div className="overflow-x-auto overflow-y-hidden">
-                    <div className="grid grid-cols-7 h-full w-[1200px] md:w-full">
-                        {weekDays.map((day, index) => (
-                            <div key={index} className="border-r flex flex-col">
-                                <div className="h-16 border-b flex items-center justify-center bg-gray-50">
-                                    <span className="font-semibold text-sm">{format(day, 'EEE d')}</span>
-                                </div>
-                                <div className="flex-1 relative">
-                                    {assigneesWithTasks.flatMap(assignee => (
-                                        assignee.tasks.filter(task => isSameDay(task.start, day)).map(task => {
-                                            const { top, height } = calculatePosition(task, day);
-                                            return (
-                                                <div
-                                                    key={task.id}
-                                                    className={`absolute w-full px-1 cursor-pointer`}
-                                                    style={{ top: `${top}%`, height: `${height}%` }}
-                                                    onClick={() => setSelectedTask(task)}
-                                                >
-                                                    <div className={`p-1 rounded-md text-xs border ${getStatusColor(task.status || '')}`}>
-                                                        <p className="font-bold truncate">{task.project}</p>
-                                                        <p className="truncate">{task.startTime} - {task.endTime}</p>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                    </React.Fragment>
+                ))}
             </div>
         </CardContent>
       </Card>
