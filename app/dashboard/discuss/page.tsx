@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { format } from 'date-fns';
 
 // Define the message type
 type Message = {
@@ -29,7 +30,7 @@ const DiscussPage = () => {
       const messagesArray: Message[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as DocumentData),
-      })) as Message[]; // Correctly cast the result to Message[]
+      })) as Message[];
       setMessages(messagesArray);
       setLoading(false);
     }, (error) => {
@@ -50,7 +51,7 @@ const DiscussPage = () => {
       if (user) {
         await addDoc(collection(db, 'messages'), {
           text: newMessage,
-          sender: user.email, // Using email as a simple identifier
+          sender: user.email,
           timestamp: new Date(),
         });
         setNewMessage('');
@@ -92,7 +93,12 @@ const DiscussPage = () => {
             <div className="flex flex-col-reverse">
               {messages.map((message) => (
                 <div key={message.id} className="mb-4">
-                  <span className="font-semibold text-sm text-gray-700">{message.sender}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-semibold text-sm text-gray-700">{message.sender}</span>
+                    <span className="text-xs text-gray-400">
+                      {format(message.timestamp.toDate(), 'MM/dd/yyyy HH:mm')}
+                    </span>
+                  </div>
                   <p className="text-sm text-gray-600">{message.text}</p>
                 </div>
               ))}
