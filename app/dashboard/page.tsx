@@ -191,16 +191,18 @@ const DashboardPage = () => {
                             </CardContent>
                         </Card>
                     </Link>
-        
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Discuss</CardTitle>
-                            <CardDescription>Communicate and collaborate with your team.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-gray-500">Coming Soon</p>
-                        </CardContent>
-                    </Card>
+
+                    <Link href="/dashboard/discuss">
+                        <Card className="hover:shadow-lg transition-shadow">
+                            <CardHeader>
+                                <CardTitle>Discuss</CardTitle>
+                                <CardDescription>Communicate and collaborate with your team.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-blue-600">Go to Discuss →</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
                 </div>
             </div>
         </div>
