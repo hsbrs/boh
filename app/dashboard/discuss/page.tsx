@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, onSnapshot, query, addDoc, DocumentData, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, addDoc, DocumentData, orderBy, where } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,16 +16,27 @@ type Message = {
   text: string;
   sender: string;
   timestamp: any;
+  topic: string;
 };
+
+const topics = ["General", "Back Office", "Lippstadt", "Herzogenrath", "Emmerich"];
 
 const DiscussPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [selectedTopic, setSelectedTopic] = useState('General');
 
   useEffect(() => {
-    // Set up a real-time listener for the 'messages' collection, sorted by timestamp
-    const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+    // A query that listens to messages for the selected topic
+    if (!selectedTopic) return;
+    
+    const q = query(
+      collection(db, 'messages'), 
+      where('topic', '==', selectedTopic),
+      orderBy('timestamp', 'asc')
+    );
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const messagesArray: Message[] = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -38,9 +49,8 @@ const DiscussPage = () => {
       setLoading(false);
     });
 
-    // Clean up the listener when the component unmounts
     return () => unsubscribe();
-  }, []);
+  }, [selectedTopic]);
 
   const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,6 +63,7 @@ const DiscussPage = () => {
           text: newMessage,
           sender: user.email,
           timestamp: new Date(),
+          topic: selectedTopic, // Save the message with the current topic
         });
         setNewMessage('');
       } else {
@@ -75,7 +86,7 @@ const DiscussPage = () => {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4 flex flex-col h-full">
+    <div className="w-full max-w-7xl mx-auto p-4 flex flex-col h-full">
       <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
         <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
           Dashboard
@@ -84,39 +95,61 @@ const DiscussPage = () => {
         <span>Discuss</span>
       </div>
       <h1 className="text-4xl font-bold text-gray-800 mb-6">Discuss</h1>
-      <Card className="flex-1 flex flex-col">
-        <CardHeader>
-          <CardTitle>Team Chat</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 flex flex-col-reverse overflow-hidden">
-          <ScrollArea className="h-full pr-4">
-            <div className="flex flex-col-reverse">
-              {messages.map((message) => (
-                <div key={message.id} className="mb-4">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-sm text-gray-700">{message.sender}</span>
-                    <span className="text-xs text-gray-400">
-                      {format(message.timestamp.toDate(), 'MM/dd/yyyy HH:mm')}
-                    </span>
+      <div className="flex flex-1 gap-4">
+        {/* Left Panel: Topics */}
+        <Card className="w-64">
+          <CardHeader>
+            <CardTitle>Topics</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {topics.map(topic => (
+              <Button
+                key={topic}
+                variant={selectedTopic === topic ? 'default' : 'ghost'}
+                className="w-full justify-start"
+                onClick={() => setSelectedTopic(topic)}
+              >
+                {topic}
+              </Button>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Right Panel: Chat */}
+        <Card className="flex-1 flex flex-col">
+          <CardHeader>
+            <CardTitle>{selectedTopic} Chat</CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col-reverse overflow-hidden">
+            <ScrollArea className="h-full pr-4">
+              <div className="flex flex-col-reverse">
+                {messages.map((message) => (
+                  <div key={message.id} className="mb-4">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-sm text-gray-700">{message.sender}</span>
+                      <span className="text-xs text-gray-400">
+                        {format(message.timestamp.toDate(), 'MM/dd/yyyy HH:mm')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{message.text}</p>
                   </div>
-                  <p className="text-sm text-gray-600">{message.text}</p>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </CardContent>
-        <div className="p-6 border-t">
-          <form onSubmit={handleSendMessage} className="flex space-x-2">
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1"
-            />
-            <Button type="submit">Send</Button>
-          </form>
-        </div>
-      </Card>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+          <div className="p-6 border-t">
+            <form onSubmit={handleSendMessage} className="flex space-x-2">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type your message..."
+                className="flex-1"
+              />
+              <Button type="submit">Send</Button>
+            </form>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };
