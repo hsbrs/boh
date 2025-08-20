@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Separator } from '@/components/ui/separator';
 
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, ListTodo, FileText, MessageSquare, Menu } from 'lucide-react';
+import { LayoutDashboard, ListTodo, FileText, MessageSquare, Menu, MapPin } from 'lucide-react';
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -136,6 +136,19 @@ const DashboardPage = () => {
                             </Tooltip>
                             <Tooltip>
                                 <TooltipTrigger asChild>
+                                    <Link href="/dashboard/webgis" className={cn(
+                                        buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                        isCollapsed ? 'w-full' : 'w-full justify-start',
+                                        'text-gray-700 hover:bg-gray-200'
+                                    )}>
+                                        <MapPin className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                        {!isCollapsed && 'WebGIS'}
+                                    </Link>
+                                </TooltipTrigger>
+                                {isCollapsed && <TooltipContent side="right">WebGIS</TooltipContent>}
+                            </Tooltip>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
                                         <Link href="#" className={cn(
                                             buttonVariants({ variant: 'ghost', size: 'sm' }),
                                             isCollapsed ? 'w-full' : 'w-full justify-start',
@@ -150,6 +163,7 @@ const DashboardPage = () => {
                             </TooltipProvider>
                         </nav>
                     </div>
+
                     <div className="mt-auto">
                         <Separator />
                         <Button onClick={handleLogout} variant="destructive" className="w-full mt-4">
@@ -188,6 +202,18 @@ const DashboardPage = () => {
                             </CardHeader>
                             <CardContent>
                                 <p className="text-sm text-blue-600">Go to Reports →</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                    
+                    <Link href="/dashboard/webgis">
+                        <Card className="hover:shadow-lg transition-shadow">
+                            <CardHeader>
+                                <CardTitle>WebGIS</CardTitle>
+                                <CardDescription>Visualize task data on an interactive map.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-blue-600">Go to WebGIS →</p>
                             </CardContent>
                         </Card>
                     </Link>
