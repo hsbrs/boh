@@ -149,7 +149,7 @@ const DashboardPage = () => {
                             </Tooltip>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                        <Link href="#" className={cn(
+                                        <Link href="/dashboard/discuss" className={cn(
                                             buttonVariants({ variant: 'ghost', size: 'sm' }),
                                             isCollapsed ? 'w-full' : 'w-full justify-start',
                                             'text-gray-700 hover:bg-gray-200'
@@ -184,48 +184,52 @@ const DashboardPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <Link href="/dashboard/tasks">
                         <Card className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                                <CardTitle>Tasks</CardTitle>
-                                <CardDescription>View, create, and manage all your field service tasks.</CardDescription>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-2xl font-bold">Tasks</CardTitle>
+                                <ListTodo className="h-8 w-8 text-blue-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-blue-600">Go to Tasks →</p>
+                                <p className="text-sm text-gray-500">View, create, and manage all your field service tasks.</p>
+                                <p className="text-sm font-semibold text-blue-600 mt-2">Go to Tasks →</p>
                             </CardContent>
                         </Card>
                     </Link>
         
                     <Link href="/dashboard/reports">
                         <Card className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                                <CardTitle>Reports</CardTitle>
-                                <CardDescription>Access detailed reports on your team's performance.</CardDescription>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-2xl font-bold">Reports</CardTitle>
+                                <FileText className="h-8 w-8 text-red-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-blue-600">Go to Reports →</p>
+                                <p className="text-sm text-gray-500">Access detailed reports on your team's performance.</p>
+                                <p className="text-sm font-semibold text-red-600 mt-2">Go to Reports →</p>
                             </CardContent>
                         </Card>
                     </Link>
                     
                     <Link href="/dashboard/webgis">
                         <Card className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                                <CardTitle>WebGIS</CardTitle>
-                                <CardDescription>Visualize task data on an interactive map.</CardDescription>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-2xl font-bold">WebGIS</CardTitle>
+                                <MapPin className="h-8 w-8 text-green-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-blue-600">Go to WebGIS →</p>
+                                <p className="text-sm text-gray-500">Visualize task data on an interactive map.</p>
+                                <p className="text-sm font-semibold text-green-600 mt-2">Go to WebGIS →</p>
                             </CardContent>
                         </Card>
                     </Link>
 
                     <Link href="/dashboard/discuss">
                         <Card className="hover:shadow-lg transition-shadow">
-                            <CardHeader>
-                                <CardTitle>Discuss</CardTitle>
-                                <CardDescription>Communicate and collaborate with your team.</CardDescription>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-2xl font-bold">Discuss</CardTitle>
+                                <MessageSquare className="h-8 w-8 text-orange-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-blue-600">Go to Discuss →</p>
+                                <p className="text-sm text-gray-500">Communicate and collaborate with your team.</p>
+                                <p className="text-sm font-semibold text-orange-600 mt-2">Go to Discuss →</p>
                             </CardContent>
                         </Card>
                     </Link>

@@ -12,7 +12,7 @@ const WebGISPage = () => {
     // Static data for the three cities, with added HP details
     const citiesData = [
         {
-            name: "Lippstadt Qgis Map:",
+            name: "Lippstadt",
             active: 35,
             inactive: 15,
             completed: 40,
@@ -31,7 +31,7 @@ const WebGISPage = () => {
             }
         },
         {
-            name: "Herzogenrath Qgis Map:",
+            name: "Herzogenrath",
             active: 20,
             inactive: 10,
             completed: 55,
@@ -42,7 +42,7 @@ const WebGISPage = () => {
             hpDetails: { "HERZG01/UDP121": 85 }
         },
         {
-            name: "Emmerich Qgis Map:",
+            name: "Emmerich",
             active: 5,
             inactive: 5,
             completed: 85,
