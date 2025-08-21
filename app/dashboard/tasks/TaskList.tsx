@@ -29,20 +29,12 @@ type GroupedTasks = {
   [key: string]: Task[];
 };
 
-const TaskList = () => {
+const TaskList = ({ showNotification }: { showNotification: (message: string, type: string) => void }) => {
   // Original state to hold all tasks fetched from Firestore
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>({});
   const [loading, setLoading] = useState(true);
-  const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
   const [filter, setFilter] = useState('All');
-
-  const showNotification = (message: string, type: string) => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 3000);
-  };
 
   const handleUpdateStatus = async (taskId: string, currentStatus: string) => {
     const taskDocRef = doc(db, 'tasks', taskId);
@@ -222,11 +214,6 @@ const TaskList = () => {
           </div>
         )}
       </div>
-      {notification && (
-        <div className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50 ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white transition-all duration-300 ease-in-out`}>
-          {notification.message}
-        </div>
-      )}
     </>
   );
 };

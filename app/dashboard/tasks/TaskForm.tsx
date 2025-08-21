@@ -24,7 +24,7 @@ const timeOptions = Array.from({ length: 13 }, (_, i) => {
   return `${hour}:00`;
 });
 
-const TaskForm = () => {
+const TaskForm = ({ showNotification }: { showNotification: (message: string, type: string) => void }) => {
   const [project, setProject] = useState('');
   const [assignee, setAssignee] = useState(assignees[0]);
   const [taskName, setTaskName] = useState('');
@@ -62,12 +62,12 @@ const TaskForm = () => {
       setLocation('');
       setLocationUrl('');
       setStatus('Planned');
-      alert('Task added successfully!');
+      showNotification('Task added successfully!', 'success');
     } catch (error) {
       if (error instanceof Error) {
-        alert('Error adding task: ' + error.message);
+        showNotification('Error adding task: ' + error.message, 'error');
       } else {
-        alert('An unknown error occurred.');
+        showNotification('An unknown error occurred.', 'error');
       }
     }
   };
