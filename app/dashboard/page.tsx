@@ -1,12 +1,10 @@
-// File: app/dashboard/page.tsx
-
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore'; // Ensure 'doc' and 'getDoc' are imported
+import { auth, db } from '@/lib/firebase'; // Ensure 'auth' and 'db' are imported
 import Link from 'next/link';
 import React from 'react';
 
@@ -23,7 +21,8 @@ const DashboardPage = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [userRole, setUserRole] = useState(null);
+    // Corrected state initialization to accept a string or null
+    const [userRole, setUserRole] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
