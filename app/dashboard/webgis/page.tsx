@@ -1,14 +1,62 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MapPin } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import { db, auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 const WebGISPage = () => {
+    const router = useRouter();
+    // Hooks must be declared at the top of the component
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                router.push('/login');
+                return;
+            }
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                setUserRole(userDoc.data().role);
+            } else {
+                setUserRole('employee');
+            }
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, [router]);
+
+    // Conditional rendering is placed after all hooks are called
+    const canViewWebGIS = userRole === 'admin' || userRole === 'manager';
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-gray-100">
+                <div className="text-xl font-semibold text-gray-700">Loading WebGIS...</div>
+            </div>
+        );
+    }
+
+    if (!canViewWebGIS) {
+        return (
+            <div className="p-8 text-center text-red-500 bg-gray-100 min-h-screen">
+                <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
+                <p>You do not have the required permissions to view this page.</p>
+                <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">Go back to Dashboard</Link>
+            </div>
+        );
+    }
+    
     // Static data for the three cities, with added HP details
     const citiesData = [
         {

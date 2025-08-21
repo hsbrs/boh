@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { collection, onSnapshot, query, DocumentData } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { collection, onSnapshot, query, DocumentData, doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
+import { db, auth } from '@/lib/firebase';
 import React from 'react';
 import Link from 'next/link';
 import { format, parseISO, addDays, isSameDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
@@ -13,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useRouter } from 'next/navigation';
 
 // Define the type for a task to provide type safety
 type Task = {
@@ -37,14 +39,30 @@ type ProcessedTask = Task & {
 };
 
 const ReportsPage = () => {
+  const router = useRouter();
+  // All hooks must be declared at the top of the component
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<ProcessedTask | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(collection(db, 'tasks'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+            setUserRole(userDoc.data().role);
+        } else {
+            setUserRole('employee');
+        }
+    });
+
+    const unsubscribeTasks = onSnapshot(query(collection(db, 'tasks')), (snapshot) => {
       let tasksArray: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as DocumentData),
@@ -56,18 +74,24 @@ const ReportsPage = () => {
       setLoading(false);
     });
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+        unsubscribeAuth();
+        unsubscribeTasks();
+    };
+  }, [router]);
 
   const { weekDays, assigneesWithTasks } = useMemo(() => {
-    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Monday
-    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 }); // Sunday
+    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 });
+    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({ start, end });
-    const assigneeMap = new Map<string, ProcessedTask[]>();
+    
+    // Dynamically get all unique assignees from the fetched tasks
+    const allAssignees = [...new Set(tasks.map(task => task.assignee).filter(Boolean) as string[])];
 
-    const assigneesList = ["Hady", "Kevin", "Maik", "Rene", "Andre"];
+    const assigneeMap = new Map<string, ProcessedTask[]>();
     const totalHoursMap = new Map<string, number>();
-    assigneesList.forEach(assignee => {
+    
+    allAssignees.forEach(assignee => {
         assigneeMap.set(assignee, []);
         totalHoursMap.set(assignee, 0);
     });
@@ -104,11 +128,23 @@ const ReportsPage = () => {
     return { weekDays, assigneesWithTasks };
   }, [tasks, selectedWeek]);
 
+  // Conditional rendering is placed after all hooks are called
+  const canViewReports = userRole === 'admin' || userRole === 'manager';
 
-  if (loading) {
+  if (loading || userRole === null) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <div className="text-xl font-semibold text-gray-700">Loading reports...</div>
+      </div>
+    );
+  }
+
+  if (!canViewReports) {
+    return (
+      <div className="p-8 text-center text-red-500 bg-gray-100 min-h-screen">
+        <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
+        <p>You do not have the required permissions to view this page.</p>
+        <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">Go back to Dashboard</Link>
       </div>
     );
   }

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { addDoc, collection } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
+import { addDoc, collection, onSnapshot, query, where, DocumentData } from 'firebase/firestore'; // Import onSnapshot, query, where
 import { db } from '@/lib/firebase';
 import React from 'react';
 import { format } from 'date-fns';
@@ -17,16 +17,15 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon } from "@radix-ui/react-icons";
 
 const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
-const assignees = ["Hady", "Kevin", "Maik", "Rene", "Andre"];
-// New logic to generate time options from 06:00 to 18:00 in one-hour intervals
 const timeOptions = Array.from({ length: 13 }, (_, i) => {
   const hour = (6 + i).toString().padStart(2, '0');
   return `${hour}:00`;
 });
 
-const TaskForm = ({ showNotification }: { showNotification: (message: string, type: string) => void }) => {
+const TaskForm = () => {
   const [project, setProject] = useState('');
-  const [assignee, setAssignee] = useState(assignees[0]);
+  const [assignee, setAssignee] = useState('');
+  const [assignees, setAssignees] = useState<string[]>([]); // Dynamic list of assignees
   const [taskName, setTaskName] = useState('');
   const [plannedDate, setPlannedDate] = useState<Date | undefined>(undefined);
   const [startTime, setStartTime] = useState('');
@@ -35,6 +34,19 @@ const TaskForm = ({ showNotification }: { showNotification: (message: string, ty
   const [location, setLocation] = useState('');
   const [locationUrl, setLocationUrl] = useState('');
   const [status, setStatus] = useState('Planned');
+
+  useEffect(() => {
+    // Fetch all users to create a dynamic list of assignees
+    const q = query(collection(db, 'users'));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const usersArray: string[] = snapshot.docs.map(doc => {
+        const userEmail = doc.data().email;
+        return userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1);
+      });
+      setAssignees(usersArray);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,7 +65,7 @@ const TaskForm = ({ showNotification }: { showNotification: (message: string, ty
         createdAt: new Date(),
       });
       setProject('');
-      setAssignee(assignees[0]);
+      setAssignee(''); // Clear the assignee state
       setTaskName('');
       setPlannedDate(undefined);
       setStartTime('');
@@ -62,12 +74,12 @@ const TaskForm = ({ showNotification }: { showNotification: (message: string, ty
       setLocation('');
       setLocationUrl('');
       setStatus('Planned');
-      showNotification('Task added successfully!', 'success');
+      alert('Task added successfully!');
     } catch (error) {
       if (error instanceof Error) {
-        showNotification('Error adding task: ' + error.message, 'error');
+        alert('Error adding task: ' + error.message);
       } else {
-        showNotification('An unknown error occurred.', 'error');
+        alert('An unknown error occurred.');
       }
     }
   };

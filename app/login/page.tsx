@@ -1,9 +1,9 @@
-// signup closed
 'use client';
 
 import { useState } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { doc, setDoc, collection } from 'firebase/firestore'; // Import 'doc' and 'setDoc'
+import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 
@@ -15,7 +15,6 @@ import { Label } from '@/components/ui/label';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // Set isLoginMode permanently to true to disable the sign-up function
   const [isLoginMode, setIsLoginMode] = useState(true);
   const router = useRouter();
   
@@ -26,8 +25,15 @@ const LoginPage = () => {
         await signInWithEmailAndPassword(auth, email, password);
         alert('Login successful!');
       } else {
-        // This block will now be unreachable
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Use setDoc to create a document with the user's UID as the document ID
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          email: user.email,
+          role: 'employee', // Assign the default role
+        });
         alert('Sign up successful!');
       }
       router.push('/dashboard');
@@ -44,7 +50,7 @@ const LoginPage = () => {
     <div className="flex min-h-screen bg-gray-100 items-center justify-center p-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-          Login
+          {isLoginMode ? 'Login' : 'Sign Up'}
         </h2>
 
         <form onSubmit={handleAuthAction}>
@@ -73,11 +79,18 @@ const LoginPage = () => {
           </div>
 
           <Button type="submit" className="w-full">
-            Login
+            {isLoginMode ? 'Login' : 'Sign Up'}
           </Button>
         </form>
-        
-        {/* The sign-up link is removed to disable registration */}
+
+        <div className="mt-6 text-center text-gray-600">
+          <Button
+            variant="link"
+            onClick={() => setIsLoginMode(!isLoginMode)}
+          >
+            {isLoginMode ? 'Need an account? Sign Up' : 'Already have an account? Login'}
+          </Button>
+        </div>
       </div>
     </div>
   );

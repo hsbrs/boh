@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc, where } from 'firebase/firestore'; // Import 'where'
 import { db } from '@/lib/firebase';
 import React from 'react';
 import { Button } from '@/components/ui/button';
@@ -29,12 +29,20 @@ type GroupedTasks = {
   [key: string]: Task[];
 };
 
-const TaskList = ({ showNotification }: { showNotification: (message: string, type: string) => void }) => {
-  // Original state to hold all tasks fetched from Firestore
+// Component now accepts 'userRole' and 'userEmail' props
+const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail: string | null; }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>({});
   const [loading, setLoading] = useState(true);
+  const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
   const [filter, setFilter] = useState('All');
+
+  const showNotification = (message: string, type: string) => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
 
   const handleUpdateStatus = async (taskId: string, currentStatus: string) => {
     const taskDocRef = doc(db, 'tasks', taskId);
@@ -68,7 +76,12 @@ const TaskList = ({ showNotification }: { showNotification: (message: string, ty
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'tasks'));
+    let q = query(collection(db, 'tasks'));
+    if (userRole === 'employee' && userEmail) {
+      const assigneeName = userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1);
+      q = query(collection(db, 'tasks'), where('assignee', '==', assigneeName));
+    }
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       let tasksArray: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -95,7 +108,7 @@ const TaskList = ({ showNotification }: { showNotification: (message: string, ty
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [userRole, userEmail]);
 
   useEffect(() => {
     let newFilteredTasks = tasks;
@@ -133,23 +146,27 @@ const TaskList = ({ showNotification }: { showNotification: (message: string, ty
   const assignees = ["Hady", "Kevin", "Maik", "Rene", "Andre"];
   const filterOptions = ['All', 'Today', 'Tomorrow', ...assignees];
 
+  const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
+
   return (
     <>
       <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-xl font-semibold text-gray-800">Current Tasks</h3>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Tasks for All" />
-            </SelectTrigger>
-            <SelectContent>
-              {filterOptions.map(option => (
-                <SelectItem key={option} value={option}>
-                  {option.startsWith('H') || option.startsWith('K') || option.startsWith('M') || option.startsWith('R') || option.startsWith('A') ? `Tasks for ${option}` : option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {isManagerOrAdmin && (
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Tasks for All" />
+              </SelectTrigger>
+              <SelectContent>
+                {filterOptions.map(option => (
+                  <SelectItem key={option} value={option}>
+                    {option.startsWith('H') || option.startsWith('K') || option.startsWith('M') || option.startsWith('R') || option.startsWith('A') ? `Tasks for ${option}` : option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         
         {Object.keys(groupedTasks).length === 0 ? (
@@ -189,22 +206,24 @@ const TaskList = ({ showNotification }: { showNotification: (message: string, ty
                         <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
                           Status: {task.status}
                         </p>
-                        <div className="flex mt-2 space-x-2">
-                          <Button
-                            onClick={() => handleUpdateStatus(task.id, task.status as string)}
-                            variant="outline"
-                            size="sm"
-                          >
-                            Change Status
-                          </Button>
-                          <Button
-                            onClick={() => handleDeleteTask(task.id)}
-                            variant="destructive"
-                            size="sm"
-                          >
-                            Delete
-                          </Button>
-                        </div>
+                        {isManagerOrAdmin && (
+                          <div className="flex mt-2 space-x-2">
+                            <Button
+                              onClick={() => handleUpdateStatus(task.id, task.status as string)}
+                              variant="outline"
+                              size="sm"
+                            >
+                              Change Status
+                            </Button>
+                            <Button
+                              onClick={() => handleDeleteTask(task.id)}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -214,6 +233,11 @@ const TaskList = ({ showNotification }: { showNotification: (message: string, ty
           </div>
         )}
       </div>
+      {notification && (
+        <div className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50 ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white transition-all duration-300 ease-in-out`}>
+          {notification.message}
+        </div>
+      )}
     </>
   );
 };
