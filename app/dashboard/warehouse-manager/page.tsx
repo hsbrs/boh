@@ -15,9 +15,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Separator } from '@/components/ui/separator';
 
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, ListTodo, FileText, MessageSquare, Menu, MapPin, UserCog, ListChecks, Warehouse } from 'lucide-react';
+import { LayoutDashboard, ListTodo, FileText, MessageSquare, Menu, MapPin, UserCog, ListChecks, Warehouse, Package, BarChart2, Truck } from 'lucide-react';
 
-const DashboardPage = () => {
+const WarehouseManagerPage = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [userRole, setUserRole] = useState<string | null>(null);
@@ -233,113 +233,56 @@ const DashboardPage = () => {
 
             {/* Main content area */}
             <div className="flex-1 p-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-4xl font-bold text-gray-800">Welcome to your Dashboard!</h1>
+                <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
+                    <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
+                        Dashboard
+                    </Link>
+                    <span>/</span>
+                    <span>Warehouse Management</span>
                 </div>
-                
-                <p className="text-gray-600 mb-8">Select an option from the sidebar to get started.</p>
-        
+                <h1 className="text-4xl font-bold text-gray-800 mb-6">Warehouse Management</h1>
+                <p className="text-gray-600 mb-8">Select a section to manage warehouse assets and inventory.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Work Orders */}
-                    <Link href="/dashboard/tasks">
+                    <Link href="/dashboard/warehouse-manager/asset-management">
                         <Card className="hover:shadow-lg transition-shadow">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-2xl font-bold">Work Orders</CardTitle>
-                                <ListTodo className="h-8 w-8 text-blue-500" />
+                                <CardTitle className="text-2xl font-bold">Asset Management</CardTitle>
+                                <Package className="h-8 w-8 text-cyan-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-gray-500">View, create, and manage all your field service work orders.</p>
-                                <p className="text-sm font-semibold text-blue-600 mt-2">Go to Work Orders →</p>
+                                <p className="text-sm text-gray-500">Add, view, and modify all assets in the warehouse.</p>
+                                <p className="text-sm font-semibold text-cyan-600 mt-2">Go to Asset Management →</p>
                             </CardContent>
                         </Card>
                     </Link>
-                    {/* Discuss */}
-                    <Link href="/dashboard/discuss">
+                    <Link href="/dashboard/warehouse-manager/reports">
                         <Card className="hover:shadow-lg transition-shadow">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-2xl font-bold">Discuss</CardTitle>
-                                <MessageSquare className="h-8 w-8 text-orange-500" />
+                                <CardTitle className="text-2xl font-bold">Reports</CardTitle>
+                                <BarChart2 className="h-8 w-8 text-orange-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-gray-500">Communicate and collaborate with your team.</p>
-                                <p className="text-sm font-semibold text-orange-600 mt-2">Go to Discuss →</p>
+                                <p className="text-sm text-gray-500">View reports on stock levels and inventory value.</p>
+                                <p className="text-sm font-semibold text-orange-600 mt-2">Go to Reports →</p>
                             </CardContent>
                         </Card>
                     </Link>
-                    {/* To Do */}
-                    <Link href="/dashboard/todo">
+                    <Link href="/dashboard/warehouse-manager/stock-updater">
                         <Card className="hover:shadow-lg transition-shadow">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-2xl font-bold">Personal To Do</CardTitle>
-                                <ListChecks className="h-8 w-8 text-indigo-500" />
+                                <CardTitle className="text-2xl font-bold">Stock Updater</CardTitle>
+                                <Truck className="h-8 w-8 text-indigo-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-gray-500">Create and manage personal to-do items.</p>
-                                <p className="text-sm font-semibold text-indigo-600 mt-2">Go to To Do →</p>
+                                <p className="text-sm text-gray-500">Quickly add or remove stock from existing assets.</p>
+                                <p className="text-sm font-semibold text-indigo-600 mt-2">Go to Stock Updater →</p>
                             </CardContent>
                         </Card>
                     </Link>
-                    {isManagerOrAdmin && (
-                        <>
-                            {/* WebGIS */}
-                            <Link href="/dashboard/webgis">
-                                <Card className="hover:shadow-lg transition-shadow">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-2xl font-bold">WebGIS</CardTitle>
-                                        <MapPin className="h-8 w-8 text-green-500" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-gray-500">Visualize task data on an interactive map.</p>
-                                        <p className="text-sm font-semibold text-green-600 mt-2">Go to WebGIS →</p>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                            {/* Reports */}
-                            <Link href="/dashboard/reports">
-                                <Card className="hover:shadow-lg transition-shadow">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-2xl font-bold">Reports</CardTitle>
-                                        <FileText className="h-8 w-8 text-red-500" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-gray-500">Access detailed reports on your team's performance.</p>
-                                        <p className="text-sm font-semibold text-red-600 mt-2">Go to Reports →</p>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                             {/* Warehouse */}
-                             <Link href="/dashboard/warehouse-manager">
-                                <Card className="hover:shadow-lg transition-shadow">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-2xl font-bold">Warehouse</CardTitle>
-                                        <Warehouse className="h-8 w-8 text-purple-500" />
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p className="text-sm text-gray-500">Manage assets and track inventory.</p>
-                                        <p className="text-sm font-semibold text-purple-600 mt-2">Go to Warehouse →</p>
-                                    </CardContent>
-                                </Card>
-                            </Link>
-                        </>
-                    )}
-                    {isAdmin && (
-                        <Link href="/dashboard/admin">
-                            <Card className="hover:shadow-lg transition-shadow">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-2xl font-bold">Admin Panel</CardTitle>
-                                    <UserCog className="h-8 w-8 text-gray-500" />
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-gray-500">Manage user roles and system settings.</p>
-                                    <p className="text-sm font-semibold text-gray-600 mt-2">Go to Admin Panel →</p>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    )}
                 </div>
             </div>
         </div>
     );
 };
 
-export default DashboardPage;
+export default WarehouseManagerPage;
