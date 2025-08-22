@@ -3,26 +3,25 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore'; // Ensure 'doc' and 'getDoc' are imported
-import { auth, db } from '@/lib/firebase'; // Ensure 'auth' and 'db' are imported
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import Link from 'next/link';
 import React from 'react';
 
 // Import shadcn/ui components
 import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Separator } from '@/components/ui/separator';
 
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, ListTodo, FileText, MessageSquare, Menu, MapPin, Shield } from 'lucide-react'; // Import Shield icon
+import { LayoutDashboard, ListTodo, FileText, MessageSquare, Menu, MapPin, ListChecks } from 'lucide-react';
 
 const DashboardPage = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [isCollapsed, setIsCollapsed] = useState(false);
-    // Corrected state initialization to accept a string or null
     const [userRole, setUserRole] = useState<string | null>(null);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -31,11 +30,8 @@ const DashboardPage = () => {
             } else {
                 const userDocRef = doc(db, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
-
                 if (userDoc.exists()) {
-                  setUserRole(userDoc.data().role);
-                } else {
-                  setUserRole('employee');
+                    setUserRole(userDoc.data().role as string);
                 }
                 setLoading(false);
             }
@@ -43,6 +39,7 @@ const DashboardPage = () => {
         return () => unsubscribe();
     }, [router]);
 
+    // Effect to handle initial state for mobile and window resizing
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth < 768) {
@@ -79,7 +76,7 @@ const DashboardPage = () => {
         );
     }
 
-    const canViewManagerContent = userRole === 'admin' || userRole === 'manager';
+    const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
 
     return (
         <div className="flex min-h-screen bg-gray-100">
@@ -133,35 +130,50 @@ const DashboardPage = () => {
                                 </TooltipTrigger>
                                 {isCollapsed && <TooltipContent side="right">Work Orders</TooltipContent>}
                             </Tooltip>
-                            {canViewManagerContent && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Link href="/dashboard/reports" className={cn(
-                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                            isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
-                                        )}>
-                                            <FileText className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Reports'}
-                                        </Link>
-                                    </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">Reports</TooltipContent>}
-                                </Tooltip>
-                            )}
-                            {canViewManagerContent && (
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Link href="/dashboard/webgis" className={cn(
-                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                            isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
-                                        )}>
-                                            <MapPin className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'WebGIS'}
-                                        </Link>
-                                    </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">WebGIS</TooltipContent>}
-                                </Tooltip>
+                            {/* New To Do link */}
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link href="/dashboard/todo" className={cn(
+                                        buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                        isCollapsed ? 'w-full' : 'w-full justify-start',
+                                        'text-gray-700 hover:bg-gray-200'
+                                    )}>
+                                        <ListChecks className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                        {!isCollapsed && 'To Do'}
+                                    </Link>
+                                </TooltipTrigger>
+                                {isCollapsed && <TooltipContent side="right">To Do</TooltipContent>}
+                            </Tooltip>
+                            {/* End of new code */}
+                            {isManagerOrAdmin && (
+                                <>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Link href="/dashboard/reports" className={cn(
+                                                buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                                isCollapsed ? 'w-full' : 'w-full justify-start',
+                                                'text-gray-700 hover:bg-gray-200'
+                                            )}>
+                                                <FileText className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                                {!isCollapsed && 'Reports'}
+                                            </Link>
+                                        </TooltipTrigger>
+                                        {isCollapsed && <TooltipContent side="right">Reports</TooltipContent>}
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Link href="/dashboard/webgis" className={cn(
+                                                buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                                isCollapsed ? 'w-full' : 'w-full justify-start',
+                                                'text-gray-700 hover:bg-gray-200'
+                                            )}>
+                                                <MapPin className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                                {!isCollapsed && 'WebGIS'}
+                                            </Link>
+                                        </TooltipTrigger>
+                                        {isCollapsed && <TooltipContent side="right">WebGIS</TooltipContent>}
+                                    </Tooltip>
+                                </>
                             )}
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -176,33 +188,18 @@ const DashboardPage = () => {
                                     </TooltipTrigger>
                                     {isCollapsed && <TooltipContent side="right">Discuss</TooltipContent>}
                                 </Tooltip>
-                            {userRole === 'admin' && ( // Only show this link to admins
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Link href="/dashboard/admin" className={cn(
-                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                            isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
-                                        )}>
-                                            <Shield className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Admin Panel'}
-                                        </Link>
-                                    </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">Admin Panel</TooltipContent>}
-                                </Tooltip>
-                            )}
-                        </TooltipProvider>
-                    </nav>
-                </div>
+                            </TooltipProvider>
+                        </nav>
+                    </div>
 
-                <div className="mt-auto">
-                    <Separator />
-                    <Button onClick={handleLogout} variant="destructive" className="w-full mt-4">
-                        {!isCollapsed && 'Logout'}
-                        {isCollapsed && <Menu className="h-5 w-5" />}
-                    </Button>
+                    <div className="mt-auto">
+                        <Separator />
+                        <Button onClick={handleLogout} variant="destructive" className="w-full mt-4">
+                            {!isCollapsed && 'Logout'}
+                            {isCollapsed && <Menu className="h-5 w-5" />}
+                        </Button>
+                    </div>
                 </div>
-            </div>
 
             {/* Main content area */}
             <div className="flex-1 p-8">
@@ -220,40 +217,53 @@ const DashboardPage = () => {
                                 <ListTodo className="h-8 w-8 text-blue-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-gray-500">View, create, and manage all your field service Work Orders.</p>
+                                <p className="text-sm text-gray-500">View, create, and manage all your field service work orders.</p>
                                 <p className="text-sm font-semibold text-blue-600 mt-2">Go to Work Orders →</p>
                             </CardContent>
                         </Card>
                     </Link>
-        
-                    {canViewManagerContent && (
-                        <Link href="/dashboard/reports">
-                            <Card className="hover:shadow-lg transition-shadow">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-2xl font-bold">Reports</CardTitle>
-                                    <FileText className="h-8 w-8 text-red-500" />
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-gray-500">Access detailed reports on your team's performance.</p>
-                                    <p className="text-sm font-semibold text-red-600 mt-2">Go to Reports →</p>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    )}
-                    
-                    {canViewManagerContent && (
-                        <Link href="/dashboard/webgis">
-                            <Card className="hover:shadow-lg transition-shadow">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-2xl font-bold">WebGIS</CardTitle>
-                                    <MapPin className="h-8 w-8 text-green-500" />
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-gray-500">Visualize data on an interactive map.</p>
-                                    <p className="text-sm font-semibold text-green-600 mt-2">Go to WebGIS →</p>
-                                </CardContent>
-                            </Card>
-                        </Link>
+                    {/* New To Do card */}
+                    <Link href="/dashboard/todo">
+                        <Card className="hover:shadow-lg transition-shadow">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-2xl font-bold">To Do</CardTitle>
+                                <ListChecks className="h-8 w-8 text-indigo-500" />
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-sm text-gray-500">Create and manage personal to-do items.</p>
+                                <p className="text-sm font-semibold text-indigo-600 mt-2">Go to To Do →</p>
+                            </CardContent>
+                        </Card>
+                    </Link>
+                    {/* End of new code */}
+                    {isManagerOrAdmin && (
+                        <>
+                            <Link href="/dashboard/reports">
+                                <Card className="hover:shadow-lg transition-shadow">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-2xl font-bold">Reports</CardTitle>
+                                        <FileText className="h-8 w-8 text-red-500" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-gray-500">Access detailed reports on your team's performance.</p>
+                                        <p className="text-sm font-semibold text-red-600 mt-2">Go to Reports →</p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                            
+                            <Link href="/dashboard/webgis">
+                                <Card className="hover:shadow-lg transition-shadow">
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-2xl font-bold">WebGIS</CardTitle>
+                                        <MapPin className="h-8 w-8 text-green-500" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm text-gray-500">Visualize task data on an interactive map.</p>
+                                        <p className="text-sm font-semibold text-green-600 mt-2">Go to WebGIS →</p>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        </>
                     )}
 
                     <Link href="/dashboard/discuss">
@@ -268,21 +278,6 @@ const DashboardPage = () => {
                             </CardContent>
                         </Card>
                     </Link>
-
-                    {userRole === 'admin' && ( // Only show this card to admins
-                        <Link href="/dashboard/admin">
-                            <Card className="hover:shadow-lg transition-shadow">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-2xl font-bold">Admin Panel</CardTitle>
-                                    <Shield className="h-8 w-8 text-purple-500" />
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-gray-500">Manage user roles and permissions.</p>
-                                    <p className="text-sm font-semibold text-purple-600 mt-2">Go to Admin Panel →</p>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                    )}
                 </div>
             </div>
         </div>
