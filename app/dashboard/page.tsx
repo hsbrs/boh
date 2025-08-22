@@ -128,10 +128,10 @@ const DashboardPage = () => {
                                         'text-gray-700 hover:bg-gray-200'
                                     )}>
                                         <ListTodo className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                        {!isCollapsed && 'Tasks'}
+                                        {!isCollapsed && 'Work Orders'}
                                     </Link>
                                 </TooltipTrigger>
-                                {isCollapsed && <TooltipContent side="right">Tasks</TooltipContent>}
+                                {isCollapsed && <TooltipContent side="right">Work Orders</TooltipContent>}
                             </Tooltip>
                             {canViewManagerContent && (
                                 <Tooltip>
@@ -216,12 +216,12 @@ const DashboardPage = () => {
                     <Link href="/dashboard/tasks">
                         <Card className="hover:shadow-lg transition-shadow">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-2xl font-bold">Tasks</CardTitle>
+                                <CardTitle className="text-2xl font-bold">Work Orders</CardTitle>
                                 <ListTodo className="h-8 w-8 text-blue-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-gray-500">View, create, and manage all your field service tasks.</p>
-                                <p className="text-sm font-semibold text-blue-600 mt-2">Go to Tasks →</p>
+                                <p className="text-sm text-gray-500">View, create, and manage all your field service Work Orders.</p>
+                                <p className="text-sm font-semibold text-blue-600 mt-2">Go to Work Orders →</p>
                             </CardContent>
                         </Card>
                     </Link>
@@ -249,7 +249,7 @@ const DashboardPage = () => {
                                     <MapPin className="h-8 w-8 text-green-500" />
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500">Visualize task data on an interactive map.</p>
+                                    <p className="text-sm text-gray-500">Visualize data on an interactive map.</p>
                                     <p className="text-sm font-semibold text-green-600 mt-2">Go to WebGIS →</p>
                                 </CardContent>
                             </Card>

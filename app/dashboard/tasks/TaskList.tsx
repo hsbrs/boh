@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 // Import shadcn/ui Select components for the filter
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Define the type for a task to provide type safety
+// Define the type for a Work Orders to provide type safety
 type Task = {
   id: string;
   project?: string;
@@ -36,6 +36,7 @@ const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail:
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
   const [filter, setFilter] = useState('All');
+  const [assignees, setAssignees] = useState<string[]>([]); // New state for assignees
 
   const showNotification = (message: string, type: string) => {
     setNotification({ message, type });
@@ -76,13 +77,28 @@ const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail:
   };
 
   useEffect(() => {
+    const usersQuery = query(collection(db, 'users'));
+    const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
+      const usersArray = snapshot.docs.map(doc => doc.data() as DocumentData);
+      const fetchedAssignees = usersArray.map(user => {
+        const email = user.email as string;
+        const name = email.split('@')[0];
+        return name.charAt(0).toUpperCase() + name.slice(1);
+      });
+      setAssignees(fetchedAssignees);
+    });
+
+    return () => unsubscribeUsers();
+  }, []);
+
+  useEffect(() => {
     let q = query(collection(db, 'tasks'));
     if (userRole === 'employee' && userEmail) {
       const assigneeName = userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1);
       q = query(collection(db, 'tasks'), where('assignee', '==', assigneeName));
     }
     
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribeTasks = onSnapshot(q, (snapshot) => {
       let tasksArray: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as DocumentData),
@@ -107,7 +123,7 @@ const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail:
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeTasks();
   }, [userRole, userEmail]);
 
   useEffect(() => {
@@ -140,28 +156,26 @@ const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail:
   }, [filter, tasks]);
 
   if (loading) {
-    return <div className="text-center text-gray-500">Loading tasks...</div>;
+    return <div className="text-center text-gray-500">Loading work orders...</div>;
   }
 
-  const assignees = ["Hady", "Kevin", "Maik", "Rene", "Andre"];
   const filterOptions = ['All', 'Today', 'Tomorrow', ...assignees];
-
   const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
 
   return (
     <>
       <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">Current Tasks</h3>
+          <h3 className="text-xl font-semibold text-gray-800">Current Work Orders</h3>
           {isManagerOrAdmin && (
             <Select value={filter} onValueChange={setFilter}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Tasks for All" />
+                <SelectValue placeholder="WO for All" />
               </SelectTrigger>
               <SelectContent>
                 {filterOptions.map(option => (
                   <SelectItem key={option} value={option}>
-                    {option.startsWith('H') || option.startsWith('K') || option.startsWith('M') || option.startsWith('R') || option.startsWith('A') ? `Tasks for ${option}` : option}
+                    {option === 'All' || option === 'Today' || option === 'Tomorrow' ? option : `WO for ${option}`}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -170,7 +184,7 @@ const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail:
         </div>
         
         {Object.keys(groupedTasks).length === 0 ? (
-          <p className="text-gray-500 text-center">No tasks found for this view.</p>
+          <p className="text-gray-500 text-center">No work orders found for this view.</p>
         ) : (
           <div className="space-y-6">
             {Object.keys(groupedTasks).map(date => (

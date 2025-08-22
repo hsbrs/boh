@@ -38,7 +38,7 @@ const TasksPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading tasks...</div>
+        <div className="text-xl font-semibold text-gray-700">Loading Work Orders...</div>
       </div>
     );
   }
@@ -53,9 +53,9 @@ const TasksPage = () => {
             Dashboard
           </Link>
           <span>/</span>
-          <span>Task Management</span>
+          <span>Work Orders</span>
         </div>
-        <h1 className="text-4xl font-bold text-gray-800 mb-6">Task Management</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-6">Work Orders</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {canViewTaskForm && <TaskForm />}
           <TaskList userRole={userRole} userEmail={userEmail} />

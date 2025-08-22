@@ -86,7 +86,7 @@ const TaskForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-4">
-      <h3 className="text-xl font-semibold text-gray-800">Add New Task</h3>
+      <h3 className="text-xl font-semibold text-gray-800">Add New Work Orders</h3>
       <div className="space-y-4">
         <div className="space-y-1">
           <Label htmlFor="project">Project</Label>
@@ -112,7 +112,7 @@ const TaskForm = () => {
           </Select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="taskName">Task</Label>
+          <Label htmlFor="taskName">Work Orders</Label>
           <Input
             id="taskName"
             type="text"
@@ -210,7 +210,7 @@ const TaskForm = () => {
         </div>
       </div>
       <Button type="submit" className="w-full">
-        Add Task
+        Add Work Orders
       </Button>
     </form>
   );
