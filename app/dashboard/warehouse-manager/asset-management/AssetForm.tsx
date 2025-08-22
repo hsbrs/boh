@@ -35,7 +35,7 @@ const AssetForm = () => {
       await addDoc(collection(db, 'warehouse_items'), {
         name,
         sku,
-        quantity,
+        quantity: Number(quantity),
         location,
         lastUpdated: new Date(),
         lastUpdatedBy: user.email,
@@ -82,7 +82,7 @@ const AssetForm = () => {
               id="quantity"
               type="number"
               value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value))}
+              onChange={(e) => setQuantity(Number(e.target.value))}
               min="0"
               required
             />

@@ -21,7 +21,6 @@ type Asset = {
 type UserProfile = {
     email: string;
     name: string;
-    // Add other user profile fields if needed
 };
 
 const AssetList = () => {
@@ -29,27 +28,7 @@ const AssetList = () => {
     const [users, setUsers] = useState<Map<string, UserProfile>>(new Map());
     const [loading, setLoading] = useState(true);
 
-    // Fetch assets from Firestore
-    useEffect(() => {
-        const q = query(collection(db, 'warehouse_items'), orderBy('name', 'asc'));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const assetsArray: Asset[] = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...(doc.data() as DocumentData),
-            })) as Asset[];
-            setAssets(assetsArray);
-            if (users.size > 0) {
-              setLoading(false);
-            }
-        }, (error) => {
-            console.error("Error fetching assets: ", error);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, [users]);
-
-    // Fetch users from Firestore
+    // Fetch users once on component mount
     useEffect(() => {
         const usersQuery = query(collection(db, 'users'));
         const unsubscribe = onSnapshot(usersQuery, (snapshot) => {
@@ -58,20 +37,39 @@ const AssetList = () => {
                 const data = doc.data() as DocumentData;
                 usersMap.set(data.email, {
                     email: data.email,
-                    name: data.email.split('@')[0] || data.email, // Simple name extraction
+                    name: data.email.split('@')[0] || data.email,
                 });
             });
             setUsers(usersMap);
-            if (assets.length > 0) {
-              setLoading(false);
-            }
+            // After fetching users, we can proceed to fetch assets.
+            // This prevents the race condition.
+            setLoading(false);
         }, (error) => {
             console.error("Error fetching users: ", error);
             setLoading(false);
         });
 
         return () => unsubscribe();
-    }, [assets]);
+    }, []);
+
+    // Fetch assets from Firestore
+    useEffect(() => {
+      // We only run this effect after users have been fetched to avoid the race condition
+      if (loading) return;
+      
+      const q = query(collection(db, 'warehouse_items'), orderBy('name', 'asc'));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+          const assetsArray: Asset[] = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...(doc.data() as DocumentData),
+          })) as Asset[];
+          setAssets(assetsArray);
+      }, (error) => {
+          console.error("Error fetching assets: ", error);
+      });
+
+      return () => unsubscribe();
+    }, [loading]);
 
     if (loading) {
         return <div className="text-center text-gray-500">Loading assets...</div>;
