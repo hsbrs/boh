@@ -8,8 +8,9 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import Link from 'next/link';
 
-// Import local components
+// Import local components and shadcn/ui dialog
 import UserManagement from './UserManagement';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const AdminPage = () => {
   const router = useRouter();

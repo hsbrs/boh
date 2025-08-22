@@ -1,20 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, DocumentData, doc, updateDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
 
-// Import shadcn/ui components
+// Import all required shadcn/ui components
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { toast } from '@/components/ui/use-toast';
 
 type User = {
   id: string;
   email: string;
   role: string;
+  fullName?: string;
+  jobTitle?: string;
+  phoneNumber?: string;
 };
 
 const roles = ['employee', 'manager', 'admin'];
@@ -22,7 +30,15 @@ const roles = ['employee', 'manager', 'admin'];
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
+
+  const showNotification = (message: string, type: string) => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
 
   useEffect(() => {
     const q = query(collection(db, 'users'));
@@ -38,16 +54,36 @@ const UserManagement = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    const userDocRef = doc(db, 'users', userId);
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+    
+    const userDocRef = doc(db, 'users', editingUser.id);
     try {
-      await updateDoc(userDocRef, { role: newRole });
-      alert('User role updated successfully!');
+      await updateDoc(userDocRef, {
+        fullName: editingUser.fullName,
+        jobTitle: editingUser.jobTitle,
+        phoneNumber: editingUser.phoneNumber,
+        role: editingUser.role,
+      });
+      showNotification('User details updated successfully!', 'success');
     } catch (error) {
-      console.error("Error updating user role: ", error);
-      alert('Error updating user role.');
+      console.error("Error updating user: ", error);
+      showNotification('Error updating user details.', 'error');
     }
-    setEditingUserId(null); // Exit editing mode
+    setEditingUser(null);
+  };
+  
+  const handleDeleteUser = async (userId: string) => {
+    if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+      const userDocRef = doc(db, 'users', userId);
+      try {
+        await deleteDoc(userDocRef);
+        showNotification('User deleted successfully!', 'success');
+      } catch (error) {
+        console.error("Error deleting user: ", error);
+        showNotification('Error deleting user.', 'error');
+      }
+    }
   };
 
   if (loading) {
@@ -55,52 +91,102 @@ const UserManagement = () => {
   }
 
   return (
-    <Card className="shadow-md">
-      <CardHeader>
-        <CardTitle>Manage User Roles</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Email</TableHead>
-              <TableHead>Current Role</TableHead>
-              <TableHead>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map(user => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.email}</TableCell>
-                <TableCell>
-                  {editingUserId === user.id ? (
-                    <Select onValueChange={(newRole) => handleRoleChange(user.id, newRole)} defaultValue={user.role}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map(role => (
-                          <SelectItem key={role} value={role}>{role}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    user.role
-                  )}
-                </TableCell>
-                <TableCell>
-                  {editingUserId === user.id ? (
-                    <Button variant="outline" onClick={() => setEditingUserId(null)}>Cancel</Button>
-                  ) : (
-                    <Button onClick={() => setEditingUserId(user.id)}>Change Role</Button>
-                  )}
-                </TableCell>
+    <>
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle>Manage User Roles & Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Email</TableHead>
+                <TableHead>Full Name</TableHead>
+                <TableHead>Job Title</TableHead>
+                <TableHead>Phone Number</TableHead>
+                <TableHead>Current Role</TableHead>
+                <TableHead>Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {users.map(user => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.email}</TableCell>
+                  <TableCell>{user.fullName || 'N/A'}</TableCell>
+                  <TableCell>{user.jobTitle || 'N/A'}</TableCell>
+                  <TableCell>{user.phoneNumber || 'N/A'}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell className="space-x-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" onClick={() => setEditingUser(user)}>Edit</Button>
+                      </DialogTrigger>
+                      {editingUser && editingUser.id === user.id && (
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Edit User Details</DialogTitle>
+                            <DialogDescription>
+                              Make changes to {editingUser.email}'s profile here. Click save when you're done.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="space-y-1">
+                              <Label htmlFor="fullName">Full Name</Label>
+                              <Input
+                                id="fullName"
+                                value={editingUser.fullName}
+                                onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="jobTitle">Job Title</Label>
+                              <Input
+                                id="jobTitle"
+                                value={editingUser.jobTitle}
+                                onChange={(e) => setEditingUser({ ...editingUser, jobTitle: e.target.value })}
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor="phoneNumber">Phone Number</Label>
+                              <Input
+                                id="phoneNumber"
+                                value={editingUser.phoneNumber}
+                                onChange={(e) => setEditingUser({ ...editingUser, phoneNumber: e.target.value })}
+                              />
+                            </div>
+                            <Separator className="my-2" />
+                            <div className="space-y-1">
+                              <Label htmlFor="role">Role</Label>
+                              <Select onValueChange={(newRole) => setEditingUser({ ...editingUser, role: newRole })} defaultValue={editingUser.role}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {roles.map(role => (
+                                    <SelectItem key={role} value={role}>{role}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <Button type="button" onClick={handleUpdateUser}>Save changes</Button>
+                        </DialogContent>
+                      )}
+                    </Dialog>
+                    <Button variant="destructive" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      {notification && (
+        <div className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50 ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white transition-all duration-300 ease-in-out`}>
+          {notification.message}
+        </div>
+      )}
+    </>
   );
 };
 

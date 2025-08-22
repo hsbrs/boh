@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, collection } from 'firebase/firestore'; // Import 'doc' and 'setDoc'
+import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -16,32 +16,47 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoginMode, setIsLoginMode] = useState(true);
+  const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
   const router = useRouter();
+
+  const showNotification = (message: string, type: string) => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
   
   const handleAuthAction = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (isLoginMode) {
+        // Log-in logic
         await signInWithEmailAndPassword(auth, email, password);
-        alert('Login successful!');
+        showNotification('Login successful!', 'success');
+        router.push('/dashboard');
       } else {
+        // Sign-up logic to create a user in Firebase Auth and Firestore
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        const userDocRef = doc(db, 'users', user.uid);
         
-        // Use setDoc to create a document with the user's UID as the document ID
-        await setDoc(doc(db, 'users', user.uid), {
+        await setDoc(userDocRef, {
           uid: user.uid,
           email: user.email,
-          role: 'employee', // Assign the default role
+          role: 'employee', // Assign a default role
+          fullName: '', // New field, initially empty
+          jobTitle: '', // New field, initially empty
+          phoneNumber: '', // New field, initially empty
         });
-        alert('Sign up successful!');
+        
+        showNotification('Sign up successful!', 'success');
+        router.push('/dashboard');
       }
-      router.push('/dashboard');
     } catch (error) {
       if (error instanceof Error) {
-        alert('Authentication error: ' + error.message);
+        showNotification('Authentication error: ' + error.message, 'error');
       } else {
-        alert('An unknown error occurred.');
+        showNotification('An unknown error occurred.', 'error');
       }
     }
   };
@@ -92,6 +107,11 @@ const LoginPage = () => {
           </Button>
         </div>
       </div>
+      {notification && (
+        <div className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50 ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white transition-all duration-300 ease-in-out`}>
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 };
