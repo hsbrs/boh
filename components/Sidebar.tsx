@@ -26,14 +26,23 @@ import {
 interface SidebarProps {
     isCollapsed: boolean;
     userRole: string | null;
+    userName: string | null; // New prop for user's name
     onToggleCollapse: () => void;
     onLogout: () => void;
 }
 
-export default function Sidebar({ isCollapsed, userRole, onToggleCollapse, onLogout }: SidebarProps) {
+export default function Sidebar({ isCollapsed, userRole, userName, onToggleCollapse, onLogout }: SidebarProps) {
     const [isWarehouseExpanded, setIsWarehouseExpanded] = useState(false);
     const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
     const isAdmin = userRole === 'admin';
+
+    const getInitials = (name: string) => {
+        const parts = name.split(' ');
+        if (parts.length > 1) {
+            return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+        }
+        return parts[0][0].toUpperCase();
+    };
 
     return (
         <div className={cn(
@@ -204,9 +213,37 @@ export default function Sidebar({ isCollapsed, userRole, onToggleCollapse, onLog
                     </TooltipProvider>
                 </nav>
             </div>
-            <div className="mt-auto">
-                <Separator />
-                <Button onClick={onLogout} variant="destructive" className="w-full mt-4">
+
+            {userName && (
+                <div className="mt-auto px-2">
+                    <Separator className="mb-4" />
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className={cn(
+                                    'flex items-center gap-4 py-2 px-3 rounded-md transition-colors',
+                                    isCollapsed ? 'justify-center' : 'justify-start'
+                                )}>
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white font-bold text-sm">
+                                        {getInitials(userName)}
+                                    </div>
+                                    {!isCollapsed && (
+                                        <div className="flex flex-col items-start leading-tight">
+                                            <span className="font-semibold">{userName}</span>
+                                            <span className="text-xs text-gray-500">{userRole}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </TooltipTrigger>
+                            {isCollapsed && <TooltipContent side="right">{userName}</TooltipContent>}
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
+            )}
+
+            <div className={cn('px-2', !userName && 'mt-auto')}>
+                <Separator className="mb-4" />
+                <Button onClick={onLogout} variant="destructive" className="w-full">
                     {!isCollapsed && 'Logout'}
                     {isCollapsed && <Menu className="h-5 w-5" />}
                 </Button>

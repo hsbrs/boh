@@ -16,6 +16,7 @@ export default function DashboardLayout({
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [userRole, setUserRole] = useState<string | null>(null);
+    const [userName, setUserName] = useState<string | null>(null); // New state for user's full name
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     useEffect(() => {
@@ -26,7 +27,9 @@ export default function DashboardLayout({
                 const userDocRef = doc(db, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
                 if (userDoc.exists()) {
-                    setUserRole(userDoc.data().role as string);
+                    const userData = userDoc.data();
+                    setUserRole(userData.role as string);
+                    setUserName(userData.fullName as string); // Fetch the full name
                 }
                 setLoading(false);
             }
@@ -75,6 +78,7 @@ export default function DashboardLayout({
             <Sidebar
                 isCollapsed={isCollapsed}
                 userRole={userRole}
+                userName={userName} // Pass the new userName prop
                 onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
                 onLogout={handleLogout}
             />
