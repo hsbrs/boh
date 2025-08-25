@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { collection, onSnapshot, query, addDoc, DocumentData, orderBy, where, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query, addDoc, DocumentData, orderBy, where, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
+import { Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 // Define the message type
 type Message = {
@@ -23,7 +25,7 @@ type Message = {
 type User = {
   id: string;
   fullName: string;
-  // Add other user properties if needed
+  role: string; // Add role to the user type
 };
 
 const topics = ["General", "Back Office", "Lippstadt", "Herzogenrath", "Emmerich"];
@@ -33,7 +35,29 @@ const DiscussPage = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState('General');
-  const [usersMap, setUsersMap] = useState<Record<string, User>>({}); // To store user data
+  const [usersMap, setUsersMap] = useState<Record<string, User>>({});
+  const [userRole, setUserRole] = useState('');
+  
+  // New state for the confirmation dialog
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [messageToDeleteId, setMessageToDeleteId] = useState<string | null>(null);
+
+  // Fetch user role on page load
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const role = userDocSnap.data().role;
+          setUserRole(role);
+        }
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   // Fetch users and store them in a map
   useEffect(() => {
@@ -50,7 +74,6 @@ const DiscussPage = () => {
   }, []);
 
   useEffect(() => {
-    // A query that listens to messages for the selected topic
     if (!selectedTopic) return;
     
     const q = query(
@@ -83,9 +106,9 @@ const DiscussPage = () => {
       if (user) {
         await addDoc(collection(db, 'messages'), {
           text: newMessage,
-          sender: user.uid, // Store user's UID instead of email
+          sender: user.uid,
           timestamp: new Date(),
-          topic: selectedTopic, // Save the message with the current topic
+          topic: selectedTopic,
         });
         setNewMessage('');
       } else {
@@ -97,6 +120,31 @@ const DiscussPage = () => {
         alert('Error sending message: ' + error.message);
       }
     }
+  };
+
+  // Function to handle opening the confirmation dialog
+  const handleOpenDialog = (messageId: string) => {
+    setMessageToDeleteId(messageId);
+    setIsDialogOpen(true);
+  };
+
+  // Function to handle the actual message deletion
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await deleteDoc(doc(db, 'messages', messageId));
+      console.log('Message deleted successfully.');
+      setIsDialogOpen(false); // Close dialog after successful deletion
+    } catch (error) {
+      console.error("Error deleting message: ", error);
+      if (error instanceof Error) {
+        alert('Error deleting message: ' + error.message);
+      }
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDialogOpen(false);
+    setMessageToDeleteId(null);
   };
 
   if (loading) {
@@ -156,6 +204,17 @@ const DiscussPage = () => {
                           <span className="text-xs text-gray-400">
                             {format(message.timestamp.toDate(), 'MM/dd/yyyy HH:mm')}
                           </span>
+                          {/* Conditionally render the delete button for admins */}
+                          {userRole === 'admin' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-gray-400 hover:text-red-500"
+                              onClick={() => handleOpenDialog(message.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                         <p className="text-sm text-gray-600">{message.text}</p>
                       </div>
@@ -178,6 +237,23 @@ const DiscussPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this message? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelDelete}>Cancel</Button>
+            <Button variant="destructive" onClick={() => messageToDeleteId && handleDeleteMessage(messageToDeleteId)}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };
