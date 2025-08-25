@@ -26,7 +26,7 @@ import {
 interface SidebarProps {
     isCollapsed: boolean;
     userRole: string | null;
-    userName: string | null; // New prop for user's name
+    userName: string | null;
     onToggleCollapse: () => void;
     onLogout: () => void;
 }
@@ -155,7 +155,7 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => setIsWarehouseExpanded(!isWarehouseExpanded)}
+                                        onClick={() => !isCollapsed && setIsWarehouseExpanded(!isWarehouseExpanded)}
                                         className={cn(
                                             'w-full justify-start text-gray-700 hover:bg-gray-200',
                                             isCollapsed && 'w-full'
@@ -214,23 +214,25 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                 </nav>
             </div>
 
-            {userName && (
-                <div className="mt-auto px-2">
-                    <Separator className="mb-4" />
+            <div className={cn(
+                "mt-auto space-y-4 px-2 py-4 border-t",
+                isCollapsed && "flex flex-col items-center justify-center space-y-2 py-2"
+            )}>
+                {userName && (
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div className={cn(
-                                    'flex items-center gap-4 py-2 px-3 rounded-md transition-colors',
+                                    'flex items-center gap-4 py-2 px-3 rounded-md transition-colors w-full',
                                     isCollapsed ? 'justify-center' : 'justify-start'
                                 )}>
-                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white font-bold text-sm">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white font-bold text-sm shrink-0">
                                         {getInitials(userName)}
                                     </div>
                                     {!isCollapsed && (
-                                        <div className="flex flex-col items-start leading-tight">
-                                            <span className="font-semibold">{userName}</span>
-                                            <span className="text-xs text-gray-500">{userRole}</span>
+                                        <div className="flex flex-col items-start leading-tight min-w-0">
+                                            <span className="font-semibold truncate">{userName}</span>
+                                            <span className="text-xs text-gray-500 truncate">{userRole}</span>
                                         </div>
                                     )}
                                 </div>
@@ -238,11 +240,8 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                             {isCollapsed && <TooltipContent side="right">{userName}</TooltipContent>}
                         </Tooltip>
                     </TooltipProvider>
-                </div>
-            )}
-
-            <div className={cn('px-2', !userName && 'mt-auto')}>
-                <Separator className="mb-4" />
+                )}
+                
                 <Button onClick={onLogout} variant="destructive" className="w-full">
                     {!isCollapsed && 'Logout'}
                     {isCollapsed && <Menu className="h-5 w-5" />}
