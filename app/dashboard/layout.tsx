@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -14,6 +14,7 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }>) {
     const router = useRouter();
+    const pathname = usePathname();
     const [loading, setLoading] = useState(true);
     const [userRole, setUserRole] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null); // New state for user's full name
@@ -73,15 +74,19 @@ export default function DashboardLayout({
         );
     }
 
+    const showSidebar = !pathname.startsWith('/dashboard/reports');
+
     return (
         <div className="flex min-h-screen bg-gray-100">
-            <Sidebar
-                isCollapsed={isCollapsed}
-                userRole={userRole}
-                userName={userName} // Pass the new userName prop
-                onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-                onLogout={handleLogout}
-            />
+            {showSidebar && (
+                <Sidebar
+                    isCollapsed={isCollapsed}
+                    userRole={userRole}
+                    userName={userName} // Pass the new userName prop
+                    onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+                    onLogout={handleLogout}
+                />
+            )}
             {children}
         </div>
     );

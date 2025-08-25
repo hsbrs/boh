@@ -7,6 +7,7 @@ import { db, auth } from '@/lib/firebase';
 import React from 'react';
 import Link from 'next/link';
 import { format, parseISO, addDays, isSameDay, isWithinInterval, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
+import { useRouter } from 'next/navigation';
 
 // Import shadcn/ui components
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useRouter } from 'next/navigation';
 
 // Define the type for a task to provide type safety
 type Task = {
@@ -40,12 +40,12 @@ type ProcessedTask = Task & {
 
 const ReportsPage = () => {
   const router = useRouter();
-  // All hooks must be declared at the top of the component
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<ProcessedTask | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [assignees, setAssignees] = useState<string[]>([]); // New state for assignees
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -56,9 +56,9 @@ const ReportsPage = () => {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-            setUserRole(userDoc.data().role);
+            setUserRole(userDoc.data().role as string);
         } else {
-            setUserRole('employee');
+            setUserRole('employee'); // Default role if user doc doesn't exist
         }
     });
 
@@ -73,25 +73,34 @@ const ReportsPage = () => {
       console.error("Error fetching tasks: ", error);
       setLoading(false);
     });
+    
+    // Fetch users dynamically
+    const usersQuery = query(collection(db, 'users'));
+    const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
+      const usersArray = snapshot.docs.map(doc => doc.data() as DocumentData);
+      const fetchedAssignees = usersArray.map(user => {
+        const email = user.email as string;
+        const name = email.split('@')[0];
+        return name.charAt(0).toUpperCase() + name.slice(1);
+      });
+      setAssignees(fetchedAssignees);
+    });
 
     return () => {
         unsubscribeAuth();
         unsubscribeTasks();
+        unsubscribeUsers();
     };
   }, [router]);
 
   const { weekDays, assigneesWithTasks } = useMemo(() => {
-    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 });
-    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 });
+    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Monday
+    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 }); // Sunday
     const weekDays = eachDayOfInterval({ start, end });
-    
-    // Dynamically get all unique assignees from the fetched tasks
-    const allAssignees = [...new Set(tasks.map(task => task.assignee).filter(Boolean) as string[])];
-
     const assigneeMap = new Map<string, ProcessedTask[]>();
-    const totalHoursMap = new Map<string, number>();
     
-    allAssignees.forEach(assignee => {
+    const totalHoursMap = new Map<string, number>();
+    assignees.forEach(assignee => { // Use the dynamic list of assignees
         assigneeMap.set(assignee, []);
         totalHoursMap.set(assignee, 0);
     });
@@ -126,9 +135,9 @@ const ReportsPage = () => {
     }));
 
     return { weekDays, assigneesWithTasks };
-  }, [tasks, selectedWeek]);
+  }, [tasks, selectedWeek, assignees]);
 
-  // Conditional rendering is placed after all hooks are called
+
   const canViewReports = userRole === 'admin' || userRole === 'manager';
 
   if (loading || userRole === null) {
@@ -163,7 +172,7 @@ const ReportsPage = () => {
   };
 
   return (
-    <div className="p-4 bg-gray-100 min-h-screen">
+    <div className="flex-1 p-8">
       <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
         <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
           Dashboard
@@ -203,7 +212,9 @@ const ReportsPage = () => {
                             </div>
                             <div className="ml-4">
                                 <span className="font-semibold">{assignee.name}</span>
-                                <p className="text-sm text-gray-500">{assignee.totalHours.toFixed(1)}h</p>
+                                <p className="text-sm text-gray-500">
+                                    {assignee.totalHours.toFixed(1)}h / 40h ({((assignee.totalHours / 40) * 100).toFixed(0)}%)
+                                </p>
                             </div>
                         </div>
                         {weekDays.map((day, dayIndex) => (
