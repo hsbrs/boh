@@ -170,26 +170,27 @@ const TasksPage = () => {
             <TaskList userRole={userRole} userEmail={userEmail} userUid={userUid} search={search} />
           </TabsContent>
           <TabsContent value="calendar" className="flex-1 overflow-auto">
-            <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth" // Start with month view
-              events={calendarEvents}
-              dateClick={handleDateClick}
-              eventClick={handleEventClick}
-              headerToolbar={{
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-              }}
-              height="100%" // Full height
-              editable={true} // Allow drag-drop (optional, can update Firestore on drop)
-              selectable={true} // Allow selecting date ranges
-              selectMirror={true}
-              dayMaxEvents={true} // Show "+" if too many events
-              weekends={true}
-              nowIndicator={true} // Show current time line
-              className="bg-white rounded-md shadow-md" // shadcn/ui-like styling
-            />
+            <div className="bg-white rounded-md shadow-md h-full">
+              <FullCalendar
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth" // Start with month view
+                events={calendarEvents}
+                dateClick={handleDateClick}
+                eventClick={handleEventClick}
+                headerToolbar={{
+                  left: 'prev,next today',
+                  center: 'title',
+                  right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                }}
+                height="100%" // Full height
+                editable={true} // Allow drag-drop (optional, can update Firestore on drop)
+                selectable={true} // Allow selecting date ranges
+                selectMirror={true}
+                dayMaxEvents={true} // Show "+" if too many events
+                weekends={true}
+                nowIndicator={true} // Show current time line
+              />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
