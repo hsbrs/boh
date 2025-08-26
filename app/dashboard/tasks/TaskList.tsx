@@ -5,7 +5,7 @@ import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc,
 import { db } from '@/lib/firebase';
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,6 +48,26 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
   const [assignees, setAssignees] = useState<string[]>([]);
   const [editTask, setEditTask] = useState<Task | null>(null);
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High': return 'bg-red-500 text-white';
+      case 'Medium': return 'bg-yellow-500 text-white';
+      case 'Low': return 'bg-green-500 text-white';
+      default: return 'bg-gray-500 text-white';
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Planned': return 'bg-blue-500 text-white';
+      case 'In Progress': return 'bg-yellow-500 text-white';
+      case 'Done': return 'bg-green-500 text-white';
+      case 'Delayed': return 'bg-red-500 text-white';
+      case 'Cancelled': return 'bg-gray-500 text-white';
+      default: return 'bg-gray-500 text-white';
+    }
+  };
+
   const handleUpdateStatus = async (taskId: string, newStatus: string) => {
     const taskDocRef = doc(db, 'tasks', taskId);
     try {
@@ -73,18 +93,15 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
   const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
     const taskDocRef = doc(db, 'tasks', taskId);
     try {
-      console.log('Update payload:', updates); // Log the payload for debugging
-      // Validate and format updates
       const validUpdates: Partial<Task> = {};
       if (updates.actualStartTime) validUpdates.actualStartTime = updates.actualStartTime;
       if (updates.actualEndTime) validUpdates.actualEndTime = updates.actualEndTime;
-      if (updates.notes !== undefined) validUpdates.notes = updates.notes; // Allow empty notes
+      if (updates.notes !== undefined) validUpdates.notes = updates.notes;
 
       await updateDoc(taskDocRef, validUpdates);
       toast.success('Work order updated successfully!');
       setEditTask(null);
     } catch (error) {
-      console.error('Update error:', error); // Log error details
       toast.error(`Failed to update work order. ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
@@ -98,7 +115,6 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
       });
       setAssignees(usersArray);
     });
-
     return () => unsubscribeUsers();
   }, []);
 
@@ -168,201 +184,202 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
   const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-semibold text-gray-800">Current Work Orders</h3>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter work orders" />
-          </SelectTrigger>
-          <SelectContent>
-            {filterOptions.map(option => (
-              <SelectItem key={option} value={option}>
-                {option === 'All' || option === 'Today' || option === 'Tomorrow' ||
-                 ['Planned', 'In Progress', 'Done', 'Delayed', 'Cancelled'].includes(option)
-                  ? option
-                  : `WO for ${option}`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <Card className="bg-white p-6 rounded-lg shadow-md h-full overflow-y-auto">
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold text-gray-800">Current Work Orders</CardTitle>
+        <div className="flex flex-col md:flex-row justify-between items-center mt-4">
+          <Input
+            placeholder="Search work orders..."
+            value={search}
+            onChange={(e) => search.length === 0 ? setFilter('All') : null}
+            className="mb-4 md:mb-0 max-w-sm"
+          />
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter work orders" />
+            </SelectTrigger>
+            <SelectContent>
+              {filterOptions.map(option => (
+                <SelectItem key={option} value={option}>
+                  {option === 'All' || option === 'Today' || option === 'Tomorrow' ||
+                   ['Planned', 'In Progress', 'Done', 'Delayed', 'Cancelled'].includes(option)
+                    ? option
+                    : `WO for ${option}`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </CardHeader>
 
-      {Object.keys(groupedTasks).length === 0 ? (
-        <p className="text-gray-500 text-center">No work orders found for this view.</p>
-      ) : (
-        <div className="space-y-6">
-          {Object.keys(groupedTasks).sort().map(date => (
-            <div key={date}>
-              <h4 className="text-xl font-bold text-gray-700 mb-2">{date}</h4>
-              <div className="space-y-4">
-                {groupedTasks[date].map(task => (
-                  <Card key={task.id} className="p-4 shadow-sm">
-                    <CardContent className="p-0">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="text-lg font-bold text-gray-900">{task.summary}</p>
-                          <p className="text-gray-600">Assignee: {task.assignee}</p>
-                          <Badge
-                            className={cn(
-                              task.priority === 'High' && 'bg-red-500',
-                              task.priority === 'Medium' && 'bg-yellow-500',
-                              task.priority === 'Low' && 'bg-green-500'
-                            )}
-                          >
-                            Priority: {task.priority}
+      <CardContent>
+        {Object.keys(groupedTasks).length === 0 ? (
+          <p className="text-gray-500 text-center">No work orders found for this view.</p>
+        ) : (
+          <div className="space-y-6">
+            {Object.keys(groupedTasks).sort().map(date => (
+              <div key={date}>
+                <h4 className="text-xl font-bold text-gray-700 mb-2">{date}</h4>
+                <div className="space-y-4">
+                  {groupedTasks[date].map(task => (
+                    <Card key={task.id} className="p-4 shadow-sm">
+                      <CardContent className="p-0">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-lg font-bold text-gray-900">{task.summary}</p>
+                            <p className="text-gray-600">Assignee: {task.assignee}</p>
+                            <Badge className={cn(getPriorityColor(task.priority || ''), 'mt-1')}>
+                              Priority: {task.priority}
+                            </Badge>
+                          </div>
+                          <Badge className={cn(getStatusColor(task.status || ''))}>
+                            {task.status}
                           </Badge>
                         </div>
-                        <Badge
-                          className={cn(
-                            task.status === 'Planned' && 'bg-blue-500',
-                            task.status === 'In Progress' && 'bg-yellow-500',
-                            task.status === 'Done' && 'bg-green-500',
-                            task.status === 'Delayed' && 'bg-red-500',
-                            task.status === 'Cancelled' && 'bg-gray-500'
-                          )}
-                        >
-                          {task.status}
-                        </Badge>
-                      </div>
-                      <Accordion type="single" collapsible>
-                        <AccordionItem value="details">
-                          <AccordionTrigger>Details</AccordionTrigger>
-                          <AccordionContent>
-                            <p className="text-gray-600">Service Type: {task.serviceType}</p>
-                            <p className="text-gray-600">Scheduled: {task.scheduledTime}</p>
-                            <p className="text-gray-600">Duration: {task.estimatedDuration} hours</p>
-                            <p className="text-gray-600">Due Date: {task.dueDate}</p>
-                            <p className="text-gray-600">Location: {task.location}</p>
-                            {task.locationUrl && (
-                              <p className="text-gray-600">
-                                <a
-                                  href={task.locationUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-500 hover:text-blue-700"
-                                >
-                                  View on Map
-                                </a>
-                              </p>
-                            )}
-                            <p className="text-gray-600">Customer: {task.customerName}</p>
-                            <p className="text-gray-600">
-                              Contact:{' '}
-                              {task.customerContact?.includes('@') ? (
-                                <a href={`mailto:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
-                                  {task.customerContact}
-                                </a>
-                              ) : (
-                                <a href={`tel:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
-                                  {task.customerContact}
-                                </a>
-                              )}
-                            </p>
-                            <p className="text-gray-600">Description: {task.description}</p>
-                            {task.notes && <p className="text-gray-600">Notes: {task.notes}</p>}
-                            {task.actualStartTime && <p className="text-gray-600">Actual Start: {task.actualStartTime}</p>}
-                            {task.actualEndTime && <p className="text-gray-600">Actual End: {task.actualEndTime}</p>}
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
-                      <div className="flex mt-2 space-x-2">
-                        {userRole === 'employee' && (
-                          <>
-                            <Button
-                              onClick={() => handleUpdateStatus(task.id, task.status === 'Planned' ? 'In Progress' : 'Done')}
-                              variant="outline"
-                              size="sm"
-                              disabled={task.status !== 'Planned' && task.status !== 'In Progress'}
-                            >
-                              {task.status === 'Planned' ? 'Start' : 'Complete'}
-                            </Button>
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">Add Note/Time</Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Update Work Order</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div>
-                                    <Label htmlFor="actualStartTime">Actual Start Time</Label>
-                                    <Input
-                                      id="actualStartTime"
-                                      type="datetime-local"
-                                      value={editTask?.actualStartTime || task.actualStartTime || ''} // Use value instead of defaultValue
-                                      onChange={(e) => setEditTask({ ...task, actualStartTime: e.target.value })}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="actualEndTime">Actual End Time</Label>
-                                    <Input
-                                      id="actualEndTime"
-                                      type="datetime-local"
-                                      value={editTask?.actualEndTime || task.actualEndTime || ''} // Use value instead of defaultValue
-                                      onChange={(e) => setEditTask({ ...task, actualEndTime: e.target.value })}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="notes">Notes</Label>
-                                    <Textarea
-                                      id="notes"
-                                      value={editTask?.notes || task.notes || ''} // Use value instead of defaultValue
-                                      onChange={(e) => setEditTask({ ...task, notes: e.target.value })}
-                                      placeholder="Add notes or updates"
-                                    />
-                                  </div>
-                                  <Button
-                                    onClick={() =>
-                                      handleUpdateTask(task.id, {
-                                        actualStartTime: editTask?.actualStartTime || task.actualStartTime,
-                                        actualEndTime: editTask?.actualEndTime || task.actualEndTime,
-                                        notes: editTask?.notes || task.notes,
-                                      })
-                                    }
-                                  >
-                                    Save Updates
-                                  </Button>
+                        <Accordion type="single" collapsible>
+                          <AccordionItem value="details">
+                            <AccordionTrigger>Details</AccordionTrigger>
+                            <AccordionContent>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 text-sm text-gray-600">
+                                <div className="space-y-1">
+                                  <p><strong>Service Type:</strong> {task.serviceType}</p>
+                                  <p><strong>Scheduled:</strong> {task.scheduledTime}</p>
+                                  <p><strong>Duration:</strong> {task.estimatedDuration} hours</p>
+                                  <p><strong>Due Date:</strong> {task.dueDate}</p>
+                                  <p><strong>Description:</strong> {task.description}</p>
                                 </div>
-                              </DialogContent>
-                            </Dialog>
-                          </>
-                        )}
-                        {isManagerOrAdmin && (
-                          <>
-                            <Select
-                              value={task.status}
-                              onValueChange={(value) => handleUpdateStatus(task.id, value)}
-                            >
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {['Planned', 'In Progress', 'Done', 'Delayed', 'Cancelled'].map(status => (
-                                  <SelectItem key={status} value={status}>{status}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              onClick={() => handleDeleteTask(task.id)}
-                              variant="destructive"
-                              size="sm"
-                            >
-                              Delete
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                                <div className="space-y-1">
+                                  <p><strong>Location:</strong> {task.location || 'N/A'}</p>
+                                  {task.locationUrl && (
+                                      <p>
+                                          <a href={task.locationUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
+                                              View on Map
+                                          </a>
+                                      </p>
+                                  )}
+                                  <p><strong>Customer:</strong> {task.customerName || 'N/A'}</p>
+                                  <p>
+                                      <strong>Contact:</strong>{' '}
+                                      {task.customerContact ? (
+                                          task.customerContact?.includes('@') ? (
+                                              <a href={`mailto:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
+                                                  {task.customerContact}
+                                              </a>
+                                          ) : (
+                                              <a href={`tel:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
+                                                  {task.customerContact}
+                                              </a>
+                                          )
+                                      ) : 'N/A'}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="mt-4 space-y-2 text-sm text-gray-600">
+                                  {task.notes && <p><strong>Notes:</strong> {task.notes}</p>}
+                                  {task.actualStartTime && <p><strong>Actual Start:</strong> {task.actualStartTime}</p>}
+                                  {task.actualEndTime && <p><strong>Actual End:</strong> {task.actualEndTime}</p>}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
+                        <div className="flex mt-2 space-x-2">
+                          {userRole === 'employee' && (
+                            <>
+                              <Button
+                                onClick={() => handleUpdateStatus(task.id, task.status === 'Planned' ? 'In Progress' : 'Done')}
+                                variant="outline"
+                                size="sm"
+                                disabled={task.status !== 'Planned' && task.status !== 'In Progress'}
+                              >
+                                {task.status === 'Planned' ? 'Start' : 'Complete'}
+                              </Button>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm">Add Note/Time</Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Update Work Order</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <Label htmlFor="actualStartTime">Actual Start Time</Label>
+                                      <Input
+                                        id="actualStartTime"
+                                        type="datetime-local"
+                                        value={editTask?.actualStartTime || task.actualStartTime || ''}
+                                        onChange={(e) => setEditTask({ ...task, actualStartTime: e.target.value })}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="actualEndTime">Actual End Time</Label>
+                                      <Input
+                                        id="actualEndTime"
+                                        type="datetime-local"
+                                        value={editTask?.actualEndTime || task.actualEndTime || ''}
+                                        onChange={(e) => setEditTask({ ...task, actualEndTime: e.target.value })}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="notes">Notes</Label>
+                                      <Textarea
+                                        id="notes"
+                                        value={editTask?.notes || task.notes || ''}
+                                        onChange={(e) => setEditTask({ ...task, notes: e.target.value })}
+                                        placeholder="Add notes or updates"
+                                      />
+                                    </div>
+                                    <Button
+                                      onClick={() =>
+                                        handleUpdateTask(task.id, {
+                                          actualStartTime: editTask?.actualStartTime || task.actualStartTime,
+                                          actualEndTime: editTask?.actualEndTime || task.actualEndTime,
+                                          notes: editTask?.notes || task.notes,
+                                        })
+                                      }
+                                    >
+                                      Save Updates
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            </>
+                          )}
+                          {isManagerOrAdmin && (
+                            <>
+                              <Select
+                                value={task.status}
+                                onValueChange={(value) => handleUpdateStatus(task.id, value)}
+                              >
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {['Planned', 'In Progress', 'Done', 'Delayed', 'Cancelled'].map(status => (
+                                    <SelectItem key={status} value={status}>{status}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                onClick={() => handleDeleteTask(task.id)}
+                                variant="destructive"
+                                size="sm"
+                              >
+                                Delete
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
