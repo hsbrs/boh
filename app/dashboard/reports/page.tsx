@@ -14,20 +14,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Define the type for a task to provide type safety
+// Define the new type for a task
 type Task = {
   id: string;
-  project?: string;
+  summary?: string;
   assignee?: string;
-  taskName?: string;
-  plannedDate?: string;
-  startTime?: string;
-  endTime?: string;
-  city?: string;
+  assigneeUid?: string;
+  description?: string;
+  serviceType?: string;
+  priority?: string;
+  scheduledTime?: string;
+  estimatedDuration?: number;
+  dueDate?: string;
   location?: string;
   locationUrl?: string;
+  customerName?: string;
+  customerContact?: string;
   status?: string;
 };
 
@@ -45,7 +48,7 @@ const ReportsPage = () => {
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<ProcessedTask | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [assignees, setAssignees] = useState<string[]>([]); // New state for assignees
+  const [assignees, setAssignees] = useState<string[]>([]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
@@ -58,7 +61,7 @@ const ReportsPage = () => {
         if (userDoc.exists()) {
             setUserRole(userDoc.data().role as string);
         } else {
-            setUserRole('employee'); // Default role if user doc doesn't exist
+            setUserRole('employee');
         }
     });
 
@@ -94,35 +97,31 @@ const ReportsPage = () => {
   }, [router]);
 
   const { weekDays, assigneesWithTasks } = useMemo(() => {
-    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Monday
-    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 }); // Sunday
+    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 });
+    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({ start, end });
     const assigneeMap = new Map<string, ProcessedTask[]>();
     
     const totalHoursMap = new Map<string, number>();
-    assignees.forEach(assignee => { // Use the dynamic list of assignees
+    assignees.forEach(assignee => {
         assigneeMap.set(assignee, []);
         totalHoursMap.set(assignee, 0);
     });
 
     tasks.forEach(task => {
-        if (task.plannedDate && task.startTime && task.endTime && task.assignee) {
-            const plannedDate = parseISO(task.plannedDate);
-            const startDateTime = parseISO(`${task.plannedDate}T${task.startTime}`);
-            const endDateTime = parseISO(`${task.plannedDate}T${task.endTime}`);
-            const durationMs = endDateTime.getTime() - startDateTime.getTime();
-            const durationHours = durationMs / (1000 * 60 * 60);
-
-            if (isWithinInterval(plannedDate, { start, end })) {
+        if (task.scheduledTime && task.estimatedDuration && task.assignee) {
+            const scheduledDate = parseISO(task.scheduledTime);
+            
+            if (isWithinInterval(scheduledDate, { start, end })) {
                 const processedTask: ProcessedTask = {
                     ...task,
-                    start: startDateTime,
-                    end: endDateTime,
-                    duration: durationHours,
+                    start: scheduledDate,
+                    end: addDays(scheduledDate, task.estimatedDuration / 24), // Placeholder for end date
+                    duration: task.estimatedDuration,
                 };
                 if (assigneeMap.has(task.assignee)) {
                     assigneeMap.get(task.assignee)?.push(processedTask);
-                    totalHoursMap.set(task.assignee, (totalHoursMap.get(task.assignee) || 0) + durationHours);
+                    totalHoursMap.set(task.assignee, (totalHoursMap.get(task.assignee) || 0) + task.estimatedDuration);
                 }
             }
         }
@@ -225,8 +224,8 @@ const ReportsPage = () => {
                                         className={`p-1 rounded-md text-xs border cursor-pointer my-1 ${getStatusColor(task.status || '')}`}
                                         onClick={() => setSelectedTask(task)}
                                     >
-                                        <p className="font-bold truncate">{task.project}</p>
-                                        <p className="truncate">{task.startTime} - {task.endTime}</p>
+                                        <p className="font-bold truncate">{task.summary}</p>
+                                        <p className="truncate">Duration: {task.duration.toFixed(1)}h</p>
                                     </div>
                                 ))}
                             </div>
@@ -242,16 +241,19 @@ const ReportsPage = () => {
         <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">{selectedTask.project}</DialogTitle>
+              <DialogTitle className="text-2xl font-bold">{selectedTask.summary}</DialogTitle>
               <DialogDescription>Details for the task assigned to {selectedTask.assignee}.</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <p><strong>Task:</strong> {selectedTask.taskName}</p>
+              <p><strong>Service Type:</strong> {selectedTask.serviceType}</p>
               <p><strong>Status:</strong> <Badge className={getStatusColor(selectedTask.status || '')}>{selectedTask.status}</Badge></p>
-              <p><strong>Date:</strong> {selectedTask.plannedDate}</p>
-              <p><strong>Time:</strong> {selectedTask.startTime} - {selectedTask.endTime} ({selectedTask.duration.toFixed(1)}h)</p>
-              <p><strong>City:</strong> {selectedTask.city}</p>
-              <p><strong>Location:</strong> {selectedTask.location}</p>
+              <p><strong>Scheduled Time:</strong> {selectedTask.scheduledTime}</p>
+              <p><strong>Estimated Duration:</strong> {selectedTask.estimatedDuration}h</p>
+              <p><strong>Due Date:</strong> {selectedTask.dueDate}</p>
+              <p><strong>Location:</strong> {selectedTask.location || 'N/A'}</p>
+              <p><strong>Customer Name:</strong> {selectedTask.customerName || 'N/A'}</p>
+              <p><strong>Customer Contact:</strong> {selectedTask.customerContact || 'N/A'}</p>
+              <p><strong>Description:</strong> {selectedTask.description || 'N/A'}</p>
             </div>
           </DialogContent>
         </Dialog>
