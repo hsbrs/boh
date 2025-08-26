@@ -9,10 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, isToday } from 'date-fns';
-import { Trash2, X } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
 
 // Define the message type
 type Message = {
@@ -44,19 +43,8 @@ const DiscussPage = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [messageToDeleteId, setMessageToDeleteId] = useState<string | null>(null);
-
-  const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
   const [unreadTopics, setUnreadTopics] = useState<Record<string, boolean>>({});
-  const [notifiedMentions, setNotifiedMentions] = useState<string[]>([]); // New state to track notified mentions
 
-  const showNotification = (message: string, type: string) => {
-    setNotification({ message, type });
-  };
-  
-  const handleDismissNotification = () => {
-    setNotification(null);
-  };
-  
   const handleTopicClick = (topic: string) => {
     setSelectedTopic(topic);
     setUnreadTopics(prev => ({ ...prev, [topic]: false }));
@@ -91,9 +79,11 @@ const DiscussPage = () => {
     fetchUsers();
   }, []);
 
+  // Effect to fetch messages for the selected topic
   useEffect(() => {
     if (!selectedTopic) return;
     
+    setLoading(true);
     const q = query(
       collection(db, 'messages'), 
       where('topic', '==', selectedTopic),
@@ -105,36 +95,6 @@ const DiscussPage = () => {
         id: doc.id,
         ...(doc.data() as DocumentData),
       })) as Message[];
-
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        const mentionsToNotify: string[] = [];
-        snapshot.docChanges().forEach(change => {
-            const messageData = change.doc.data() as Message;
-            if (
-                messageData.mentions?.includes(currentUser.uid) &&
-                messageData.sender !== currentUser.uid &&
-                !notifiedMentions.includes(change.doc.id)
-            ) {
-                // If it's a new document being added, show notification and add to notified list
-                if (change.type === 'added') {
-                    const mentioningUser = usersMap[messageData.sender]?.fullName || 'Someone';
-                    showNotification(`${mentioningUser} mentioned you in ${messageData.topic}!`, 'success');
-                    mentionsToNotify.push(change.doc.id);
-
-                    if (messageData.topic !== selectedTopic) {
-                        setUnreadTopics(prev => ({ ...prev, [messageData.topic]: true }));
-                    }
-                }
-            }
-        });
-        
-        // Add new notified mentions to the state
-        if (mentionsToNotify.length > 0) {
-            setNotifiedMentions(prev => [...prev, ...mentionsToNotify]);
-        }
-      }
-
       setMessages(messagesArray);
       setLoading(false);
     }, (error) => {
@@ -143,7 +103,32 @@ const DiscussPage = () => {
     });
 
     return () => unsubscribe();
-  }, [selectedTopic, usersMap, notifiedMentions]);
+  }, [selectedTopic]);
+
+  // Effect for mention notifications
+  useEffect(() => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    const q = query(
+        collection(db, 'messages'),
+        where('mentions', 'array-contains', currentUser.uid),
+        where('timestamp', '>', new Date())
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        snapshot.docChanges().forEach(change => {
+            if (change.type === 'added') {
+                const message = change.doc.data() as { topic: string, sender: string };
+                if (message.topic !== selectedTopic && message.sender !== currentUser.uid) {
+                    setUnreadTopics(prev => ({ ...prev, [message.topic]: true }));
+                }
+            }
+        });
+    });
+
+    return () => unsubscribe();
+  }, [selectedTopic]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -287,7 +272,7 @@ const DiscussPage = () => {
                 >
                   {topic}
                   {unreadTopics[topic] && (
-                    <Badge className="absolute right-2 top-1/2 -translate-y-1/2">New</Badge>
+                    <Badge className="absolute right-2 top-1/2 -translate-y-1/2">Mention</Badge>
                   )}
                 </Button>
               ))}
@@ -388,23 +373,6 @@ const DiscussPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {notification && (
-        <div className={cn(
-          "fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50 transition-all duration-300 ease-in-out flex items-center justify-between space-x-4",
-          notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        )}>
-          <span>{notification.message}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDismissNotification}
-            className="text-white hover:bg-white/20 p-1"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
