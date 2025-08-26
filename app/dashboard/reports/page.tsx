@@ -253,7 +253,7 @@ const ReportsPage = () => {
       <div className="h-[calc(100vh-200px)]">
         {activeReport === 'overview' && renderOverview()}
         {activeReport === 'calendar' && <ReportCalendar tasks={tasks} userRole={userRole} />}
-        {activeReport === 'resource' && <ReportUser />}
+        {activeReport === 'resource' && <ReportUser tasks={tasks} />}
       </div>
     </div>
   );

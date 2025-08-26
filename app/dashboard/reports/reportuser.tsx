@@ -41,9 +41,8 @@ type ProcessedTask = Task & {
   duration: number;
 };
 
-const ReportUser = () => {
+const ReportUser = ({ tasks }: { tasks: Task[] }) => {
   const router = useRouter();
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [selectedTask, setSelectedTask] = useState<ProcessedTask | null>(null);
@@ -65,18 +64,6 @@ const ReportUser = () => {
         }
     });
 
-    const unsubscribeTasks = onSnapshot(query(collection(db, 'tasks')), (snapshot) => {
-      let tasksArray: Task[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...(doc.data() as DocumentData),
-      }));
-      setTasks(tasksArray);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching tasks: ", error);
-      setLoading(false);
-    });
-    
     // Fetch users dynamically
     const usersQuery = query(collection(db, 'users'));
     const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
@@ -87,11 +74,14 @@ const ReportUser = () => {
         return name.charAt(0).toUpperCase() + name.slice(1);
       });
       setAssignees(fetchedAssignees);
+      setLoading(false);
+    }, (error) => {
+        console.error("Error fetching users: ", error);
+        setLoading(false);
     });
 
     return () => {
         unsubscribeAuth();
-        unsubscribeTasks();
         unsubscribeUsers();
     };
   }, [router]);
@@ -172,20 +162,8 @@ const ReportUser = () => {
 
   return (
     <div className="flex-1 p-8">
-      <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
-        <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
-          Dashboard
-        </Link>
-        <span>/</span>
-        <Link href="/dashboard/reports" className="hover:text-blue-600 transition-colors">
-          Reports
-        </Link>
-        <span>/</span>
-        <span>Resource Planning</span>
-      </div>
-      <h1 className="text-4xl font-bold text-gray-800 mb-6">Resource Planning</h1>
 
-      <Card className="flex flex-col h-[80vh]">
+      <Card className="flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-2xl font-bold">Schedule by Resource</CardTitle>
             <div className="flex space-x-2">
@@ -195,7 +173,7 @@ const ReportUser = () => {
             </div>
         </CardHeader>
         <CardContent className="flex-1 p-0 overflow-hidden">
-            <div className="grid grid-cols-[200px_repeat(7,minmax(0,1fr))] grid-rows-[64px_repeat(5,1fr)] h-full">
+            <div className="grid grid-cols-[200px_repeat(7,minmax(0,1fr))] grid-rows-[64px_repeat(5,1fr)]">
                 {/* Header row with weekdays */}
                 <div className="border-b border-r bg-gray-50 flex items-center justify-center">
                     <span className="font-bold">Assignees</span>
