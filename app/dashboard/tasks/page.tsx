@@ -14,10 +14,13 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { Toaster, toast } from 'sonner';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 type Task = {
   id: string;
@@ -25,7 +28,9 @@ type Task = {
   scheduledTime?: string;
   priority?: string;
   status?: string;
-  // Add other fields as needed
+  assignee?: string;
+  description?: string;
+  serviceType?: string;
 };
 
 const TasksPage = () => {
@@ -37,6 +42,9 @@ const TasksPage = () => {
   const [metrics, setMetrics] = useState({ completedToday: 0, totalAssigned: 0 });
   const [tasks, setTasks] = useState<Task[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [calendarFilter, setCalendarFilter] = useState('All');
+  const [calendarSearch, setCalendarSearch] = useState('');
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -56,7 +64,6 @@ const TasksPage = () => {
         setUserUid(user.uid);
       }
 
-      // Fetch metrics for managers/admins
       if (userDoc.exists() && (userDoc.data().role === 'admin' || userDoc.data().role === 'manager')) {
         const today = format(new Date(), 'yyyy-MM-dd');
         const tasksQuery = query(collection(db, 'tasks'));
@@ -71,10 +78,8 @@ const TasksPage = () => {
     return () => unsubscribe();
   }, [router]);
 
-  // Fetch tasks for calendar events (real-time)
   useEffect(() => {
     let q = query(collection(db, 'tasks'));
-    // For employees, filter by assigneeUid
     if (userRole === 'employee' && userUid) {
       q = query(collection(db, 'tasks'), where('assigneeUid', '==', userUid));
     }
@@ -85,18 +90,14 @@ const TasksPage = () => {
         ...doc.data() as DocumentData,
       }));
 
-      // Map tasks to FullCalendar events
       const events = fetchedTasks.map(task => ({
         id: task.id,
         title: task.summary || 'Untitled Task',
         start: task.scheduledTime ? new Date(task.scheduledTime) : new Date(),
-        backgroundColor: task.priority === 'High' ? '#ef4444' : task.priority === 'Medium' ? '#f59e0b' : '#10b981', // Red/Yellow/Green based on priority
+        backgroundColor: task.priority === 'High' ? '#ef4444' : task.priority === 'Medium' ? '#f59e0b' : '#10b981',
         borderColor: task.priority === 'High' ? '#dc2626' : task.priority === 'Medium' ? '#d97706' : '#059669',
         textColor: 'white',
-        extendedProps: {
-          status: task.status,
-          // Add more props like description, assignee
-        },
+        extendedProps: { ...task },
       }));
 
       setTasks(fetchedTasks);
@@ -105,21 +106,6 @@ const TasksPage = () => {
 
     return () => unsubscribeTasks();
   }, [userRole, userUid]);
-
-  // Handle date click (e.g., create new task)
-  const handleDateClick = (info: any) => {
-    toast.info(`Clicked on ${info.dateStr}. You can create a new task here!`);
-    // Optional: Open a modal to create a task on this date
-  };
-
-  // Handle event click (e.g., view task details)
-  const handleEventClick = (info: any) => {
-    const task = tasks.find(t => t.id === info.event.id);
-    if (task) {
-      toast.info(`Task: ${task.summary} - Status: ${task.status}`);
-      // Optional: Open a modal to edit/view task
-    }
-  };
 
   if (loading) {
     return (
@@ -130,6 +116,12 @@ const TasksPage = () => {
   }
 
   const canViewTaskForm = userRole === 'admin' || userRole === 'manager';
+
+  const filteredEvents = calendarEvents.filter(ev => {
+    const matchesSearch = ev.title.toLowerCase().includes(calendarSearch.toLowerCase());
+    const matchesFilter = calendarFilter === 'All' || ev.extendedProps.status === calendarFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="flex flex-col w-screen h-screen bg-gray-100 p-4">
@@ -163,27 +155,72 @@ const TasksPage = () => {
             <TaskList userRole={userRole} userEmail={userEmail} userUid={userUid} />
           </TabsContent>
           <TabsContent value="calendar" className="flex-1 overflow-auto">
-            <div className="bg-white rounded-md shadow-md h-full">
-              <FullCalendar
-                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth" // Start with month view
-                events={calendarEvents}
-                dateClick={handleDateClick}
-                eventClick={handleEventClick}
-                headerToolbar={{
-                  left: 'prev,next today',
-                  center: 'title',
-                  right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                }}
-                height="100%" // Full height
-                editable={true} // Allow drag-drop (optional, can update Firestore on drop)
-                selectable={true} // Allow selecting date ranges
-                selectMirror={true}
-                dayMaxEvents={true} // Show "+" if too many events
-                weekends={true}
-                nowIndicator={true} // Show current time line
-              />
-            </div>
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle>Work Orders Calendar</CardTitle>
+                <div className="flex flex-col md:flex-row justify-between items-center mt-4 w-full">
+                  <Input
+                    placeholder="Search events..."
+                    value={calendarSearch}
+                    onChange={(e) => setCalendarSearch(e.target.value)}
+                    className="mb-4 md:mb-0 max-w-sm"
+                  />
+                  <Select value={calendarFilter} onValueChange={setCalendarFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="All">All</SelectItem>
+                      <SelectItem value="Planned">Planned</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Done">Done</SelectItem>
+                      <SelectItem value="Delayed">Delayed</SelectItem>
+                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent className="h-full">
+                <FullCalendar
+                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                  initialView="dayGridMonth"
+                  events={filteredEvents}
+                  eventClick={(info) => {
+                    const task = tasks.find(t => t.id === info.event.id);
+                    if (task) setSelectedTask(task);
+                  }}
+                  headerToolbar={{
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                  }}
+                  height="100%"
+                  selectable
+                  dayMaxEvents
+                  weekends
+                  nowIndicator
+                />
+              </CardContent>
+            </Card>
+
+            {/* Dialog for event details */}
+            <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{selectedTask?.summary}</DialogTitle>
+                </DialogHeader>
+                {selectedTask && (
+                  <div className="text-sm text-gray-600 space-y-2">
+                    <p><strong>Status:</strong> {selectedTask.status}</p>
+                    <p><strong>Priority:</strong> {selectedTask.priority}</p>
+                    <p><strong>Assignee:</strong> {selectedTask.assignee}</p>
+                    <p><strong>Scheduled:</strong> {selectedTask.scheduledTime}</p>
+                    <p><strong>Service Type:</strong> {selectedTask.serviceType}</p>
+                    <p><strong>Description:</strong> {selectedTask.description}</p>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
         </Tabs>
       </div>
