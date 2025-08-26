@@ -115,7 +115,6 @@ const TasksPage = () => {
           <TabsList className="grid w-full grid-cols-3 mb-4">
             {canViewTaskForm && <TabsTrigger value="create">Create Work Order</TabsTrigger>}
             <TabsTrigger value="list">My Work Orders</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar View</TabsTrigger>
           </TabsList>
           {canViewTaskForm && (
             <TabsContent value="create" className="flex-1">
@@ -124,9 +123,6 @@ const TasksPage = () => {
           )}
           <TabsContent value="list" className="flex-1 overflow-auto">
             <TaskList userRole={userRole} userEmail={userEmail} userUid={userUid} />
-          </TabsContent>
-          <TabsContent value="calendar" className="flex-1 overflow-auto">
-            <Calendar tasks={tasks} userRole={userRole} />
           </TabsContent>
         </Tabs>
       </div>
