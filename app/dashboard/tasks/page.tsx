@@ -14,13 +14,13 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { Toaster, toast } from 'sonner';
+import { Toaster } from 'sonner';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 
 type Task = {
   id: string;
@@ -94,9 +94,6 @@ const TasksPage = () => {
         id: task.id,
         title: task.summary || 'Untitled Task',
         start: task.scheduledTime ? new Date(task.scheduledTime) : new Date(),
-        backgroundColor: task.priority === 'High' ? '#ef4444' : task.priority === 'Medium' ? '#f59e0b' : '#10b981',
-        borderColor: task.priority === 'High' ? '#dc2626' : task.priority === 'Medium' ? '#d97706' : '#059669',
-        textColor: 'white',
         extendedProps: { ...task },
       }));
 
@@ -122,6 +119,22 @@ const TasksPage = () => {
     const matchesFilter = calendarFilter === 'All' || ev.extendedProps.status === calendarFilter;
     return matchesSearch && matchesFilter;
   });
+
+  // 🔹 Consistent badge helper (aligned with TaskList.tsx)
+  const renderBadge = (label: string, type: 'priority' | 'status') => {
+    if (!label) return null;
+    if (type === 'priority') {
+      if (label === 'High') return <Badge variant="destructive">High</Badge>;
+      if (label === 'Medium') return <Badge variant="secondary">Medium</Badge>;
+      return <Badge variant="outline">Low</Badge>;
+    } else {
+      if (label === 'Planned') return <Badge className="bg-blue-500 text-white">Planned</Badge>;
+      if (label === 'In Progress') return <Badge className="bg-yellow-500 text-black">In Progress</Badge>;
+      if (label === 'Done') return <Badge className="bg-green-600 text-white">Done</Badge>;
+      if (label === 'Delayed') return <Badge className="bg-red-600 text-white">Delayed</Badge>;
+      return <Badge variant="outline">{label}</Badge>;
+    }
+  };
 
   return (
     <div className="flex flex-col w-screen h-screen bg-gray-100 p-4">
@@ -180,7 +193,7 @@ const TasksPage = () => {
                   </Select>
                 </div>
               </CardHeader>
-              <CardContent className="h-full">
+              <CardContent className="h-full min-h-[60vh]">
                 <FullCalendar
                   plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                   initialView="dayGridMonth"
@@ -199,28 +212,46 @@ const TasksPage = () => {
                   dayMaxEvents
                   weekends
                   nowIndicator
+                  eventContent={(arg) => {
+                    const task = arg.event.extendedProps as Task;
+                    return (
+                      <div className="flex flex-col">
+                        <span className="font-medium truncate">{arg.event.title}</span>
+                        <div className="flex gap-1 mt-1">
+                          {renderBadge(task.priority || '', 'priority')}
+                          {renderBadge(task.status || '', 'status')}
+                        </div>
+                      </div>
+                    );
+                  }}
                 />
               </CardContent>
             </Card>
 
-            {/* Dialog for event details */}
-            <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{selectedTask?.summary}</DialogTitle>
-                </DialogHeader>
-                {selectedTask && (
-                  <div className="text-sm text-gray-600 space-y-2">
-                    <p><strong>Status:</strong> {selectedTask.status}</p>
-                    <p><strong>Priority:</strong> {selectedTask.priority}</p>
-                    <p><strong>Assignee:</strong> {selectedTask.assignee}</p>
-                    <p><strong>Scheduled:</strong> {selectedTask.scheduledTime}</p>
-                    <p><strong>Service Type:</strong> {selectedTask.serviceType}</p>
-                    <p><strong>Description:</strong> {selectedTask.description}</p>
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
+              {/* Dialog for event details */}
+              <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
+                <DialogContent className="max-w-lg p-0 border-none bg-transparent">
+                  {selectedTask && (
+                    <Card className="w-full">
+                      <CardHeader>
+                        <CardTitle className="flex items-center justify-between">
+                          {selectedTask.summary}
+                          <div className="flex gap-2">
+                            {renderBadge(selectedTask.priority || '', 'priority')}
+                            {renderBadge(selectedTask.status || '', 'status')}
+                          </div>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="text-sm text-gray-600 space-y-2">
+                        <p><strong>Assignee:</strong> {selectedTask.assignee}</p>
+                        <p><strong>Scheduled:</strong> {selectedTask.scheduledTime}</p>
+                        <p><strong>Service Type:</strong> {selectedTask.serviceType}</p>
+                        <p><strong>Description:</strong> {selectedTask.description}</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </DialogContent>
+              </Dialog>
           </TabsContent>
         </Tabs>
       </div>

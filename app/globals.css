@@ -120,3 +120,51 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ==== FullCalendar styled via Tailwind ==== */
+
+.fc {
+  @apply text-gray-800;
+}
+
+/* Toolbar buttons and header */
+.fc .fc-toolbar-title {
+  @apply text-lg md:text-xl font-semibold text-gray-800;
+}
+.fc .fc-toolbar.fc-header-toolbar {
+  @apply mb-4;
+}
+.fc .fc-button {
+  @apply h-9 px-3 rounded-md border bg-white text-gray-900 shadow-sm hover:bg-gray-50;
+}
+.fc .fc-button:focus {
+  @apply outline-none ring-2 ring-offset-2 ring-gray-300;
+}
+.fc .fc-button[disabled] {
+  @apply opacity-50 cursor-not-allowed;
+}
+.fc .fc-button.fc-button-active {
+  @apply bg-gray-900 text-white hover:bg-gray-800;
+}
+
+/* Highlight today's cell */
+.fc .fc-day-today {
+  @apply bg-blue-50;
+}
+
+/* Rounded event styling */
+.fc .fc-daygrid-event,
+.fc .fc-timegrid-event {
+  @apply rounded-md px-2 py-1 text-sm shadow-sm;
+}
+
+/* Optional: Tailwind-based priority colors */
+.fc .priority-high {
+  @apply bg-red-500 text-white;
+}
+.fc .priority-medium {
+  @apply bg-yellow-500 text-gray-900;
+}
+.fc .priority-low {
+  @apply bg-green-500 text-white;
+}
