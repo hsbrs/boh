@@ -34,7 +34,6 @@ const TasksPage = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userUid, setUserUid] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [metrics, setMetrics] = useState({ completedToday: 0, totalAssigned: 0 });
   const [tasks, setTasks] = useState<Task[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
@@ -161,7 +160,7 @@ const TasksPage = () => {
             </TabsContent>
           )}
           <TabsContent value="list" className="flex-1 overflow-auto">
-            <TaskList userRole={userRole} userEmail={userEmail} userUid={userUid} search={search} />
+            <TaskList userRole={userRole} userEmail={userEmail} userUid={userUid} />
           </TabsContent>
           <TabsContent value="calendar" className="flex-1 overflow-auto">
             <div className="bg-white rounded-md shadow-md h-full">
