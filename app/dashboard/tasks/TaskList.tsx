@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { Label } from '@/components/ui/label'; // Explicitly imported to ensure availability
+import { Label } from '@/components/ui/label';
 
 type Task = {
   id: string;
@@ -73,11 +73,19 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
   const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
     const taskDocRef = doc(db, 'tasks', taskId);
     try {
-      await updateDoc(taskDocRef, updates);
+      console.log('Update payload:', updates); // Log the payload for debugging
+      // Validate and format updates
+      const validUpdates: Partial<Task> = {};
+      if (updates.actualStartTime) validUpdates.actualStartTime = updates.actualStartTime;
+      if (updates.actualEndTime) validUpdates.actualEndTime = updates.actualEndTime;
+      if (updates.notes !== undefined) validUpdates.notes = updates.notes; // Allow empty notes
+
+      await updateDoc(taskDocRef, validUpdates);
       toast.success('Work order updated successfully!');
       setEditTask(null);
     } catch (error) {
-      toast.error('Failed to update work order.');
+      console.error('Update error:', error); // Log error details
+      toast.error(`Failed to update work order. ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -279,11 +287,11 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
                                 </DialogHeader>
                                 <div className="space-y-4">
                                   <div>
-                                    <Label htmlFor="actualStartTime">Actual Start Time</Label> {/* Verify this renders */}
+                                    <Label htmlFor="actualStartTime">Actual Start Time</Label>
                                     <Input
                                       id="actualStartTime"
                                       type="datetime-local"
-                                      defaultValue={editTask?.actualStartTime || task.actualStartTime}
+                                      value={editTask?.actualStartTime || task.actualStartTime || ''} // Use value instead of defaultValue
                                       onChange={(e) => setEditTask({ ...task, actualStartTime: e.target.value })}
                                     />
                                   </div>
@@ -292,7 +300,7 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
                                     <Input
                                       id="actualEndTime"
                                       type="datetime-local"
-                                      defaultValue={editTask?.actualEndTime || task.actualEndTime}
+                                      value={editTask?.actualEndTime || task.actualEndTime || ''} // Use value instead of defaultValue
                                       onChange={(e) => setEditTask({ ...task, actualEndTime: e.target.value })}
                                     />
                                   </div>
@@ -300,7 +308,7 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
                                     <Label htmlFor="notes">Notes</Label>
                                     <Textarea
                                       id="notes"
-                                      defaultValue={editTask?.notes || task.notes}
+                                      value={editTask?.notes || task.notes || ''} // Use value instead of defaultValue
                                       onChange={(e) => setEditTask({ ...task, notes: e.target.value })}
                                       placeholder="Add notes or updates"
                                     />
@@ -311,7 +319,6 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
                                         actualStartTime: editTask?.actualStartTime || task.actualStartTime,
                                         actualEndTime: editTask?.actualEndTime || task.actualEndTime,
                                         notes: editTask?.notes || task.notes,
-                                        status: task.status,
                                       })
                                     }
                                   >
