@@ -1,48 +1,47 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { addDoc, collection, onSnapshot, query, where, DocumentData } from 'firebase/firestore'; // Import onSnapshot, query, where
+import { addDoc, collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
 import { format } from 'date-fns';
-
-// Import shadcn/ui components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { CalendarIcon } from "@radix-ui/react-icons";
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from '@radix-ui/react-icons';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
-const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
-const timeOptions = Array.from({ length: 13 }, (_, i) => {
-  const hour = (6 + i).toString().padStart(2, '0');
-  return `${hour}:00`;
-});
+const serviceTypes = ['Installation', 'Repair', 'Maintenance', 'Inspection'];
+const priorities = ['High', 'Medium', 'Low'];
 
 const TaskForm = () => {
-  const [project, setProject] = useState('');
-  const [assignee, setAssignee] = useState('');
-  const [assignees, setAssignees] = useState<string[]>([]); // Dynamic list of assignees
-  const [taskName, setTaskName] = useState('');
-  const [plannedDate, setPlannedDate] = useState<Date | undefined>(undefined);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [city, setCity] = useState(cities[0]);
+  const [summary, setSummary] = useState('');
+  const [assignee, setAssignee] = useState<{ name: string; uid: string } | null>(null);
+  const [assignees, setAssignees] = useState<{ name: string; uid: string }[]>([]);
+  const [description, setDescription] = useState('');
+  const [serviceType, setServiceType] = useState(serviceTypes[0]);
+  const [priority, setPriority] = useState(priorities[1]);
+  const [scheduledTime, setScheduledTime] = useState<Date | undefined>(undefined);
+  const [estimatedDuration, setEstimatedDuration] = useState('1');
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [location, setLocation] = useState('');
   const [locationUrl, setLocationUrl] = useState('');
+  const [customerName, setCustomerName] = useState('');
+  const [customerContact, setCustomerContact] = useState('');
   const [status, setStatus] = useState('Planned');
 
   useEffect(() => {
-    // Fetch all users to create a dynamic list of assignees
     const q = query(collection(db, 'users'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const usersArray: string[] = snapshot.docs.map(doc => {
-        const userEmail = doc.data().email;
-        return userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1);
-      });
+      const usersArray = snapshot.docs.map(doc => ({
+        name: doc.data().email.split('@')[0].charAt(0).toUpperCase() + doc.data().email.split('@')[0].slice(1),
+        uid: doc.id,
+      }));
       setAssignees(usersArray);
     });
     return () => unsubscribe();
@@ -50,142 +49,191 @@ const TaskForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!assignee) {
+      toast.error('Please select an assignee.');
+      return;
+    }
     try {
       await addDoc(collection(db, 'tasks'), {
-        project,
-        assignee,
-        taskName,
-        plannedDate: plannedDate ? format(plannedDate, 'yyyy-MM-dd') : '',
-        startTime,
-        endTime,
-        city,
+        summary,
+        assignee: assignee.name,
+        assigneeUid: assignee.uid,
+        description,
+        serviceType,
+        priority,
+        scheduledTime: scheduledTime ? format(scheduledTime, 'yyyy-MM-dd HH:mm') : '',
+        estimatedDuration: parseFloat(estimatedDuration),
+        dueDate: dueDate ? format(dueDate, 'yyyy-MM-dd') : '',
         location,
         locationUrl,
+        customerName,
+        customerContact,
         status,
         createdAt: new Date(),
+        actualStartTime: '',
+        actualEndTime: '',
+        notes: '',
       });
-      setProject('');
-      setAssignee(''); // Clear the assignee state
-      setTaskName('');
-      setPlannedDate(undefined);
-      setStartTime('');
-      setEndTime('');
-      setCity(cities[0]);
+
+      setSummary('');
+      setAssignee(null);
+      setDescription('');
+      setServiceType(serviceTypes[0]);
+      setPriority(priorities[1]);
+      setScheduledTime(undefined);
+      setEstimatedDuration('1');
+      setDueDate(undefined);
       setLocation('');
       setLocationUrl('');
+      setCustomerName('');
+      setCustomerContact('');
       setStatus('Planned');
-      alert('Task added successfully!');
+      toast.success('Work order added successfully!');
     } catch (error) {
-      if (error instanceof Error) {
-        alert('Error adding task: ' + error.message);
-      } else {
-        alert('An unknown error occurred.');
-      }
+      toast.error(error instanceof Error ? error.message : 'An unknown error occurred.');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-4">
-      <h3 className="text-xl font-semibold text-gray-800">Add New Work Orders</h3>
+      <h3 className="text-xl font-semibold text-gray-800">Create Work Order</h3>
       <div className="space-y-4">
         <div className="space-y-1">
-          <Label htmlFor="project">Project</Label>
+          <Label htmlFor="summary">Summary</Label>
           <Input
-            id="project"
+            id="summary"
             type="text"
-            value={project}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProject(e.target.value)}
+            value={summary}
+            onChange={(e) => setSummary(e.target.value)}
             required
+            placeholder="e.g., Install Fiber Optic Cable"
           />
         </div>
         <div className="space-y-1">
           <Label htmlFor="assignee">Assignee</Label>
-          <Select value={assignee} onValueChange={setAssignee} required>
+          <Select
+            value={assignee?.name || ''}
+            onValueChange={(value) => {
+              const selected = assignees.find(a => a.name === value);
+              setAssignee(selected || null);
+            }}
+            required
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select an assignee" />
             </SelectTrigger>
             <SelectContent>
               {assignees.map((a) => (
-                <SelectItem key={a} value={a}>{a}</SelectItem>
+                <SelectItem key={a.uid} value={a.name}>{a.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1">
-          <Label htmlFor="taskName">Work Orders</Label>
-          <Input
-            id="taskName"
-            type="text"
-            value={taskName}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTaskName(e.target.value)}
+          <Label htmlFor="description">Description</Label>
+          <Textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Detailed instructions for the technician"
             required
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="plannedDate">Planned Date</Label>
+          <Label htmlFor="serviceType">Service Type</Label>
+          <Select value={serviceType} onValueChange={setServiceType} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a service type" />
+            </SelectTrigger>
+            <SelectContent>
+              {serviceTypes.map((type) => (
+                <SelectItem key={type} value={type}>{type}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="priority">Priority</Label>
+          <Select value={priority} onValueChange={setPriority} required>
+            <SelectTrigger>
+              <SelectValue placeholder="Select priority" />
+            </SelectTrigger>
+            <SelectContent>
+              {priorities.map((p) => (
+                <SelectItem key={p} value={p}>{p}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="scheduledTime">Scheduled Time</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !plannedDate && "text-muted-foreground"
-                )}
+                variant="outline"
+                className={cn('w-full justify-start text-left font-normal', !scheduledTime && 'text-muted-foreground')}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {plannedDate ? format(plannedDate, "PPP") : <span>Pick a date</span>}
+                {scheduledTime ? format(scheduledTime, 'PPP HH:mm') : <span>Pick a date and time</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={plannedDate}
-                onSelect={setPlannedDate}
+                selected={scheduledTime}
+                onSelect={setScheduledTime}
+                initialFocus
+              />
+              <div className="p-3 border-t">
+                <Input
+                  type="time"
+                  value={scheduledTime ? format(scheduledTime, 'HH:mm') : ''}
+                  onChange={(e) => {
+                    if (e.target.value && scheduledTime) {
+                      const [hours, minutes] = e.target.value.split(':').map(Number);
+                      const newDate = new Date(scheduledTime);
+                      newDate.setHours(hours, minutes);
+                      setScheduledTime(newDate);
+                    }
+                  }}
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="estimatedDuration">Estimated Duration (hours)</Label>
+          <Input
+            id="estimatedDuration"
+            type="number"
+            min="0.5"
+            step="0.5"
+            value={estimatedDuration}
+            onChange={(e) => setEstimatedDuration(e.target.value)}
+            required
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="dueDate">Due Date</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn('w-full justify-start text-left font-normal', !dueDate && 'text-muted-foreground')}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dueDate ? format(dueDate, 'PPP') : <span>Pick a due date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dueDate}
+                onSelect={setDueDate}
                 initialFocus
               />
             </PopoverContent>
           </Popover>
-        </div>
-        <div className="flex space-x-4">
-          <div className="flex-1 space-y-1">
-            <Label htmlFor="startTime">Start Time</Label>
-            <Select onValueChange={setStartTime} value={startTime}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a time" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeOptions.map((time) => (
-                  <SelectItem key={time} value={time}>{time}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex-1 space-y-1">
-            <Label htmlFor="endTime">End Time</Label>
-            <Select onValueChange={setEndTime} value={endTime}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a time" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeOptions.map((time) => (
-                  <SelectItem key={time} value={time}>{time}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="city">City</Label>
-          <Select value={city} onValueChange={setCity} required>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a city" />
-            </SelectTrigger>
-            <SelectContent>
-              {cities.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
         <div className="space-y-1">
           <Label htmlFor="location">Location Address</Label>
@@ -193,25 +241,45 @@ const TaskForm = () => {
             id="location"
             type="text"
             value={location}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocation(e.target.value)}
-            placeholder="e.g., 123 Main St"
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="e.g., 123 Main St, Herzogenrath"
             required
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="locationUrl">Google Maps URL</Label>
+          <Label htmlFor="locationUrl">Google Maps URL (Optional)</Label>
           <Input
             id="locationUrl"
             type="url"
             value={locationUrl}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocationUrl(e.target.value)}
+            onChange={(e) => setLocationUrl(e.target.value)}
             placeholder="https://maps.app.goo.gl/..."
           />
         </div>
+        <div className="space-y-1">
+          <Label htmlFor="customerName">Customer Name</Label>
+          <Input
+            id="customerName"
+            type="text"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            placeholder="e.g., John Doe or Acme Corp"
+            required
+          />
+        </div>
+        <div className="space-y-1">
+          <Label htmlFor="customerContact">Customer Contact</Label>
+          <Input
+            id="customerContact"
+            type="text"
+            value={customerContact}
+            onChange={(e) => setCustomerContact(e.target.value)}
+            placeholder="e.g., john.doe@example.com or +1234567890"
+            required
+          />
+        </div>
       </div>
-      <Button type="submit" className="w-full">
-        Add Work Orders
-      </Button>
+      <Button type="submit" className="w-full">Create Work Order</Button>
     </form>
   );
 };

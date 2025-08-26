@@ -74,7 +74,8 @@ export default function DashboardLayout({
         );
     }
 
-    const showSidebar = !pathname.startsWith('/dashboard/reports');
+    const pathsWithoutSidebar = ['/dashboard/reports'];
+    const showSidebar = !pathsWithoutSidebar.some(path => pathname.startsWith(path));
 
     return (
         <div className="flex min-h-screen bg-gray-100">

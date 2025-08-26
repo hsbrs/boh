@@ -1,91 +1,94 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc, where } from 'firebase/firestore'; // Import 'where'
+import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-// Import shadcn/ui Select components for the filter
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label'; // Explicitly imported to ensure availability
 
-// Define the type for a Work Orders to provide type safety
 type Task = {
   id: string;
-  project?: string;
+  summary?: string;
   assignee?: string;
-  taskName?: string;
-  plannedDate?: string;
-  startTime?: string;
-  endTime?: string;
-  city?: string;
+  assigneeUid?: string;
+  description?: string;
+  serviceType?: string;
+  priority?: string;
+  scheduledTime?: string;
+  estimatedDuration?: number;
+  dueDate?: string;
   location?: string;
   locationUrl?: string;
+  customerName?: string;
+  customerContact?: string;
   status?: string;
+  actualStartTime?: string;
+  actualEndTime?: string;
+  notes?: string;
 };
 
-// Define the type for the grouped tasks object
-type GroupedTasks = {
-  [key: string]: Task[];
-};
+type GroupedTasks = { [key: string]: Task[] };
 
-// Component now accepts 'userRole' and 'userEmail' props
-const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail: string | null; }) => {
+const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string | null; userEmail: string | null; userUid: string | null; search: string }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>({});
   const [loading, setLoading] = useState(true);
-  const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
   const [filter, setFilter] = useState('All');
-  const [assignees, setAssignees] = useState<string[]>([]); // New state for assignees
+  const [assignees, setAssignees] = useState<string[]>([]);
+  const [editTask, setEditTask] = useState<Task | null>(null);
 
-  const showNotification = (message: string, type: string) => {
-    setNotification({ message, type });
-    setTimeout(() => {
-      setNotification(null);
-    }, 3000);
-  };
-
-  const handleUpdateStatus = async (taskId: string, currentStatus: string) => {
+  const handleUpdateStatus = async (taskId: string, newStatus: string) => {
     const taskDocRef = doc(db, 'tasks', taskId);
-    let newStatus = 'In Progress';
-    if (currentStatus === 'In Progress') {
-      newStatus = 'Done';
-    } else if (currentStatus === 'Done') {
-      newStatus = 'Planned';
-    }
-    
     try {
       await updateDoc(taskDocRef, { status: newStatus });
-      showNotification('Task status updated successfully!', 'success');
+      toast.success('Status updated successfully!');
     } catch (error) {
-      console.error("Error updating status: ", error);
-      showNotification('Error updating status.', 'error');
+      toast.error('Failed to update status.');
     }
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
+    if (window.confirm('Are you sure you want to delete this work order?')) {
       const taskDocRef = doc(db, 'tasks', taskId);
       try {
         await deleteDoc(taskDocRef);
-        showNotification('Task deleted successfully!', 'success');
+        toast.success('Work order deleted successfully!');
       } catch (error) {
-        console.error("Error deleting task: ", error);
-        showNotification('Error deleting task.', 'error');
+        toast.error('Failed to delete work order.');
       }
+    }
+  };
+
+  const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
+    const taskDocRef = doc(db, 'tasks', taskId);
+    try {
+      await updateDoc(taskDocRef, updates);
+      toast.success('Work order updated successfully!');
+      setEditTask(null);
+    } catch (error) {
+      toast.error('Failed to update work order.');
     }
   };
 
   useEffect(() => {
     const usersQuery = query(collection(db, 'users'));
     const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
-      const usersArray = snapshot.docs.map(doc => doc.data() as DocumentData);
-      const fetchedAssignees = usersArray.map(user => {
-        const email = user.email as string;
-        const name = email.split('@')[0];
-        return name.charAt(0).toUpperCase() + name.slice(1);
+      const usersArray = snapshot.docs.map(doc => {
+        const email = doc.data().email as string;
+        return email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
       });
-      setAssignees(fetchedAssignees);
+      setAssignees(usersArray);
     });
 
     return () => unsubscribeUsers();
@@ -93,142 +96,247 @@ const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail:
 
   useEffect(() => {
     let q = query(collection(db, 'tasks'));
-    if (userRole === 'employee' && userEmail) {
-      const assigneeName = userEmail.split('@')[0].charAt(0).toUpperCase() + userEmail.split('@')[0].slice(1);
-      q = query(collection(db, 'tasks'), where('assignee', '==', assigneeName));
+    if (userRole === 'employee' && userUid) {
+      q = query(collection(db, 'tasks'), where('assigneeUid', '==', userUid));
     }
-    
+
     const unsubscribeTasks = onSnapshot(q, (snapshot) => {
-      let tasksArray: Task[] = snapshot.docs.map(doc => ({
+      const tasksArray: Task[] = snapshot.docs.map(doc => ({
         id: doc.id,
-        ...(doc.data() as DocumentData),
+        ...doc.data() as DocumentData,
       }));
 
       tasksArray.sort((a, b) => {
-        const dateA = a.plannedDate || '';
-        const dateB = b.plannedDate || '';
-        const timeA = a.startTime || '00:00';
-        const timeB = b.startTime || '00:00';
-
-        if (dateA !== dateB) {
-          return dateA.localeCompare(dateB);
-        }
-        return timeA.localeCompare(timeB);
+        const dateA = a.scheduledTime || '';
+        const dateB = b.scheduledTime || '';
+        return dateA.localeCompare(dateB);
       });
 
       setTasks(tasksArray);
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching tasks: ", error);
+      console.error('Error fetching tasks: ', error);
       setLoading(false);
     });
 
     return () => unsubscribeTasks();
-  }, [userRole, userEmail]);
+  }, [userRole, userUid]);
 
   useEffect(() => {
-    let newFilteredTasks = tasks;
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
+    let newFilteredTasks = tasks.filter(task =>
+      (task.summary?.toLowerCase().includes(search.toLowerCase()) ||
+       task.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+       task.location?.toLowerCase().includes(search.toLowerCase()))
+    );
 
-    const todayDate = today.toISOString().split('T')[0];
-    const tomorrowDate = tomorrow.toISOString().split('T')[0];
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const tomorrow = format(new Date(Date.now() + 86400000), 'yyyy-MM-dd');
 
     if (filter === 'Today') {
-      newFilteredTasks = tasks.filter(task => task.plannedDate === todayDate);
+      newFilteredTasks = newFilteredTasks.filter(task => task.scheduledTime?.startsWith(today));
     } else if (filter === 'Tomorrow') {
-      newFilteredTasks = tasks.filter(task => task.plannedDate === tomorrowDate);
+      newFilteredTasks = newFilteredTasks.filter(task => task.scheduledTime?.startsWith(tomorrow));
+    } else if (filter === 'Planned' || filter === 'In Progress' || filter === 'Done' || filter === 'Delayed' || filter === 'Cancelled') {
+      newFilteredTasks = newFilteredTasks.filter(task => task.status === filter);
     } else if (filter !== 'All') {
-      newFilteredTasks = tasks.filter(task => task.assignee === filter);
+      newFilteredTasks = newFilteredTasks.filter(task => task.assignee === filter);
     }
 
     const newGroupedTasks: GroupedTasks = newFilteredTasks.reduce((groups, task) => {
-      const date = task.plannedDate || 'No Date';
-      if (!groups[date]) {
-        groups[date] = [];
-      }
+      const date = task.scheduledTime ? task.scheduledTime.split(' ')[0] : 'No Date';
+      groups[date] = groups[date] || [];
       groups[date].push(task);
       return groups;
     }, {} as GroupedTasks);
 
     setGroupedTasks(newGroupedTasks);
-  }, [filter, tasks]);
+  }, [filter, tasks, search]);
 
   if (loading) {
     return <div className="text-center text-gray-500">Loading work orders...</div>;
   }
 
-  const filterOptions = ['All', 'Today', 'Tomorrow', ...assignees];
+  const filterOptions = ['All', 'Today', 'Tomorrow', 'Planned', 'In Progress', 'Done', 'Delayed', 'Cancelled', ...assignees];
   const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
 
   return (
-    <>
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">Current Work Orders</h3>
-          {isManagerOrAdmin && (
-            <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="WO for All" />
-              </SelectTrigger>
-              <SelectContent>
-                {filterOptions.map(option => (
-                  <SelectItem key={option} value={option}>
-                    {option === 'All' || option === 'Today' || option === 'Tomorrow' ? option : `WO for ${option}`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-        
-        {Object.keys(groupedTasks).length === 0 ? (
-          <p className="text-gray-500 text-center">No work orders found for this view.</p>
-        ) : (
-          <div className="space-y-6">
-            {Object.keys(groupedTasks).map(date => (
-              <div key={date}>
-                <h4 className="text-xl font-bold text-gray-700 mb-2">{date}</h4>
-                <div className="space-y-4">
-                  {groupedTasks[date].map(task => (
-                    <Card key={task.id} className="p-4 shadow-sm">
-                      <CardContent className="p-0">
-                        <p className="text-lg font-bold text-gray-900">{task.project}</p>
-                        <p className="text-gray-600">Assignee: {task.assignee}</p>
-                        <p className="text-gray-600">Task: {task.taskName}</p>
-                        <p className="text-gray-600">Planned Date: {task.plannedDate}</p>
-                        <p className="text-gray-600">Time: {task.startTime} - {task.endTime}</p>
-                        <p className="text-gray-600">City: {task.city}</p>
-                        {task.location && (
-                          <p className="text-gray-600 flex items-center">
-                            Location: {task.location}
-                            {task.locationUrl && (
-                              <a
-                                href={task.locationUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="ml-2 text-blue-500 hover:text-blue-700 transition-colors"
-                              >
-                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                </svg>
-                              </a>
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-semibold text-gray-800">Current Work Orders</h3>
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter work orders" />
+          </SelectTrigger>
+          <SelectContent>
+            {filterOptions.map(option => (
+              <SelectItem key={option} value={option}>
+                {option === 'All' || option === 'Today' || option === 'Tomorrow' ||
+                 ['Planned', 'In Progress', 'Done', 'Delayed', 'Cancelled'].includes(option)
+                  ? option
+                  : `WO for ${option}`}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {Object.keys(groupedTasks).length === 0 ? (
+        <p className="text-gray-500 text-center">No work orders found for this view.</p>
+      ) : (
+        <div className="space-y-6">
+          {Object.keys(groupedTasks).sort().map(date => (
+            <div key={date}>
+              <h4 className="text-xl font-bold text-gray-700 mb-2">{date}</h4>
+              <div className="space-y-4">
+                {groupedTasks[date].map(task => (
+                  <Card key={task.id} className="p-4 shadow-sm">
+                    <CardContent className="p-0">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-lg font-bold text-gray-900">{task.summary}</p>
+                          <p className="text-gray-600">Assignee: {task.assignee}</p>
+                          <Badge
+                            className={cn(
+                              task.priority === 'High' && 'bg-red-500',
+                              task.priority === 'Medium' && 'bg-yellow-500',
+                              task.priority === 'Low' && 'bg-green-500'
                             )}
-                          </p>
-                        )}
-                        <p className={`font-semibold ${task.status === 'Planned' ? 'text-blue-500' : task.status === 'In Progress' ? 'text-yellow-500' : 'text-green-500'}`}>
-                          Status: {task.status}
-                        </p>
-                        {isManagerOrAdmin && (
-                          <div className="flex mt-2 space-x-2">
+                          >
+                            Priority: {task.priority}
+                          </Badge>
+                        </div>
+                        <Badge
+                          className={cn(
+                            task.status === 'Planned' && 'bg-blue-500',
+                            task.status === 'In Progress' && 'bg-yellow-500',
+                            task.status === 'Done' && 'bg-green-500',
+                            task.status === 'Delayed' && 'bg-red-500',
+                            task.status === 'Cancelled' && 'bg-gray-500'
+                          )}
+                        >
+                          {task.status}
+                        </Badge>
+                      </div>
+                      <Accordion type="single" collapsible>
+                        <AccordionItem value="details">
+                          <AccordionTrigger>Details</AccordionTrigger>
+                          <AccordionContent>
+                            <p className="text-gray-600">Service Type: {task.serviceType}</p>
+                            <p className="text-gray-600">Scheduled: {task.scheduledTime}</p>
+                            <p className="text-gray-600">Duration: {task.estimatedDuration} hours</p>
+                            <p className="text-gray-600">Due Date: {task.dueDate}</p>
+                            <p className="text-gray-600">Location: {task.location}</p>
+                            {task.locationUrl && (
+                              <p className="text-gray-600">
+                                <a
+                                  href={task.locationUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-500 hover:text-blue-700"
+                                >
+                                  View on Map
+                                </a>
+                              </p>
+                            )}
+                            <p className="text-gray-600">Customer: {task.customerName}</p>
+                            <p className="text-gray-600">
+                              Contact:{' '}
+                              {task.customerContact?.includes('@') ? (
+                                <a href={`mailto:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
+                                  {task.customerContact}
+                                </a>
+                              ) : (
+                                <a href={`tel:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
+                                  {task.customerContact}
+                                </a>
+                              )}
+                            </p>
+                            <p className="text-gray-600">Description: {task.description}</p>
+                            {task.notes && <p className="text-gray-600">Notes: {task.notes}</p>}
+                            {task.actualStartTime && <p className="text-gray-600">Actual Start: {task.actualStartTime}</p>}
+                            {task.actualEndTime && <p className="text-gray-600">Actual End: {task.actualEndTime}</p>}
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                      <div className="flex mt-2 space-x-2">
+                        {userRole === 'employee' && (
+                          <>
                             <Button
-                              onClick={() => handleUpdateStatus(task.id, task.status as string)}
+                              onClick={() => handleUpdateStatus(task.id, task.status === 'Planned' ? 'In Progress' : 'Done')}
                               variant="outline"
                               size="sm"
+                              disabled={task.status !== 'Planned' && task.status !== 'In Progress'}
                             >
-                              Change Status
+                              {task.status === 'Planned' ? 'Start' : 'Complete'}
                             </Button>
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">Add Note/Time</Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Update Work Order</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <div>
+                                    <Label htmlFor="actualStartTime">Actual Start Time</Label> {/* Verify this renders */}
+                                    <Input
+                                      id="actualStartTime"
+                                      type="datetime-local"
+                                      defaultValue={editTask?.actualStartTime || task.actualStartTime}
+                                      onChange={(e) => setEditTask({ ...task, actualStartTime: e.target.value })}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="actualEndTime">Actual End Time</Label>
+                                    <Input
+                                      id="actualEndTime"
+                                      type="datetime-local"
+                                      defaultValue={editTask?.actualEndTime || task.actualEndTime}
+                                      onChange={(e) => setEditTask({ ...task, actualEndTime: e.target.value })}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="notes">Notes</Label>
+                                    <Textarea
+                                      id="notes"
+                                      defaultValue={editTask?.notes || task.notes}
+                                      onChange={(e) => setEditTask({ ...task, notes: e.target.value })}
+                                      placeholder="Add notes or updates"
+                                    />
+                                  </div>
+                                  <Button
+                                    onClick={() =>
+                                      handleUpdateTask(task.id, {
+                                        actualStartTime: editTask?.actualStartTime || task.actualStartTime,
+                                        actualEndTime: editTask?.actualEndTime || task.actualEndTime,
+                                        notes: editTask?.notes || task.notes,
+                                        status: task.status,
+                                      })
+                                    }
+                                  >
+                                    Save Updates
+                                  </Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          </>
+                        )}
+                        {isManagerOrAdmin && (
+                          <>
+                            <Select
+                              value={task.status}
+                              onValueChange={(value) => handleUpdateStatus(task.id, value)}
+                            >
+                              <SelectTrigger className="w-[120px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {['Planned', 'In Progress', 'Done', 'Delayed', 'Cancelled'].map(status => (
+                                  <SelectItem key={status} value={status}>{status}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <Button
                               onClick={() => handleDeleteTask(task.id)}
                               variant="destructive"
@@ -236,23 +344,18 @@ const TaskList = ({ userRole, userEmail }: { userRole: string | null; userEmail:
                             >
                               Delete
                             </Button>
-                          </div>
+                          </>
                         )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-      {notification && (
-        <div className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg z-50 ${notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white transition-all duration-300 ease-in-out`}>
-          {notification.message}
+            </div>
+          ))}
         </div>
       )}
-    </>
+    </div>
   );
 };
 
