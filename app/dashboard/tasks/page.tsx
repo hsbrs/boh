@@ -144,12 +144,6 @@ const TasksPage = () => {
         <h1 className="text-4xl font-bold text-gray-800 mb-6">Work Orders</h1>
         {canViewTaskForm && (
           <div className="mb-4 flex justify-between items-center">
-            <Input
-              placeholder="Search work orders..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-sm"
-            />
             <div className="text-sm text-gray-600">
               Completed Today: {metrics.completedToday} / Total Assigned: {metrics.totalAssigned}
             </div>

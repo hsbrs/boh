@@ -7,7 +7,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -16,6 +15,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 type Task = {
   id: string;
@@ -40,11 +40,20 @@ type Task = {
 
 type GroupedTasks = { [key: string]: Task[] };
 
-const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string | null; userEmail: string | null; userUid: string | null; search: string }) => {
+const TaskList = ({
+  userRole,
+  userEmail,
+  userUid,
+}: {
+  userRole: string | null;
+  userEmail: string | null;
+  userUid: string | null;
+}) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [groupedTasks, setGroupedTasks] = useState<GroupedTasks>({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('All');
+  const [search, setSearch] = useState('');
   const [assignees, setAssignees] = useState<string[]>([]);
   const [editTask, setEditTask] = useState<Task | null>(null);
 
@@ -73,7 +82,7 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
     try {
       await updateDoc(taskDocRef, { status: newStatus });
       toast.success('Status updated successfully!');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update status.');
     }
   };
@@ -84,7 +93,7 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
       try {
         await deleteDoc(taskDocRef);
         toast.success('Work order deleted successfully!');
-      } catch (error) {
+      } catch {
         toast.error('Failed to delete work order.');
       }
     }
@@ -160,7 +169,7 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
       newFilteredTasks = newFilteredTasks.filter(task => task.scheduledTime?.startsWith(today));
     } else if (filter === 'Tomorrow') {
       newFilteredTasks = newFilteredTasks.filter(task => task.scheduledTime?.startsWith(tomorrow));
-    } else if (filter === 'Planned' || filter === 'In Progress' || filter === 'Done' || filter === 'Delayed' || filter === 'Cancelled') {
+    } else if (['Planned', 'In Progress', 'Done', 'Delayed', 'Cancelled'].includes(filter)) {
       newFilteredTasks = newFilteredTasks.filter(task => task.status === filter);
     } else if (filter !== 'All') {
       newFilteredTasks = newFilteredTasks.filter(task => task.assignee === filter);
@@ -187,13 +196,15 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
     <Card className="bg-white p-6 rounded-lg shadow-md h-full overflow-y-auto">
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-gray-800">Current Work Orders</CardTitle>
-        <div className="flex flex-col md:flex-row justify-between items-center mt-4">
+        <div className="flex flex-col md:flex-row justify-between items-center mt-4 w-full">
+          {/* Search input (left) */}
           <Input
             placeholder="Search work orders..."
             value={search}
-            onChange={(e) => search.length === 0 ? setFilter('All') : null}
+            onChange={(e) => setSearch(e.target.value)}
             className="mb-4 md:mb-0 max-w-sm"
           />
+          {/* Filter dropdown (right) */}
           <Select value={filter} onValueChange={setFilter}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter work orders" />
@@ -251,33 +262,33 @@ const TaskList = ({ userRole, userEmail, userUid, search }: { userRole: string |
                                 <div className="space-y-1">
                                   <p><strong>Location:</strong> {task.location || 'N/A'}</p>
                                   {task.locationUrl && (
-                                      <p>
-                                          <a href={task.locationUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
-                                              View on Map
-                                          </a>
-                                      </p>
+                                    <p>
+                                      <a href={task.locationUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-700">
+                                        View on Map
+                                      </a>
+                                    </p>
                                   )}
                                   <p><strong>Customer:</strong> {task.customerName || 'N/A'}</p>
                                   <p>
-                                      <strong>Contact:</strong>{' '}
-                                      {task.customerContact ? (
-                                          task.customerContact?.includes('@') ? (
-                                              <a href={`mailto:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
-                                                  {task.customerContact}
-                                              </a>
-                                          ) : (
-                                              <a href={`tel:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
-                                                  {task.customerContact}
-                                              </a>
-                                          )
-                                      ) : 'N/A'}
+                                    <strong>Contact:</strong>{' '}
+                                    {task.customerContact ? (
+                                      task.customerContact?.includes('@') ? (
+                                        <a href={`mailto:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
+                                          {task.customerContact}
+                                        </a>
+                                      ) : (
+                                        <a href={`tel:${task.customerContact}`} className="text-blue-500 hover:text-blue-700">
+                                          {task.customerContact}
+                                        </a>
+                                      )
+                                    ) : 'N/A'}
                                   </p>
                                 </div>
                               </div>
                               <div className="mt-4 space-y-2 text-sm text-gray-600">
-                                  {task.notes && <p><strong>Notes:</strong> {task.notes}</p>}
-                                  {task.actualStartTime && <p><strong>Actual Start:</strong> {task.actualStartTime}</p>}
-                                  {task.actualEndTime && <p><strong>Actual End:</strong> {task.actualEndTime}</p>}
+                                {task.notes && <p><strong>Notes:</strong> {task.notes}</p>}
+                                {task.actualStartTime && <p><strong>Actual Start:</strong> {task.actualStartTime}</p>}
+                                {task.actualEndTime && <p><strong>Actual End:</strong> {task.actualEndTime}</p>}
                               </div>
                             </AccordionContent>
                           </AccordionItem>
