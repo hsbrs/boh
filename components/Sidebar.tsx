@@ -18,7 +18,7 @@ import {
     Warehouse,
     ChevronDown,
     ChevronRight,
-    Package,
+    Package, // New icon for Project Management
     BarChart2,
     Truck,
 } from 'lucide-react';
@@ -124,6 +124,20 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
 
                         {isManagerOrAdmin && (
                             <>
+                                {/* New link for Project Management */}
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link href="/dashboard/projects" className={cn(
+                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                            isCollapsed ? 'w-full' : 'w-full justify-start',
+                                            'text-gray-700 hover:bg-gray-200'
+                                        )}>
+                                            <Package className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                            {!isCollapsed && 'Project Management'}
+                                        </Link>
+                                    </TooltipTrigger>
+                                    {isCollapsed && <TooltipContent side="right">Project Management</TooltipContent>}
+                                </Tooltip>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <Link href="/dashboard/webgis" className={cn(

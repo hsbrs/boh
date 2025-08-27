@@ -7,7 +7,7 @@ import { auth, db } from '@/lib/firebase';
 import Link from 'next/link';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ListTodo, FileText, MessageSquare, MapPin, UserCog, ListChecks, Warehouse } from 'lucide-react';
+import { ListTodo, FileText, MessageSquare, MapPin, UserCog, ListChecks, Warehouse, Package } from 'lucide-react';
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -91,6 +91,19 @@ const DashboardPage = () => {
                 </Link>
                 {isManagerOrAdmin && (
                     <>
+                        {/* New Project Management Tile */}
+                        <Link href="/dashboard/projects">
+                            <Card className="hover:shadow-lg transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-2xl font-bold">Project Management</CardTitle>
+                                    <Package className="h-8 w-8 text-purple-500" />
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-gray-500">Manage projects and their status by city.</p>
+                                    <p className="text-sm font-semibold text-purple-600 mt-2">Go to Projects →</p>
+                                </CardContent>
+                            </Card>
+                        </Link>
                         {/* WebGIS */}
                         <Link href="/dashboard/webgis">
                             <Card className="hover:shadow-lg transition-shadow">
