@@ -297,29 +297,29 @@ const ProjectOverviewPage = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
-  );
+      </div>
+    );
 
   return (
     <div className="flex-1 p-8">
-      <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
-        <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
-          Dashboard
-        </Link>
-        <span>/</span>
+          <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
+            <Link href="/dashboard" className="hover:text-blue-600 transition-colors">
+              Dashboard
+            </Link>
+            <span>/</span>
         <span>Projects</span>
-      </div>
+          </div>
       
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-bold text-gray-800">Project Management</h1>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-4xl font-bold text-gray-800">Project Management</h1>
         <Link href="/dashboard/projects/create">
           <Button>
-            <PlusCircleIcon className="mr-2 h-4 w-4" />
+                  <PlusCircleIcon className="mr-2 h-4 w-4" />
             Create New Project
-          </Button>
+                </Button>
         </Link>
-      </div>
-
+          </div>
+          
       {/* Project Navigation */}
       <div className="flex space-x-2 mb-6">
         <Button
@@ -328,27 +328,27 @@ const ProjectOverviewPage = () => {
         >
           Overview
         </Button>
-        <Button
+                                    <Button
           variant={activeTab === 'list' ? 'default' : 'outline'}
           onClick={() => setActiveTab('list')}
-        >
+                                    >
           Project List
-        </Button>
-        <Button
+                                    </Button>
+                                    <Button
           variant={activeTab === 'analytics' ? 'default' : 'outline'}
           onClick={() => setActiveTab('analytics')}
-        >
+                                    >
           Analytics
-        </Button>
-      </div>
+                                    </Button>
+                                  </div>
 
       {/* Project Content */}
       <div className="h-[calc(100vh-200px)]">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'list' && renderProjectList()}
         {activeTab === 'analytics' && renderAnalytics()}
+        </div>
       </div>
-    </div>
   );
 };
 
