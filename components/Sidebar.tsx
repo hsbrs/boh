@@ -21,6 +21,7 @@ import {
     Package, // New icon for Project Management
     BarChart2,
     Truck,
+    Plane, // New icon for Vacation
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -120,6 +121,21 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                 </Link>
                             </TooltipTrigger>
                             {isCollapsed && <TooltipContent side="right">Personal To Do</TooltipContent>}
+                        </Tooltip>
+
+                        {/* Vacation Management - Available to all users */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Link href="/dashboard/vacation" className={cn(
+                                    buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                    isCollapsed ? 'w-full' : 'w-full justify-start',
+                                    'text-gray-700 hover:bg-gray-200'
+                                )}>
+                                    <Plane className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                    {!isCollapsed && 'Vacation'}
+                                </Link>
+                            </TooltipTrigger>
+                            {isCollapsed && <TooltipContent side="right">Vacation Management</TooltipContent>}
                         </Tooltip>
 
                         {isManagerOrAdmin && (

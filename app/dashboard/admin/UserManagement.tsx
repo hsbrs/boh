@@ -26,7 +26,7 @@ type User = {
   createdAt?: Date;
 };
 
-const roles = ['employee', 'manager', 'admin'];
+const roles = ['employee', 'hr', 'pm', 'manager', 'admin'];
 
 const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -117,6 +117,36 @@ const UserManagement = () => {
 
   return (
     <>
+      <Card className="shadow-md mb-6">
+        <CardHeader>
+          <CardTitle>Role Hierarchy & Permissions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 text-sm">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <div className="font-semibold text-gray-800">Employee</div>
+              <div className="text-gray-600">Basic access, submit vacation requests</div>
+            </div>
+            <div className="text-center p-3 bg-blue-50 rounded-lg">
+              <div className="font-semibold text-blue-800">HR</div>
+              <div className="text-blue-600">First vacation approval level</div>
+            </div>
+            <div className="text-center p-3 bg-purple-50 rounded-lg">
+              <div className="font-semibold text-purple-800">PM</div>
+              <div className="text-purple-600">Project planning & second vacation approval</div>
+            </div>
+            <div className="text-center p-3 bg-orange-50 rounded-lg">
+              <div className="font-semibold text-orange-800">Manager</div>
+              <div className="text-orange-600">Warehouse, projects & final vacation approval</div>
+            </div>
+            <div className="text-center p-3 bg-red-50 rounded-lg">
+              <div className="font-semibold text-red-800">Admin</div>
+              <div className="text-red-600">Full system access & user management</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="shadow-md">
         <CardHeader>
           <CardTitle>Manage User Roles & Details</CardTitle>
@@ -200,7 +230,18 @@ const UserManagement = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {roles.map(role => (
-                                    <SelectItem key={role} value={role}>{role}</SelectItem>
+                                    <SelectItem key={role} value={role}>
+                                      <div className="flex flex-col">
+                                        <span className="font-medium">{role.charAt(0).toUpperCase() + role.slice(1)}</span>
+                                        <span className="text-xs text-gray-500">
+                                          {role === 'employee' && 'Basic user access'}
+                                          {role === 'hr' && 'Human Resources - Vacation approval'}
+                                          {role === 'pm' && 'Project Management - Project planning'}
+                                          {role === 'manager' && 'Warehouse & Project management'}
+                                          {role === 'admin' && 'Full system access'}
+                                        </span>
+                                      </div>
+                                    </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>

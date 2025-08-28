@@ -40,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# vacation system files (keep local, don't upload to GitHub)
+firestore.rules
+firestore_rules_updated.txt
+VACATION_SYSTEM.md
