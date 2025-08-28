@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
@@ -27,7 +26,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
   const [replacementUserId, setReplacementUserId] = useState<string>('');
   const [replacementUserName, setReplacementUserName] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [users, setUsers] = useState<Array<{uid: string, fullName: string, role: string}>>([]);
+  const [users, setUsers] = useState<Array<{uid: string, fullName: string, role: string, isApproved?: boolean}>>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
   useEffect(() => {
@@ -41,7 +40,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
                 uid: doc.id,
                 ...doc.data()
               }))
-              .filter(user => user.uid !== currentUser.uid && user.isApproved) // Exclude current user and unapproved users
+                             .filter(user => user.uid !== currentUser.uid && (user.isApproved !== false)) // Exclude current user and unapproved users
               .sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
             
             setUsers(usersData);
