@@ -19,6 +19,14 @@ interface VacationRequestFormProps {
   onSuccess?: () => void;
 }
 
+interface UserData {
+  uid: string;
+  fullName?: string;
+  role?: string;
+  isApproved?: boolean;
+  email?: string;
+}
+
 export default function VacationRequestForm({ onSuccess }: VacationRequestFormProps) {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
@@ -26,7 +34,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
   const [replacementUserId, setReplacementUserId] = useState<string>('');
   const [replacementUserName, setReplacementUserName] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [users, setUsers] = useState<Array<{uid: string, fullName: string, role: string, isApproved?: boolean}>>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
   useEffect(() => {
@@ -39,8 +47,8 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
               .map(doc => ({
                 uid: doc.id,
                 ...doc.data()
-              }))
-                             .filter(user => user.uid !== currentUser.uid && (user.isApproved !== false)) // Exclude current user and unapproved users
+              } as UserData))
+              .filter(user => user.uid !== currentUser.uid && (user.isApproved !== false)) // Exclude current user and unapproved users
               .sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
             
             setUsers(usersData);
