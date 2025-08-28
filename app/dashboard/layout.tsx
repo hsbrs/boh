@@ -19,6 +19,7 @@ export default function DashboardLayout({
     const [userRole, setUserRole] = useState<string | null>(null);
     const [userName, setUserName] = useState<string | null>(null); // New state for user's full name
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isApproved, setIsApproved] = useState<boolean | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -31,6 +32,13 @@ export default function DashboardLayout({
                     const userData = userDoc.data();
                     setUserRole(userData.role as string);
                     setUserName(userData.fullName as string); // Fetch the full name
+                    setIsApproved(userData.isApproved as boolean);
+                    
+                    // Redirect unapproved users to pending approval page
+                    if (userData.isApproved === false) {
+                        router.push('/pending-approval');
+                        return;
+                    }
                 }
                 setLoading(false);
             }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import React from 'react';
@@ -31,7 +31,22 @@ const LoginPage = () => {
     try {
       if (isLoginMode) {
         // Log-in logic
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Check if user is approved
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.isApproved === false) {
+            showNotification('Your account is pending admin approval.', 'error');
+            router.push('/pending-approval');
+            return;
+          }
+        }
+        
         showNotification('Login successful!', 'success');
         router.push('/dashboard');
       } else {
@@ -47,10 +62,12 @@ const LoginPage = () => {
           fullName: '', // New field, initially empty
           jobTitle: '', // New field, initially empty
           phoneNumber: '', // New field, initially empty
+          isApproved: false, // New field - user needs admin approval
+          createdAt: new Date(), // Track when user was created
         });
         
-        showNotification('Sign up successful!', 'success');
-        router.push('/dashboard');
+        showNotification('Sign up successful! Please wait for admin approval.', 'success');
+        router.push('/pending-approval');
       }
     } catch (error) {
       if (error instanceof Error) {

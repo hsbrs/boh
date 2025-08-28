@@ -22,6 +22,8 @@ type User = {
   fullName?: string;
   jobTitle?: string;
   phoneNumber?: string;
+  isApproved?: boolean;
+  createdAt?: Date;
 };
 
 const roles = ['employee', 'manager', 'admin'];
@@ -71,6 +73,30 @@ const UserManagement = () => {
     }
     setEditingUser(null);
   };
+
+  const handleApproveUser = async (userId: string) => {
+    const userDocRef = doc(db, 'users', userId);
+    try {
+      await updateDoc(userDocRef, { isApproved: true });
+      showNotification('User approved successfully!', 'success');
+    } catch (error) {
+      console.error("Error approving user: ", error);
+      showNotification('Error approving user.', 'error');
+    }
+  };
+
+  const handleDenyUser = async (userId: string) => {
+    if (window.confirm("Are you sure you want to deny this user? They will not be able to access the dashboard.")) {
+      const userDocRef = doc(db, 'users', userId);
+      try {
+        await updateDoc(userDocRef, { isApproved: false });
+        showNotification('User denied successfully!', 'success');
+      } catch (error) {
+        console.error("Error denying user: ", error);
+        showNotification('Error denying user.', 'error');
+      }
+    }
+  };
   
   const handleDeleteUser = async (userId: string) => {
     if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
@@ -104,6 +130,7 @@ const UserManagement = () => {
                 <TableHead>Job Title</TableHead>
                 <TableHead>Phone Number</TableHead>
                 <TableHead>Current Role</TableHead>
+                <TableHead>Approval Status</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
@@ -115,6 +142,17 @@ const UserManagement = () => {
                   <TableCell>{user.jobTitle || 'N/A'}</TableCell>
                   <TableCell>{user.phoneNumber || 'N/A'}</TableCell>
                   <TableCell>{user.role}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      user.isApproved === true 
+                        ? 'bg-green-100 text-green-800' 
+                        : user.isApproved === false 
+                        ? 'bg-red-100 text-red-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {user.isApproved === true ? 'Approved' : user.isApproved === false ? 'Denied' : 'Pending'}
+                    </span>
+                  </TableCell>
                   <TableCell className="space-x-2">
                     <Dialog>
                       <DialogTrigger asChild>
@@ -172,7 +210,27 @@ const UserManagement = () => {
                         </DialogContent>
                       )}
                     </Dialog>
-                    <Button variant="destructive" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                    {user.isApproved !== true && (
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        onClick={() => handleApproveUser(user.id)}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Approve
+                      </Button>
+                    )}
+                    {user.isApproved === true && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleDenyUser(user.id)}
+                        className="border-red-300 text-red-700 hover:bg-red-50"
+                      >
+                        Deny
+                      </Button>
+                    )}
+                    <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
                   </TableCell>
                 </TableRow>
               ))}
