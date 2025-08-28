@@ -38,7 +38,7 @@ const AdminPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading admin panel...</div>
+        <div className="text-xl font-semibold text-gray-700">Admin-Panel wird geladen...</div>
       </div>
     );
   }
@@ -46,9 +46,9 @@ const AdminPage = () => {
   if (userRole !== 'admin') {
     return (
       <div className="p-8 text-center text-red-500 bg-gray-100 min-h-screen">
-        <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
-        <p>You do not have the required permissions to view this page.</p>
-        <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">Go back to Dashboard</Link>
+        <h1 className="text-4xl font-bold mb-4">Zugriff verweigert</h1>
+        <p>Sie haben nicht die erforderlichen Berechtigungen, um diese Seite anzuzeigen.</p>
+        <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">Zurück zum Dashboard</Link>
       </div>
     );
   }
@@ -60,9 +60,9 @@ const AdminPage = () => {
           Dashboard
         </Link>
         <span>/</span>
-        <span>Admin Panel</span>
+        <span>Admin-Panel</span>
       </div>
-      <h1 className="text-4xl font-bold text-gray-800 mb-6">Admin Panel</h1>
+      <h1 className="text-4xl font-bold text-gray-800 mb-6">Admin-Panel</h1>
       <UserManagement />
     </div>
   );

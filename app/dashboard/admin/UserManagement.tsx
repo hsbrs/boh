@@ -66,10 +66,10 @@ const UserManagement = () => {
         phoneNumber: editingUser.phoneNumber,
         role: editingUser.role,
       });
-      showNotification('User details updated successfully!', 'success');
+      showNotification('Benutzerdetails erfolgreich aktualisiert!', 'success');
     } catch (error) {
       console.error("Error updating user: ", error);
-      showNotification('Error updating user details.', 'error');
+      showNotification('Fehler beim Aktualisieren der Benutzerdetails.', 'error');
     }
     setEditingUser(null);
   };
@@ -78,22 +78,22 @@ const UserManagement = () => {
     const userDocRef = doc(db, 'users', userId);
     try {
       await updateDoc(userDocRef, { isApproved: true });
-      showNotification('User approved successfully!', 'success');
+      showNotification('Benutzer erfolgreich genehmigt!', 'success');
     } catch (error) {
       console.error("Error approving user: ", error);
-      showNotification('Error approving user.', 'error');
+      showNotification('Fehler beim Genehmigen des Benutzers.', 'error');
     }
   };
 
   const handleDenyUser = async (userId: string) => {
-    if (window.confirm("Are you sure you want to deny this user? They will not be able to access the dashboard.")) {
+          if (window.confirm("Sind Sie sicher, dass Sie diesen Benutzer ablehnen möchten? Sie können nicht mehr auf das Dashboard zugreifen.")) {
       const userDocRef = doc(db, 'users', userId);
       try {
         await updateDoc(userDocRef, { isApproved: false });
-        showNotification('User denied successfully!', 'success');
+        showNotification('Benutzer erfolgreich abgelehnt!', 'success');
       } catch (error) {
         console.error("Error denying user: ", error);
-        showNotification('Error denying user.', 'error');
+        showNotification('Fehler beim Ablehnen des Benutzers.', 'error');
       }
     }
   };
@@ -191,14 +191,14 @@ const UserManagement = () => {
                       {editingUser && editingUser.id === user.id && (
                         <DialogContent className="sm:max-w-[425px]">
                           <DialogHeader>
-                            <DialogTitle>Edit User Details</DialogTitle>
+                            <DialogTitle>Benutzerdetails bearbeiten</DialogTitle>
                             <DialogDescription>
-                              Make changes to {editingUser.email}'s profile here. Click save when you're done.
+                              Nehmen Sie hier Änderungen am Profil von {editingUser.email} vor. Klicken Sie auf Speichern, wenn Sie fertig sind.
                             </DialogDescription>
                           </DialogHeader>
                           <div className="grid gap-4 py-4">
                             <div className="space-y-1">
-                              <Label htmlFor="fullName">Full Name</Label>
+                              <Label htmlFor="fullName">Vollständiger Name</Label>
                               <Input
                                 id="fullName"
                                 value={editingUser.fullName}
@@ -206,7 +206,7 @@ const UserManagement = () => {
                               />
                             </div>
                             <div className="space-y-1">
-                              <Label htmlFor="jobTitle">Job Title</Label>
+                              <Label htmlFor="jobTitle">Berufsbezeichnung</Label>
                               <Input
                                 id="jobTitle"
                                 value={editingUser.jobTitle}
@@ -214,7 +214,7 @@ const UserManagement = () => {
                               />
                             </div>
                             <div className="space-y-1">
-                              <Label htmlFor="phoneNumber">Phone Number</Label>
+                              <Label htmlFor="phoneNumber">Telefonnummer</Label>
                               <Input
                                 id="phoneNumber"
                                 value={editingUser.phoneNumber}
@@ -223,10 +223,10 @@ const UserManagement = () => {
                             </div>
                             <Separator className="my-2" />
                             <div className="space-y-1">
-                              <Label htmlFor="role">Role</Label>
+                              <Label htmlFor="role">Rolle</Label>
                               <Select onValueChange={(newRole) => setEditingUser({ ...editingUser, role: newRole })} defaultValue={editingUser.role}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select a role" />
+                                  <SelectValue placeholder="Rolle auswählen" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {roles.map(role => (
@@ -234,11 +234,11 @@ const UserManagement = () => {
                                       <div className="flex flex-col">
                                         <span className="font-medium">{role.charAt(0).toUpperCase() + role.slice(1)}</span>
                                         <span className="text-xs text-gray-500">
-                                          {role === 'employee' && 'Basic user access'}
-                                          {role === 'hr' && 'Human Resources - Vacation approval'}
-                                          {role === 'pm' && 'Project Management - Project planning'}
-                                          {role === 'manager' && 'Warehouse & Project management'}
-                                          {role === 'admin' && 'Full system access'}
+                                          {role === 'employee' && 'Grundlegender Benutzerzugriff'}
+                                          {role === 'hr' && 'Personalwesen - Urlaubsgenehmigung'}
+                                          {role === 'pm' && 'Projektmanagement - Projektplanung'}
+                                          {role === 'manager' && 'Lager- & Projektmanagement'}
+                                          {role === 'admin' && 'Voller Systemzugriff'}
                                         </span>
                                       </div>
                                     </SelectItem>
@@ -247,7 +247,7 @@ const UserManagement = () => {
                               </Select>
                             </div>
                           </div>
-                          <Button type="button" onClick={handleUpdateUser}>Save changes</Button>
+                          <Button type="button" onClick={handleUpdateUser}>Änderungen speichern</Button>
                         </DialogContent>
                       )}
                     </Dialog>
@@ -258,7 +258,7 @@ const UserManagement = () => {
                         onClick={() => handleApproveUser(user.id)}
                         className="bg-green-600 hover:bg-green-700"
                       >
-                        Approve
+                        Genehmigen
                       </Button>
                     )}
                     {user.isApproved === true && (
@@ -268,10 +268,10 @@ const UserManagement = () => {
                         onClick={() => handleDenyUser(user.id)}
                         className="border-red-300 text-red-700 hover:bg-red-50"
                       >
-                        Deny
+                        Ablehnen
                       </Button>
                     )}
-                    <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(user.id)}>Delete</Button>
+                    <Button variant="destructive" size="sm" onClick={() => handleDeleteUser(user.id)}>Löschen</Button>
                   </TableCell>
                 </TableRow>
               ))}

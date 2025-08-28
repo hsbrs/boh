@@ -82,7 +82,7 @@ const ReportsPage = () => {
   if (loading || userRole === null) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading reports...</div>
+        <div className="text-xl font-semibold text-gray-700">Berichte werden geladen...</div>
       </div>
     );
   }
@@ -90,9 +90,9 @@ const ReportsPage = () => {
   if (!canViewReports) {
     return (
       <div className="p-8 text-center text-red-500 bg-gray-100 min-h-screen">
-        <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
-        <p>You do not have the required permissions to view this page.</p>
-        <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">Go back to Dashboard</Link>
+        <h1 className="text-4xl font-bold mb-4">Zugriff verweigert</h1>
+        <p>Sie haben nicht die erforderlichen Berechtigungen, um diese Seite anzuzeigen.</p>
+        <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">Zurück zum Dashboard</Link>
       </div>
     );
   }
@@ -167,24 +167,24 @@ const ReportsPage = () => {
       {/* Status Breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle>Task Status Breakdown</CardTitle>
+          <CardTitle>Aufgabenstatus-Übersicht</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-              <span className="font-medium">Planned</span>
+              <span className="font-medium">Geplant</span>
               <Badge className="bg-blue-200 text-blue-800">{plannedTasks}</Badge>
             </div>
             <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-              <span className="font-medium">In Progress</span>
+              <span className="font-medium">In Bearbeitung</span>
               <Badge className="bg-yellow-200 text-yellow-800">{inProgressTasks}</Badge>
             </div>
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-              <span className="font-medium">Completed</span>
+              <span className="font-medium">Abgeschlossen</span>
               <Badge className="bg-green-200 text-green-800">{completedTasks}</Badge>
             </div>
             <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-              <span className="font-medium">Delayed</span>
+              <span className="font-medium">Verzögert</span>
               <Badge className="bg-red-200 text-red-800">{delayedTasks}</Badge>
             </div>
           </div>
@@ -194,7 +194,7 @@ const ReportsPage = () => {
       {/* Recent Tasks */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Tasks</CardTitle>
+          <CardTitle>Letzte Aufgaben</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -202,10 +202,10 @@ const ReportsPage = () => {
               <div key={task.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex-1">
                   <h4 className="font-medium">{task.summary}</h4>
-                  <p className="text-sm text-gray-500">Assigned to: {task.assignee}</p>
+                  <p className="text-sm text-gray-500">Zugewiesen an: {task.assignee}</p>
                 </div>
                 <Badge className={getStatusColor(task.status || '')}>
-                  {task.status || 'Unknown'}
+                  {task.status || 'Unbekannt'}
                 </Badge>
               </div>
             ))}
@@ -222,10 +222,10 @@ const ReportsPage = () => {
           Dashboard
         </Link>
         <span>/</span>
-        <span>Reports</span>
+        <span>Berichte</span>
       </div>
       
-      <h1 className="text-4xl font-bold text-gray-800 mb-6">Reports & Analytics</h1>
+      <h1 className="text-4xl font-bold text-gray-800 mb-6">Berichte & Analysen</h1>
 
       {/* Report Navigation */}
       <div className="flex space-x-2 mb-6">
@@ -233,19 +233,19 @@ const ReportsPage = () => {
           variant={activeReport === 'overview' ? 'default' : 'outline'}
           onClick={() => setActiveReport('overview')}
         >
-          Overview
+          Übersicht
         </Button>
         <Button
           variant={activeReport === 'calendar' ? 'default' : 'outline'}
           onClick={() => setActiveReport('calendar')}
         >
-          Calendar View
+          Kalenderansicht
         </Button>
         <Button
           variant={activeReport === 'resource' ? 'default' : 'outline'}
           onClick={() => setActiveReport('resource')}
         >
-          Resource Planning
+          Ressourcenplanung
         </Button>
       </div>
 

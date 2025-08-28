@@ -63,7 +63,7 @@ const ReportsPage = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="text-xl font-semibold text-gray-700">Loading...</div>
+                <div className="text-xl font-semibold text-gray-700">Laden...</div>
             </div>
         );
     }
@@ -75,10 +75,10 @@ const ReportsPage = () => {
         return (
             <div className="flex min-h-screen items-center justify-center bg-gray-100 p-8">
                 <div className="text-center">
-                    <h1 className="text-4xl font-bold text-red-600 mb-4">Access Denied</h1>
-                    <p className="text-lg text-gray-700">You do not have permission to view this page.</p>
+                    <h1 className="text-4xl font-bold text-red-600 mb-4">Zugriff verweigert</h1>
+                    <p className="text-lg text-gray-700">Sie haben keine Berechtigung, diese Seite anzuzeigen.</p>
                     <Button asChild className="mt-6">
-                        <Link href="/dashboard">Go to Dashboard</Link>
+                        <Link href="/dashboard">Zum Dashboard</Link>
                     </Button>
                 </div>
             </div>
@@ -97,17 +97,17 @@ const ReportsPage = () => {
                 </Link>
                 <span>/</span>
                 <Link href="/dashboard/warehouse-manager" className="hover:text-blue-600 transition-colors">
-                    Warehouse
+                    Lager
                 </Link>
                 <span>/</span>
-                <span>Reports</span>
+                <span>Berichte</span>
             </div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-6">Warehouse Reports</h1>
+            <h1 className="text-4xl font-bold text-gray-800 mb-6">Lagerberichte</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Total Items</CardTitle>
-                        <CardDescription>All items in stock</CardDescription>
+                        <CardTitle>Gesamtartikel</CardTitle>
+                        <CardDescription>Alle Artikel auf Lager</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <span className="text-4xl font-bold">{totalAssets}</span>
@@ -115,8 +115,8 @@ const ReportsPage = () => {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Unique Items</CardTitle>
-                        <CardDescription>Number of unique SKUs</CardDescription>
+                        <CardTitle>Einzelartikel</CardTitle>
+                        <CardDescription>Anzahl der eindeutigen SKUs</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <span className="text-4xl font-bold">{uniqueItems}</span>
@@ -124,8 +124,8 @@ const ReportsPage = () => {
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Low Stock Alert</CardTitle>
-                        <CardDescription>Items with quantity {'<='} 10</CardDescription>
+                        <CardTitle>Niedriger Bestand</CardTitle>
+                        <CardDescription>Artikel mit Menge {'<='} 10</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <span className="text-4xl font-bold text-red-500">{lowStockItems.length}</span>
@@ -134,7 +134,7 @@ const ReportsPage = () => {
             </div>
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-2xl">Low Stock Details</CardTitle>
+                    <CardTitle className="text-2xl">Details zum niedrigen Bestand</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <ScrollArea className="h-[300px] w-full pr-4">
@@ -144,8 +144,8 @@ const ReportsPage = () => {
                                     <TableRow>
                                         <TableHead>Name</TableHead>
                                         <TableHead>SKU</TableHead>
-                                        <TableHead>Quantity</TableHead>
-                                        <TableHead>Location</TableHead>
+                                        <TableHead>Menge</TableHead>
+                                        <TableHead>Standort</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -160,7 +160,7 @@ const ReportsPage = () => {
                                 </TableBody>
                             </Table>
                         ) : (
-                            <div className="text-center text-gray-500 py-10">No low stock items. Everything looks good!</div>
+                            <div className="text-center text-gray-500 py-10">Keine Artikel mit niedrigem Bestand. Alles sieht gut aus!</div>
                         )}
                     </ScrollArea>
                 </CardContent>

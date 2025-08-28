@@ -54,7 +54,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
             setUsers(usersData);
           } catch (error) {
             console.error('Error fetching users:', error);
-            toast.error('Failed to load users list');
+            toast.error('Fehler beim Laden der Benutzerliste');
           } finally {
             setLoadingUsers(false);
           }
@@ -74,17 +74,17 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
     e.preventDefault();
     
     if (!startDate || !endDate || !reason.trim() || !replacementUserId) {
-      toast.error('Please fill in all fields including replacement person');
+      toast.error('Bitte füllen Sie alle Felder einschließlich der Vertretungsperson aus');
       return;
     }
 
     if (startDate >= endDate) {
-      toast.error('End date must be after start date');
+      toast.error('Enddatum muss nach dem Startdatum liegen');
       return;
     }
 
     if (startDate < new Date()) {
-      toast.error('Start date cannot be in the past');
+      toast.error('Startdatum kann nicht in der Vergangenheit liegen');
       return;
     }
 
@@ -93,7 +93,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
     try {
       const user = auth.currentUser;
       if (!user) {
-        toast.error('User not authenticated');
+        toast.error('Benutzer nicht authentifiziert');
         return;
       }
 
@@ -150,7 +150,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="startDate">Start Date</Label>
+            <Label htmlFor="startDate">Startdatum</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -161,7 +161,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : "Pick a start date"}
+                  {startDate ? format(startDate, "PPP") : "Startdatum wählen"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -177,7 +177,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="endDate">End Date</Label>
+            <Label htmlFor="endDate">Enddatum</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -188,7 +188,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : "Pick an end date"}
+                  {endDate ? format(endDate, "PPP") : "Enddatum wählen"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -205,10 +205,10 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
         </div>
 
                  <div className="space-y-2">
-           <Label htmlFor="reason">Reason for Vacation</Label>
+           <Label htmlFor="reason">Urlaubsgrund</Label>
            <Textarea
              id="reason"
-             placeholder="Please provide a reason for your vacation request..."
+             placeholder="Bitte geben Sie einen Grund für Ihren Urlaubsantrag an..."
              value={reason}
              onChange={(e) => setReason(e.target.value)}
              rows={4}
@@ -219,10 +219,10 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
          <div className="space-y-2">
            <Label htmlFor="replacement" className="flex items-center gap-2">
              <Users className="h-4 w-4" />
-             Replacement Person During Vacation
+             Vertretungsperson während des Urlaubs
            </Label>
            {loadingUsers ? (
-             <div className="text-sm text-gray-500">Loading users...</div>
+             <div className="text-sm text-gray-500">Benutzer werden geladen...</div>
            ) : (
              <Select
                value={replacementUserId}
@@ -233,7 +233,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
                }}
              >
                <SelectTrigger>
-                 <SelectValue placeholder="Select a replacement person" />
+                 <SelectValue placeholder="Vertretungsperson auswählen" />
                </SelectTrigger>
                <SelectContent>
                  {users.map((user) => (
@@ -249,7 +249,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
            )}
            {replacementUserId && (
              <p className="text-sm text-gray-600">
-               <span className="font-medium">Selected:</span> {replacementUserName}
+               <span className="font-medium">Ausgewählt:</span> {replacementUserName}
              </p>
            )}
          </div>
@@ -259,7 +259,7 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
           className="w-full" 
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Submitting...' : 'Submit Request'}
+          {isSubmitting ? 'Wird eingereicht...' : 'Antrag einreichen'}
         </Button>
       </form>
     </div>

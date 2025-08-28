@@ -52,7 +52,7 @@ const ProjectAnalyticsPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading analytics...</div>
+        <div className="text-xl font-semibold text-gray-700">Analysen werden geladen...</div>
       </div>
     );
   }
@@ -314,7 +314,7 @@ const ProjectAnalyticsPage = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <MapPinIcon className="h-5 w-5" />
-              <span>Projects by City</span>
+              <span>Projekte nach Stadt</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -339,7 +339,7 @@ const ProjectAnalyticsPage = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <EuroIcon className="h-5 w-5" />
-              <span>Budget by Status</span>
+              <span>Budget nach Status</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -364,21 +364,21 @@ const ProjectAnalyticsPage = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <CalendarIcon className="h-5 w-5" />
-              <span>Timeline Metrics</span>
+              <span>Zeitplan-Metriken</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                <span className="font-medium text-red-800">Overdue Projects</span>
+                <span className="font-medium text-red-800">Überfällige Projekte</span>
                 <Badge className="bg-red-200 text-red-800">{overdueProjects}</Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                <span className="font-medium text-yellow-800">Upcoming Deadlines</span>
+                <span className="font-medium text-yellow-800">Bevorstehende Fristen</span>
                 <Badge className="bg-yellow-200 text-yellow-800">{upcomingDeadlines}</Badge>
               </div>
               <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <span className="font-medium text-green-800">On Track</span>
+                <span className="font-medium text-green-800">Auf Kurs</span>
                 <Badge className="bg-green-200 text-green-800">
                   {totalProjects - overdueProjects - upcomingDeadlines}
                 </Badge>
@@ -390,26 +390,26 @@ const ProjectAnalyticsPage = () => {
         {/* Performance Insights */}
         <Card>
           <CardHeader>
-            <CardTitle>Performance Insights</CardTitle>
+            <CardTitle>Leistungseinblicke</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="p-3 bg-blue-50 rounded-lg">
-                <h4 className="font-medium text-blue-800 mb-2">Efficiency Score</h4>
+                <h4 className="font-medium text-blue-800 mb-2">Effizienzwert</h4>
                 <p className="text-sm text-blue-600">
-                  {totalProjects > 0 ? ((completedProjects / totalProjects) * 100).toFixed(1) : '0'}% of projects completed successfully
+                  {totalProjects > 0 ? ((completedProjects / totalProjects) * 100).toFixed(1) : '0'}% der Projekte erfolgreich abgeschlossen
                 </p>
               </div>
               <div className="p-3 bg-green-50 rounded-lg">
-                <h4 className="font-medium text-green-800 mb-2">Budget Utilization</h4>
+                <h4 className="font-medium text-green-800 mb-2">Budgetauslastung</h4>
                 <p className="text-sm text-green-600">
-                  Average project budget: €{averageBudget.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                  Durchschnittliches Projektbudget: €{averageBudget.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                 </p>
               </div>
               <div className="p-3 bg-purple-50 rounded-lg">
-                <h4 className="font-medium text-purple-800 mb-2">Geographic Distribution</h4>
+                <h4 className="font-medium text-purple-800 mb-2">Geografische Verteilung</h4>
                 <p className="text-sm text-purple-600">
-                  Projects spread across {Object.keys(projectsByCity).length} cities
+                  Projekte verteilt auf {Object.keys(projectsByCity).length} Städte
                 </p>
               </div>
             </div>

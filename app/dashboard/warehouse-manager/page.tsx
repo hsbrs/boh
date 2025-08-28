@@ -16,44 +16,44 @@ const WarehouseManagerPage = () => {
                     Dashboard
                 </Link>
                 <span>/</span>
-                <span>Warehouse Management</span>
+                <span>Lagerverwaltung</span>
             </div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-6">Warehouse Management</h1>
-            <p className="text-gray-600 mb-8">Select a section to manage warehouse assets and inventory.</p>
+            <h1 className="text-4xl font-bold text-gray-800 mb-6">Lagerverwaltung</h1>
+            <p className="text-gray-600 mb-8">Wählen Sie einen Bereich aus, um Lageranlagen und Inventar zu verwalten.</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Link href="/dashboard/warehouse-manager/asset-management">
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Asset Management</CardTitle>
+                            <CardTitle className="text-2xl font-bold">Anlagenverwaltung</CardTitle>
                             <Package className="h-8 w-8 text-cyan-500" />
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-500">Add, view, and modify all assets in the warehouse.</p>
-                            <p className="text-sm font-semibold text-cyan-600 mt-2">Go to Asset Management →</p>
+                            <p className="text-sm text-gray-500">Alle Anlagen im Lager hinzufügen, anzeigen und ändern.</p>
+                            <p className="text-sm font-semibold text-cyan-600 mt-2">Zur Anlagenverwaltung →</p>
                         </CardContent>
                     </Card>
                 </Link>
                 <Link href="/dashboard/warehouse-manager/reports">
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Reports</CardTitle>
+                            <CardTitle className="text-2xl font-bold">Berichte</CardTitle>
                             <BarChart2 className="h-8 w-8 text-orange-500" />
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-500">View reports on stock levels and inventory value.</p>
-                            <p className="text-sm font-semibold text-orange-600 mt-2">Go to Reports →</p>
+                            <p className="text-sm text-gray-500">Berichte über Lagerbestände und Inventarwert anzeigen.</p>
+                            <p className="text-sm font-semibold text-orange-600 mt-2">Zu Berichten →</p>
                         </CardContent>
                     </Card>
                 </Link>
                 <Link href="/dashboard/warehouse-manager/stock-updater">
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Stock Updater</CardTitle>
+                            <CardTitle className="text-2xl font-bold">Bestandsaktualisierung</CardTitle>
                             <Truck className="h-8 w-8 text-indigo-500" />
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-500">Quickly add or remove stock from existing assets.</p>
-                            <p className="text-sm font-semibold text-indigo-600 mt-2">Go to Stock Updater →</p>
+                            <p className="text-sm text-gray-500">Schnell Bestand zu bestehenden Anlagen hinzufügen oder entfernen.</p>
+                            <p className="text-sm font-semibold text-indigo-600 mt-2">Zur Bestandsaktualisierung →</p>
                         </CardContent>
                     </Card>
                 </Link>

@@ -41,13 +41,13 @@ const LoginPage = () => {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           if (userData.isApproved === false) {
-            showNotification('Your account is pending admin approval.', 'error');
+            showNotification('Ihr Konto wartet auf die Genehmigung durch den Administrator.', 'error');
             router.push('/pending-approval');
             return;
           }
         }
         
-        showNotification('Login successful!', 'success');
+        showNotification('Anmeldung erfolgreich!', 'success');
         router.push('/dashboard');
       } else {
         // Sign-up logic to create a user in Firebase Auth and Firestore
@@ -66,14 +66,14 @@ const LoginPage = () => {
           createdAt: new Date(), // Track when user was created
         });
         
-        showNotification('Sign up successful! Please wait for admin approval.', 'success');
+        showNotification('Registrierung erfolgreich! Bitte warten Sie auf die Genehmigung durch den Administrator.', 'success');
         router.push('/pending-approval');
       }
     } catch (error) {
       if (error instanceof Error) {
-        showNotification('Authentication error: ' + error.message, 'error');
+        showNotification('Authentifizierungsfehler: ' + error.message, 'error');
       } else {
-        showNotification('An unknown error occurred.', 'error');
+        showNotification('Ein unbekannter Fehler ist aufgetreten.', 'error');
       }
     }
   };
@@ -82,16 +82,16 @@ const LoginPage = () => {
     <div className="flex min-h-screen bg-gray-100 items-center justify-center p-4">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-          {isLoginMode ? 'Login' : 'Sign Up'}
+          {isLoginMode ? 'Anmeldung' : 'Registrierung'}
         </h2>
 
         <form onSubmit={handleAuthAction}>
           <div className="mb-4">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">E-Mail</Label>
             <Input
               id="email"
               type="email"
-              placeholder="Your email address"
+              placeholder="Ihre E-Mail-Adresse"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -99,11 +99,11 @@ const LoginPage = () => {
           </div>
 
           <div className="mb-6">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Passwort</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Your password"
+              placeholder="Ihr Passwort"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -111,7 +111,7 @@ const LoginPage = () => {
           </div>
 
           <Button type="submit" className="w-full">
-            {isLoginMode ? 'Login' : 'Sign Up'}
+            {isLoginMode ? 'Anmelden' : 'Registrieren'}
           </Button>
         </form>
 
@@ -120,7 +120,7 @@ const LoginPage = () => {
             variant="link"
             onClick={() => setIsLoginMode(!isLoginMode)}
           >
-            {isLoginMode ? 'Need an account? Sign Up' : 'Already have an account? Login'}
+            {isLoginMode ? 'Benötigen Sie ein Konto? Registrieren' : 'Haben Sie bereits ein Konto? Anmelden'}
           </Button>
         </div>
       </div>

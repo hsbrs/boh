@@ -82,7 +82,7 @@ export default function VacationPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl">Laden...</div>
       </div>
     );
   }
@@ -90,7 +90,7 @@ export default function VacationPage() {
   if (!user) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl">Please log in to access this page.</div>
+        <div className="text-xl">Bitte melden Sie sich an, um auf diese Seite zuzugreifen.</div>
       </div>
     );
   }
@@ -99,9 +99,9 @@ export default function VacationPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Vacation Management</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Urlaubsverwaltung</h1>
           <p className="text-gray-600 mt-2">
-            Manage vacation requests and approvals
+            Urlaubsanträge und Genehmigungen verwalten
           </p>
         </div>
         <Badge variant="outline" className="text-sm">
@@ -113,7 +113,7 @@ export default function VacationPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">Gesamtanträge</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -123,7 +123,7 @@ export default function VacationPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">Ausstehend</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -133,7 +133,7 @@ export default function VacationPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
+            <CardTitle className="text-sm font-medium">Genehmigt</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -143,7 +143,7 @@ export default function VacationPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Denied</CardTitle>
+            <CardTitle className="text-sm font-medium">Abgelehnt</CardTitle>
             <XCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -155,9 +155,9 @@ export default function VacationPage() {
       {/* Main Content */}
       <Tabs defaultValue="requests" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="requests">Vacation Requests</TabsTrigger>
+          <TabsTrigger value="requests">Urlaubsanträge</TabsTrigger>
           {userRole === 'employee' && (
-            <TabsTrigger value="submit">Submit Request</TabsTrigger>
+            <TabsTrigger value="submit">Antrag einreichen</TabsTrigger>
           )}
         </TabsList>
 

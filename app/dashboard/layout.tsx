@@ -67,9 +67,9 @@ export default function DashboardLayout({
             router.push('/login');
         } catch (error) {
             if (error instanceof Error) {
-                alert('Error logging out: ' + error.message);
+                alert('Fehler beim Abmelden: ' + error.message);
             } else {
-                alert('An unknown error occurred.');
+                alert('Ein unbekannter Fehler ist aufgetreten.');
             }
         }
     };
@@ -77,7 +77,7 @@ export default function DashboardLayout({
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="text-xl font-semibold text-gray-700">Loading...</div>
+                <div className="text-xl font-semibold text-gray-700">Laden...</div>
             </div>
         );
     }

@@ -76,10 +76,10 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                     'text-gray-700 hover:bg-gray-200'
                                 )}>
                                     <LayoutDashboard className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'Home'}
+                                    {!isCollapsed && 'Startseite'}
                                 </Link>
                             </TooltipTrigger>
-                            {isCollapsed && <TooltipContent side="right">Home</TooltipContent>}
+                            {isCollapsed && <TooltipContent side="right">Startseite</TooltipContent>}
                         </Tooltip>
 
                         <Tooltip>
@@ -90,10 +90,10 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                     'text-gray-700 hover:bg-gray-200'
                                 )}>
                                     <ListTodo className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'Work Orders'}
+                                    {!isCollapsed && 'Arbeitsaufträge'}
                                 </Link>
                             </TooltipTrigger>
-                            {isCollapsed && <TooltipContent side="right">Work Orders</TooltipContent>}
+                            {isCollapsed && <TooltipContent side="right">Arbeitsaufträge</TooltipContent>}
                         </Tooltip>
                         
                         <Tooltip>
@@ -104,10 +104,10 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                     'text-gray-700 hover:bg-gray-200'
                                 )}>
                                     <MessageSquare className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'Discuss'}
+                                    {!isCollapsed && 'Diskutieren'}
                                 </Link>
                             </TooltipTrigger>
-                            {isCollapsed && <TooltipContent side="right">Discuss</TooltipContent>}
+                            {isCollapsed && <TooltipContent side="right">Diskutieren</TooltipContent>}
                         </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -117,10 +117,10 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                     'text-gray-700 hover:bg-gray-200'
                                 )}>
                                     <ListChecks className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'To Do'}
+                                    {!isCollapsed && 'To-Dos'}
                                 </Link>
                             </TooltipTrigger>
-                            {isCollapsed && <TooltipContent side="right">Personal To Do</TooltipContent>}
+                            {isCollapsed && <TooltipContent side="right">Persönliche To-Dos</TooltipContent>}
                         </Tooltip>
 
                         {/* Vacation Management - Available to all users */}
@@ -132,10 +132,10 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                     'text-gray-700 hover:bg-gray-200'
                                 )}>
                                     <Plane className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'Vacation'}
+                                    {!isCollapsed && 'Urlaub'}
                                 </Link>
                             </TooltipTrigger>
-                            {isCollapsed && <TooltipContent side="right">Vacation Management</TooltipContent>}
+                            {isCollapsed && <TooltipContent side="right">Urlaubsverwaltung</TooltipContent>}
                         </Tooltip>
 
                         {isManagerOrAdmin && (
@@ -149,10 +149,10 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                             'text-gray-700 hover:bg-gray-200'
                                         )}>
                                             <Package className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Project Management'}
+                                            {!isCollapsed && 'Projektmanagement'}
                                         </Link>
                                     </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">Project Management</TooltipContent>}
+                                    {isCollapsed && <TooltipContent side="right">Projektmanagement</TooltipContent>}
                                 </Tooltip>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -178,7 +178,7 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                             {!isCollapsed && 'Reports'}
                                         </Link>
                                     </TooltipTrigger>
-                                    {isCollapsed && <TooltipContent side="right">Reports</TooltipContent>}
+                                    {isCollapsed && <TooltipContent side="right">Berichte</TooltipContent>}
                                 </Tooltip>
                                 
                                 <div className="flex flex-col">
@@ -192,7 +192,7 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                         )}
                                     >
                                         <Warehouse className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                        {!isCollapsed && 'Warehouse'}
+                                        {!isCollapsed && 'Lager'}
                                         {!isCollapsed && (
                                             isWarehouseExpanded ? <ChevronDown className="ml-auto h-4 w-4" /> : <ChevronRight className="ml-auto h-4 w-4" />
                                         )}
@@ -204,21 +204,21 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                                 'w-full justify-start text-gray-700 hover:bg-gray-200'
                                             )}>
                                                 <Package className="h-5 w-5 mr-2" />
-                                                Asset Management
+                                                Anlagenverwaltung
                                             </Link>
                                             <Link href="/dashboard/warehouse-manager/reports" className={cn(
                                                 buttonVariants({ variant: 'ghost', size: 'sm' }),
                                                 'w-full justify-start text-gray-700 hover:bg-gray-200'
                                             )}>
                                                 <BarChart2 className="h-5 w-5 mr-2" />
-                                                Reports
+                                                Berichte
                                             </Link>
                                             <Link href="/dashboard/warehouse-manager/stock-updater" className={cn(
                                                 buttonVariants({ variant: 'ghost', size: 'sm' }),
                                                 'w-full justify-start text-gray-700 hover:bg-gray-200'
                                             )}>
                                                 <Truck className="h-5 w-5 mr-2" />
-                                                Stock Updater
+                                                Bestandsaktualisierung
                                             </Link>
                                         </nav>
                                     )}
@@ -234,10 +234,10 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                         'text-gray-700 hover:bg-gray-200'
                                     )}>
                                         <UserCog className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                        {!isCollapsed && 'Admin Panel'}
+                                        {!isCollapsed && 'Admin-Panel'}
                                     </Link>
                                 </TooltipTrigger>
-                                {isCollapsed && <TooltipContent side="right">Admin Panel</TooltipContent>}
+                                {isCollapsed && <TooltipContent side="right">Admin-Panel</TooltipContent>}
                             </Tooltip>
                         )}
                     </TooltipProvider>
@@ -273,7 +273,7 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                 )}
                 
                 <Button onClick={onLogout} variant="destructive" className="w-full">
-                    {!isCollapsed && 'Logout'}
+                    {!isCollapsed && 'Abmelden'}
                     {isCollapsed && <Menu className="h-5 w-5" />}
                 </Button>
             </div>

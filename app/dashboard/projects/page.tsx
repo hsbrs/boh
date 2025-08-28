@@ -48,7 +48,7 @@ const ProjectOverviewPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading projects...</div>
+        <div className="text-xl font-semibold text-gray-700">Projekte werden geladen...</div>
       </div>
     );
   }
@@ -86,19 +86,19 @@ const ProjectOverviewPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
+            <CardTitle className="text-sm font-medium">Gesamtprojekte</CardTitle>
             <Badge variant="outline">{totalProjects}</Badge>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProjects}</div>
-            <p className="text-xs text-muted-foreground">All active projects</p>
+            <p className="text-xs text-muted-foreground">Alle aktiven Projekte</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Badge className="bg-yellow-200 text-yellow-800">Active</Badge>
+            <CardTitle className="text-sm font-medium">In Bearbeitung</CardTitle>
+            <Badge className="bg-yellow-200 text-yellow-800">Aktiv</Badge>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{inProcessProjects}</div>
@@ -307,15 +307,15 @@ const ProjectOverviewPage = () => {
               Dashboard
             </Link>
             <span>/</span>
-        <span>Projects</span>
+        <span>Projekte</span>
           </div>
       
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-4xl font-bold text-gray-800">Project Management</h1>
+            <h1 className="text-4xl font-bold text-gray-800">Projektmanagement</h1>
         <Link href="/dashboard/projects/create">
           <Button>
                   <PlusCircleIcon className="mr-2 h-4 w-4" />
-            Create New Project
+            Neues Projekt erstellen
                 </Button>
         </Link>
           </div>
@@ -326,19 +326,19 @@ const ProjectOverviewPage = () => {
           variant={activeTab === 'overview' ? 'default' : 'outline'}
           onClick={() => setActiveTab('overview')}
         >
-          Overview
+          Übersicht
         </Button>
                                     <Button
           variant={activeTab === 'list' ? 'default' : 'outline'}
           onClick={() => setActiveTab('list')}
                                     >
-          Project List
+          Projektliste
                                     </Button>
                                     <Button
           variant={activeTab === 'analytics' ? 'default' : 'outline'}
           onClick={() => setActiveTab('analytics')}
                                     >
-          Analytics
+          Analysen
                                     </Button>
                                   </div>
 

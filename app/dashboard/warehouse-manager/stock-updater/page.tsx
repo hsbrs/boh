@@ -72,11 +72,11 @@ const StockUpdaterPage = () => {
     
     const handleUpdateStock = async (isAdding: boolean) => {
         if (!selectedAssetId) {
-            showNotification('Please select an asset to update.', 'error');
+            showNotification('Bitte wählen Sie eine Anlage zur Aktualisierung aus.', 'error');
             return;
         }
         if (quantityChange <= 0) {
-            showNotification('Quantity must be a positive number.', 'error');
+            showNotification('Die Menge muss eine positive Zahl sein.', 'error');
             return;
         }
 
@@ -91,7 +91,7 @@ const StockUpdaterPage = () => {
         }
 
         if (newQuantity < 0) {
-            showNotification('Resulting quantity cannot be negative.', 'error');
+            showNotification('Die resultierende Menge kann nicht negativ sein.', 'error');
             return;
         }
 
@@ -112,7 +112,7 @@ const StockUpdaterPage = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="text-xl font-semibold text-gray-700">Loading...</div>
+                <div className="text-xl font-semibold text-gray-700">Laden...</div>
             </div>
         );
     }

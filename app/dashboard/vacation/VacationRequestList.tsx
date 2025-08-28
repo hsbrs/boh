@@ -81,11 +81,11 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', text: 'Pending' },
-      hr_review: { color: 'bg-blue-100 text-blue-800', text: 'HR Review' },
-      pm_review: { color: 'bg-purple-100 text-purple-800', text: 'PM Review' },
-      approved: { color: 'bg-green-100 text-green-800', text: 'Approved' },
-      denied: { color: 'bg-red-100 text-red-800', text: 'Denied' }
+      pending: { color: 'bg-yellow-100 text-yellow-800', text: 'Ausstehend' },
+      hr_review: { color: 'bg-blue-100 text-blue-800', text: 'HR-Prüfung' },
+      pm_review: { color: 'bg-purple-100 text-purple-800', text: 'PM-Prüfung' },
+      approved: { color: 'bg-green-100 text-green-800', text: 'Genehmigt' },
+      denied: { color: 'bg-red-100 text-red-800', text: 'Abgelehnt' }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
@@ -108,7 +108,7 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
 
   const handleAction = async () => {
     if (!selectedRequest || !comment.trim()) {
-      toast.error('Please provide a comment');
+      toast.error('Bitte geben Sie einen Kommentar an');
       return;
     }
 
@@ -129,13 +129,13 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
 
       await updateDoc(requestRef, updateData);
       
-      toast.success(`Request ${action === 'approve' ? 'approved' : 'denied'} successfully`);
+      toast.success(`Antrag erfolgreich ${action === 'approve' ? 'genehmigt' : 'abgelehnt'}`);
       setSelectedRequest(null);
       setComment('');
       setAction('approve');
     } catch (error) {
       console.error('Error updating request:', error);
-      toast.error('Failed to update request');
+      toast.error('Fehler beim Aktualisieren des Antrags');
     } finally {
       setIsSubmitting(false);
     }
@@ -151,7 +151,7 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
-        <div className="text-lg">Loading vacation requests...</div>
+        <div className="text-lg">Urlaubsanträge werden geladen...</div>
       </div>
     );
   }
@@ -161,20 +161,20 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
   return (
     <div className="space-y-4">
              <div className="flex justify-between items-center">
-         <h3 className="text-xl font-semibold">Vacation Requests</h3>
+         <h3 className="text-xl font-semibold">Urlaubsanträge</h3>
          <div className="flex gap-2">
            {userRole === 'employee' && (
              <Badge variant="outline" className="text-sm">
-               {requests.length} request{requests.length !== 1 ? 's' : ''}
+               {requests.length} Antrag{requests.length !== 1 ? 'e' : ''}
              </Badge>
            )}
            {userRole !== 'employee' && (
              <>
                <Badge variant="outline" className="text-sm">
-                 {requests.length} total
+                 {requests.length} Gesamt
                </Badge>
                <Badge variant="secondary" className="text-sm bg-blue-100 text-blue-800">
-                 {requests.filter(r => canApprove(r)).length} require action
+                 {requests.filter(r => canApprove(r)).length} Aktion erforderlich
                </Badge>
              </>
            )}
@@ -185,7 +185,7 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
         <Card>
           <CardContent className="p-8 text-center text-gray-500">
             <Calendar className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>No vacation requests found</p>
+            <p>Keine Urlaubsanträge gefunden</p>
           </CardContent>
         </Card>
       ) : (
@@ -205,7 +205,7 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                      {getStatusBadge(request.status)}
                      {canApprove(request) && (
                        <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
-                         Action Required
+                         Aktion erforderlich
                        </Badge>
                      )}
                    </div>
@@ -222,7 +222,7 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-gray-500" />
                     <span className="text-sm">
-                      {Math.ceil((request.endDate.toDate() - request.startDate.toDate()) / (1000 * 60 * 60 * 24))} days
+                      {Math.ceil((request.endDate.toDate() - request.startDate.toDate()) / (1000 * 60 * 60 * 24))} Tage
                     </span>
                   </div>
                 </div>
@@ -236,7 +236,7 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                    <div className="flex items-center gap-2">
                      <Users className="h-4 w-4 text-gray-500" />
                      <span className="text-sm">
-                       <span className="font-medium">Replacement:</span> {request.replacementUserName}
+                       <span className="font-medium">Vertretung:</span> {request.replacementUserName}
                      </span>
                    </div>
                  )}
@@ -255,25 +255,25 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                            }}
                          >
                            <CheckCircle className="h-4 w-4 mr-1" />
-                           Approve
+                           Genehmigen
                          </Button>
                        </DialogTrigger>
                        <DialogContent>
                          <DialogHeader>
-                           <DialogTitle>Approve Vacation Request</DialogTitle>
+                           <DialogTitle>Urlaubsantrag genehmigen</DialogTitle>
                          </DialogHeader>
                          <div className="space-y-4">
                            <div>
-                             <Label htmlFor="comment">Comment (optional)</Label>
+                             <Label htmlFor="comment">Kommentar (optional)</Label>
                              <Textarea
                                id="comment"
-                               placeholder="Add a comment..."
+                               placeholder="Kommentar hinzufügen..."
                                value={comment}
                                onChange={(e) => setComment(e.target.value)}
                              />
                            </div>
                            <Button onClick={handleAction} className="w-full" disabled={isSubmitting}>
-                             {isSubmitting ? 'Approving...' : 'Approve Request'}
+                             {isSubmitting ? 'Wird genehmigt...' : 'Antrag genehmigen'}
                            </Button>
                          </div>
                        </DialogContent>
@@ -291,19 +291,19 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                            }}
                          >
                            <XCircle className="h-4 w-4 mr-1" />
-                           Deny
+                           Ablehnen
                          </Button>
                        </DialogTrigger>
                        <DialogContent>
                          <DialogHeader>
-                           <DialogTitle>Deny Vacation Request</DialogTitle>
+                           <DialogTitle>Urlaubsantrag ablehnen</DialogTitle>
                          </DialogHeader>
                          <div className="space-y-4">
                            <div>
-                             <Label htmlFor="comment">Comment (required)</Label>
+                             <Label htmlFor="comment">Kommentar (erforderlich)</Label>
                              <Textarea
                                id="comment"
-                               placeholder="Please provide a reason for denial..."
+                               placeholder="Bitte geben Sie einen Grund für die Ablehnung an..."
                                value={comment}
                                onChange={(e) => setComment(e.target.value)}
                                required
@@ -315,7 +315,7 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                              className="w-full"
                              disabled={isSubmitting || !comment.trim()}
                            >
-                             {isSubmitting ? 'Denying...' : 'Deny Request'}
+                             {isSubmitting ? 'Wird abgelehnt...' : 'Antrag ablehnen'}
                            </Button>
                          </div>
                        </DialogContent>
@@ -327,11 +327,11 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                   {!canApprove(request) && userRole !== 'employee' && (
                     <div className="pt-2">
                       <Badge variant="outline" className="text-xs">
-                        {request.status === 'approved' ? 'Fully Approved' : 
-                         request.status === 'denied' ? 'Denied' : 
-                         request.status === 'hr_review' ? 'Awaiting PM Review' :
-                         request.status === 'pm_review' ? 'Awaiting Manager Review' :
-                         'Awaiting Other Approval'}
+                        {request.status === 'approved' ? 'Vollständig genehmigt' : 
+                         request.status === 'denied' ? 'Abgelehnt' : 
+                         request.status === 'hr_review' ? 'Warten auf PM-Prüfung' :
+                         request.status === 'pm_review' ? 'Warten auf Manager-Prüfung' :
+                         'Warten auf andere Genehmigung'}
                       </Badge>
                     </div>
                   )}
@@ -339,14 +339,14 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                 {/* Show approval history */}
                 {request.approvals && (
                   <div className="pt-2 border-t">
-                    <p className="text-xs font-medium text-gray-600 mb-2">Approval History:</p>
+                    <p className="text-xs font-medium text-gray-600 mb-2">Genehmigungsverlauf:</p>
                     <div className="space-y-1">
                       {Object.entries(request.approvals).map(([role, approval]) => (
                         approval.date && (
                           <div key={role} className="flex items-center gap-2 text-xs">
                             <span className="capitalize font-medium">{role}:</span>
                             <Badge variant={approval.approved ? "default" : "destructive"} className="text-xs">
-                              {approval.approved ? 'Approved' : 'Denied'}
+                              {approval.approved ? 'Genehmigt' : 'Abgelehnt'}
                             </Badge>
                             {approval.comment && (
                               <span className="text-gray-600">- {approval.comment}</span>

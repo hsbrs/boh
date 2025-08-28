@@ -86,7 +86,7 @@ const ViewProjectsPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading projects...</div>
+        <div className="text-xl font-semibold text-gray-700">Projekte werden geladen...</div>
       </div>
     );
   }
@@ -131,7 +131,7 @@ const ViewProjectsPage = () => {
               <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 id="search"
-                placeholder="Search by title, description, or city..."
+                placeholder="Nach Titel, Beschreibung oder Stadt suchen..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -139,10 +139,10 @@ const ViewProjectsPage = () => {
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by Status" />
+                <SelectValue placeholder="Nach Status filtern" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="all">Alle Status</SelectItem>
                 <SelectItem value="Started">Started</SelectItem>
                 <SelectItem value="In Process">In Process</SelectItem>
                 <SelectItem value="Completed">Completed</SelectItem>
@@ -151,10 +151,10 @@ const ViewProjectsPage = () => {
             </Select>
             <Select value={cityFilter} onValueChange={setCityFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filter by City" />
+                <SelectValue placeholder="Nach Stadt filtern" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Cities</SelectItem>
+                <SelectItem value="all">Alle Städte</SelectItem>
                 {Array.from(new Set(projects.map(p => p.city))).map(city => (
                   <SelectItem key={city} value={city}>{city}</SelectItem>
                 ))}
@@ -167,9 +167,9 @@ const ViewProjectsPage = () => {
       {/* Projects Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Projects ({filteredProjects.length})</CardTitle>
+          <CardTitle>Projekte ({filteredProjects.length})</CardTitle>
           <p className="text-sm text-gray-600">
-            Showing {filteredProjects.length} of {projects.length} projects
+            Zeige {filteredProjects.length} von {projects.length} Projekten
           </p>
         </CardHeader>
         <CardContent>
@@ -177,13 +177,13 @@ const ViewProjectsPage = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Project Title</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>City</TableHead>
+                  <TableHead>Projekttitel</TableHead>
+                  <TableHead>Beschreibung</TableHead>
+                  <TableHead>Stadt</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>End Date</TableHead>
+                  <TableHead>Priorität</TableHead>
+                  <TableHead>Startdatum</TableHead>
+                  <TableHead>Enddatum</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

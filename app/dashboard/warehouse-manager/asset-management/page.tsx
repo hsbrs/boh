@@ -16,12 +16,12 @@ const AssetManagementPage = () => {
                 </Link>
                 <span>/</span>
                 <Link href="/dashboard/warehouse-manager" className="hover:text-blue-600 transition-colors">
-                    Warehouse Management
+                    Lagerverwaltung
                 </Link>
                 <span>/</span>
-                <span>Asset Management</span>
+                <span>Anlagenverwaltung</span>
             </div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-6">Asset Management</h1>
+            <h1 className="text-4xl font-bold text-gray-800 mb-6">Anlagenverwaltung</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <AssetForm />
                 <AssetList />

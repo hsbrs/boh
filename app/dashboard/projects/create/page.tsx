@@ -63,7 +63,7 @@ const CreateProjectPage = () => {
       // Add to Firestore
       const docRef = await addDoc(collection(db, 'projects'), projectData);
       
-      showNotification('Project created successfully!', 'success');
+      showNotification('Projekt erfolgreich erstellt!', 'success');
       
       // Reset form
       setTitle('');
@@ -82,7 +82,7 @@ const CreateProjectPage = () => {
 
     } catch (error) {
       console.error("Error creating project: ", error);
-      showNotification('Error creating project. Please try again.', 'error');
+      showNotification('Fehler beim Erstellen des Projekts. Bitte versuchen Sie es erneut.', 'error');
     } finally {
       setLoading(false);
     }
@@ -209,7 +209,7 @@ const CreateProjectPage = () => {
               {/* Dates */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
+                  <Label htmlFor="startDate">Startdatum</Label>
                   <Input
                     id="startDate"
                     type="date"
@@ -219,7 +219,7 @@ const CreateProjectPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="endDate">End Date</Label>
+                  <Label htmlFor="endDate">Enddatum</Label>
                   <Input
                     id="endDate"
                     type="date"
@@ -237,7 +237,7 @@ const CreateProjectPage = () => {
                   type="number"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
-                  placeholder="Enter project budget"
+                  placeholder="Projektbudget eingeben"
                   min="0"
                   step="0.01"
                 />
@@ -247,16 +247,16 @@ const CreateProjectPage = () => {
               {title && (
                 <Card className="bg-gray-50">
                   <CardHeader>
-                    <CardTitle className="text-lg">Project Preview</CardTitle>
+                    <CardTitle className="text-lg">Projektvorschau</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Title:</span>
+                        <span className="font-medium">Titel:</span>
                         <span>{title}</span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">City:</span>
+                        <span className="font-medium">Stadt:</span>
                         <span>{city}</span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -269,7 +269,7 @@ const CreateProjectPage = () => {
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">Priority:</span>
+                        <span className="font-medium">Priorität:</span>
                         <Badge className={getPriorityColor(priority)}>
                           {priority}
                         </Badge>
@@ -283,12 +283,12 @@ const CreateProjectPage = () => {
               <div className="flex justify-end space-x-4 pt-6">
                 <Link href="/dashboard/projects">
                   <Button variant="outline" type="button">
-                    Cancel
+                    Abbrechen
                   </Button>
                 </Link>
                 <Button type="submit" disabled={loading}>
                   <SaveIcon className="mr-2 h-4 w-4" />
-                  {loading ? 'Creating...' : 'Create Project'}
+                  {loading ? 'Wird erstellt...' : 'Projekt erstellen'}
                 </Button>
               </div>
             </form>

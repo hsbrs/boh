@@ -42,7 +42,7 @@ const WebGISPage = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="text-xl font-semibold text-gray-700">Loading WebGIS...</div>
+                <div className="text-xl font-semibold text-gray-700">WebGIS wird geladen...</div>
             </div>
         );
     }
@@ -50,9 +50,9 @@ const WebGISPage = () => {
     if (!canViewWebGIS) {
         return (
             <div className="p-8 text-center text-red-500 bg-gray-100 min-h-screen">
-                <h1 className="text-4xl font-bold mb-4">Access Denied</h1>
-                <p>You do not have the required permissions to view this page.</p>
-                <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">Go back to Dashboard</Link>
+                <h1 className="text-4xl font-bold mb-4">Zugriff verweigert</h1>
+                <p>Sie haben nicht die erforderlichen Berechtigungen, um diese Seite anzuzeigen.</p>
+                <Link href="/dashboard" className="text-blue-600 hover:underline mt-4 inline-block">Zurück zum Dashboard</Link>
             </div>
         );
     }
@@ -115,7 +115,7 @@ const WebGISPage = () => {
                 <span>/</span>
                 <span>WebGIS</span>
             </div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-6">WebGIS: City Status Overview</h1>
+            <h1 className="text-4xl font-bold text-gray-800 mb-6">WebGIS: Stadtstatus-Übersicht</h1>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {citiesData.map((city, index) => (
                     <Card key={index} className="overflow-hidden hover:shadow-xl transition-shadow">
@@ -130,31 +130,31 @@ const WebGISPage = () => {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="bg-gray-100 rounded-lg p-4 text-left">
-                                <CardDescription className="font-semibold text-lg mb-2 text-gray-800">Status Overview:</CardDescription>
+                                <CardDescription className="font-semibold text-lg mb-2 text-gray-800">Status-Übersicht:</CardDescription>
                                 <p className="text-sm flex justify-between">
-                                    <span className="text-gray-900">UDP Active:</span> <span className="font-bold text-green-600">{city.active}</span>
+                                    <span className="text-gray-900">UDP Aktiv:</span> <span className="font-bold text-green-600">{city.active}</span>
                                 </p>
                                 <p className="text-sm flex justify-between">
-                                    <span className="text-gray-900">UDP Inactive:</span> <span className="font-bold text-yellow-600">{city.inactive}</span>
+                                    <span className="text-gray-900">UDP Inaktiv:</span> <span className="font-bold text-yellow-600">{city.inactive}</span>
                                 </p>
                                 <p className="text-sm flex justify-between">
-                                    <span className="text-gray-900">UDP Completed:</span> <span className="font-bold text-blue-600">{city.completed}</span>
+                                    <span className="text-gray-900">UDP Abgeschlossen:</span> <span className="font-bold text-blue-600">{city.completed}</span>
                                 </p>
                                 <div className="mt-2 pt-2 border-t border-gray-300 flex justify-between">
-                                    <p className="text-sm font-semibold">Total UDP:</p> <span className="font-bold text-gray-800">{city.total}</span>
+                                    <p className="text-sm font-semibold">Gesamt UDP:</p> <span className="font-bold text-gray-800">{city.total}</span>
                                 </div>
                             </div>
                             <div className="bg-gray-100 rounded-lg p-4 text-left">
-                                <CardDescription className="font-semibold text-lg mb-2 text-gray-800">Billed HP:</CardDescription>
+                                <CardDescription className="font-semibold text-lg mb-2 text-gray-800">In Rechnung gestellte HP:</CardDescription>
                                 <div className="flex justify-between items-center">
-                                    <p className="text-sm font-semibold">Total Billed HP:</p> <span className="font-bold text-gray-800">{city.hp}</span>
+                                    <p className="text-sm font-semibold">Gesamt in Rechnung gestellte HP:</p> <span className="font-bold text-gray-800">{city.hp}</span>
                                     <Dialog>
                                         <DialogTrigger asChild>
                                             <Button variant="link" size="sm" className="text-blue-600">Details</Button>
                                         </DialogTrigger>
                                         <DialogContent className="sm:max-w-[425px]">
                                             <DialogHeader>
-                                                <DialogTitle className="text-2xl font-bold">{city.name} - Billed HP Details</DialogTitle>
+                                                <DialogTitle className="text-2xl font-bold">{city.name} - In Rechnung gestellte HP Details</DialogTitle>
                                             </DialogHeader>
                                             <ScrollArea className="h-[300px] w-full pr-4">
                                                 <div className="grid gap-4 py-4">

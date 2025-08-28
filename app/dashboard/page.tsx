@@ -65,7 +65,7 @@ const DashboardPage = () => {
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="text-xl font-semibold text-gray-700">Loading...</div>
+                <div className="text-xl font-semibold text-gray-700">Laden...</div>
             </div>
         );
     }
@@ -76,20 +76,20 @@ const DashboardPage = () => {
     return (
         <div className="flex-1 p-8">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-4xl font-bold text-gray-800">Welcome to your Dashboard!</h1>
+                <h1 className="text-4xl font-bold text-gray-800">Willkommen zu Ihrem Dashboard!</h1>
             </div>
             
-            <p className="text-gray-600 mb-8">Select an option from the sidebar to get started.</p>
+            <p className="text-gray-600 mb-8">Wählen Sie eine Option aus der Seitenleiste, um zu beginnen.</p>
             
             {/* Vacation Status Preview */}
             <div className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Vacation Status</h2>
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Urlaubsstatus</h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card className="bg-blue-50 border-blue-200">
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-blue-800">Total Requests</p>
+                                    <p className="text-sm font-medium text-blue-800">Gesamtanträge</p>
                                     <p className="text-2xl font-bold text-blue-900">{vacationStats.total}</p>
                                 </div>
                                 <Plane className="h-6 w-6 text-blue-500" />
@@ -100,7 +100,7 @@ const DashboardPage = () => {
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-yellow-800">Pending</p>
+                                    <p className="text-sm font-medium text-yellow-800">Ausstehend</p>
                                     <p className="text-2xl font-bold text-yellow-900">{vacationStats.pending}</p>
                                 </div>
                                 <div className="h-6 w-6 rounded-full bg-yellow-400"></div>
@@ -111,7 +111,7 @@ const DashboardPage = () => {
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-green-800">Approved</p>
+                                    <p className="text-sm font-medium text-green-800">Genehmigt</p>
                                     <p className="text-2xl font-bold text-green-900">{vacationStats.approved}</p>
                                 </div>
                                 <div className="h-6 w-6 rounded-full bg-green-400"></div>
@@ -122,7 +122,7 @@ const DashboardPage = () => {
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-red-800">Denied</p>
+                                    <p className="text-sm font-medium text-red-800">Abgelehnt</p>
                                     <p className="text-2xl font-bold text-red-900">{vacationStats.denied}</p>
                                 </div>
                                 <div className="h-6 w-6 rounded-full bg-red-400"></div>
@@ -133,15 +133,15 @@ const DashboardPage = () => {
                 <div className="mt-4 text-center">
                     {vacationStats.total === 0 ? (
                         <div className="text-gray-600 mb-2">
-                            <p>No vacation requests yet. Ready to take some time off?</p>
+                            <p>Noch keine Urlaubsanträge. Bereit für etwas Zeit?</p>
                         </div>
                     ) : (
                         <div className="text-gray-600 mb-2">
-                            <p>You have {vacationStats.pending} pending request{vacationStats.pending !== 1 ? 's' : ''}</p>
+                            <p>Sie haben {vacationStats.pending} ausstehende Anfrage{vacationStats.pending !== 1 ? 'n' : ''}</p>
                         </div>
                     )}
                     <Link href="/dashboard/vacation" className="text-teal-600 hover:text-teal-800 font-medium">
-                        View Full Vacation Dashboard →
+                        Vollständiges Urlaubs-Dashboard anzeigen →
                     </Link>
                 </div>
             </div>
@@ -151,12 +151,12 @@ const DashboardPage = () => {
                 <Link href="/dashboard/tasks">
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Work Orders</CardTitle>
+                            <CardTitle className="text-2xl font-bold">Arbeitsaufträge</CardTitle>
                             <ListTodo className="h-8 w-8 text-blue-500" />
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-500">View, create, and manage all your field service work orders.</p>
-                            <p className="text-sm font-semibold text-blue-600 mt-2">Go to Work Orders →</p>
+                            <p className="text-sm text-gray-500">Alle Ihre Außendienst-Arbeitsaufträge anzeigen, erstellen und verwalten.</p>
+                            <p className="text-sm font-semibold text-blue-600 mt-2">Zu Arbeitsaufträgen →</p>
                         </CardContent>
                     </Card>
                 </Link>
@@ -164,12 +164,12 @@ const DashboardPage = () => {
                 <Link href="/dashboard/discuss">
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Discuss</CardTitle>
+                            <CardTitle className="text-2xl font-bold">Diskutieren</CardTitle>
                             <MessageSquare className="h-8 w-8 text-orange-500" />
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-500">Communicate and collaborate with your team.</p>
-                            <p className="text-sm font-semibold text-orange-600 mt-2">Go to Discuss →</p>
+                            <p className="text-sm text-gray-500">Kommunizieren und mit Ihrem Team zusammenarbeiten.</p>
+                            <p className="text-sm font-semibold text-orange-600 mt-2">Zum Diskutieren →</p>
                         </CardContent>
                     </Card>
                 </Link>
@@ -177,12 +177,12 @@ const DashboardPage = () => {
                 <Link href="/dashboard/todo">
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Personal To Do</CardTitle>
+                            <CardTitle className="text-2xl font-bold">Persönliche To-Dos</CardTitle>
                             <ListChecks className="h-8 w-8 text-indigo-500" />
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-500">Create and manage personal to-do items.</p>
-                            <p className="text-sm font-semibold text-indigo-600 mt-2">Go to To Do →</p>
+                            <p className="text-sm text-gray-500">Persönliche To-Do-Elemente erstellen und verwalten.</p>
+                            <p className="text-sm font-semibold text-indigo-600 mt-2">Zu To-Dos →</p>
                         </CardContent>
                     </Card>
                 </Link>
@@ -190,12 +190,12 @@ const DashboardPage = () => {
                 <Link href="/dashboard/vacation">
                     <Card className="hover:shadow-lg transition-shadow">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Vacation</CardTitle>
+                            <CardTitle className="text-2xl font-bold">Urlaub</CardTitle>
                             <Plane className="h-8 w-8 text-teal-500" />
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-500">Submit and manage vacation requests with approval workflow.</p>
-                            <p className="text-sm font-semibold text-teal-600 mt-2">Go to Vacation →</p>
+                            <p className="text-sm text-gray-500">Urlaubsanträge einreichen und mit Genehmigungsworkflow verwalten.</p>
+                            <p className="text-sm font-semibold text-teal-600 mt-2">Zum Urlaub →</p>
                         </CardContent>
                     </Card>
                 </Link>
@@ -205,12 +205,12 @@ const DashboardPage = () => {
                         <Link href="/dashboard/projects">
                             <Card className="hover:shadow-lg transition-shadow">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-2xl font-bold">Project Management</CardTitle>
+                                    <CardTitle className="text-2xl font-bold">Projektmanagement</CardTitle>
                                     <Package className="h-8 w-8 text-purple-500" />
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500">Manage projects and their status by city.</p>
-                                    <p className="text-sm font-semibold text-purple-600 mt-2">Go to Projects →</p>
+                                    <p className="text-sm text-gray-500">Projekte und ihren Status nach Stadt verwalten.</p>
+                                    <p className="text-sm font-semibold text-purple-600 mt-2">Zu Projekten →</p>
                                 </CardContent>
                             </Card>
                         </Link>
@@ -222,8 +222,8 @@ const DashboardPage = () => {
                                     <MapPin className="h-8 w-8 text-green-500" />
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500">Visualize task data on an interactive map.</p>
-                                    <p className="text-sm font-semibold text-green-600 mt-2">Go to WebGIS →</p>
+                                    <p className="text-sm text-gray-500">Aufgabendaten auf einer interaktiven Karte visualisieren.</p>
+                                    <p className="text-sm font-semibold text-green-600 mt-2">Zu WebGIS →</p>
                                 </CardContent>
                             </Card>
                         </Link>
@@ -231,12 +231,12 @@ const DashboardPage = () => {
                         <Link href="/dashboard/reports">
                             <Card className="hover:shadow-lg transition-shadow">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-2xl font-bold">Reports</CardTitle>
+                                    <CardTitle className="text-2xl font-bold">Berichte</CardTitle>
                                     <FileText className="h-8 w-8 text-red-500" />
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500">Access detailed reports on your team's performance.</p>
-                                    <p className="text-sm font-semibold text-red-600 mt-2">Go to Reports →</p>
+                                    <p className="text-sm text-gray-500">Detaillierte Berichte über die Leistung Ihres Teams abrufen.</p>
+                                    <p className="text-sm font-semibold text-red-600 mt-2">Zu Berichten →</p>
                                 </CardContent>
                             </Card>
                         </Link>
@@ -244,12 +244,12 @@ const DashboardPage = () => {
                          <Link href="/dashboard/warehouse-manager">
                             <Card className="hover:shadow-lg transition-shadow">
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-2xl font-bold">Warehouse</CardTitle>
+                                    <CardTitle className="text-2xl font-bold">Lager</CardTitle>
                                     <Warehouse className="h-8 w-8 text-purple-500" />
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500">Manage assets and track inventory.</p>
-                                    <p className="text-sm font-semibold text-purple-600 mt-2">Go to Warehouse →</p>
+                                    <p className="text-sm text-gray-500">Anlagen verwalten und Inventar verfolgen.</p>
+                                    <p className="text-sm font-semibold text-purple-600 mt-2">Zum Lager →</p>
                                 </CardContent>
                             </Card>
                         </Link>
@@ -259,12 +259,12 @@ const DashboardPage = () => {
                     <Link href="/dashboard/admin">
                         <Card className="hover:shadow-lg transition-shadow">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-2xl font-bold">Admin Panel</CardTitle>
+                                <CardTitle className="text-2xl font-bold">Admin-Panel</CardTitle>
                                 <UserCog className="h-8 w-8 text-gray-500" />
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-gray-500">Manage user roles and system settings.</p>
-                                <p className="text-sm font-semibold text-gray-600 mt-2">Go to Admin Panel →</p>
+                                <p className="text-sm text-gray-500">Benutzerrollen und Systemeinstellungen verwalten.</p>
+                                <p className="text-sm font-semibold text-gray-600 mt-2">Zum Admin-Panel →</p>
                             </CardContent>
                         </Card>
                     </Link>

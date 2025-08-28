@@ -87,7 +87,7 @@ const TasksPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center w-screen h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading Work Orders...</div>
+        <div className="text-xl font-semibold text-gray-700">Arbeitsaufträge werden geladen...</div>
       </div>
     );
   }
@@ -101,20 +101,20 @@ const TasksPage = () => {
         <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
           <Link href="/dashboard" className="hover:text-blue-600 transition-colors">Dashboard</Link>
           <span>/</span>
-          <span>Work Orders</span>
+          <span>Arbeitsaufträge</span>
         </div>
-        <h1 className="text-4xl font-bold text-gray-800 mb-6">Work Orders</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-6">Arbeitsaufträge</h1>
         {canViewTaskForm && (
           <div className="mb-4 flex justify-between items-center">
             <div className="text-sm text-gray-600">
-              Completed Today: {metrics.completedToday} / Total Assigned: {metrics.totalAssigned}
+              Heute abgeschlossen: {metrics.completedToday} / Gesamt zugewiesen: {metrics.totalAssigned}
             </div>
           </div>
         )}
         <Tabs defaultValue={canViewTaskForm ? 'list' : 'my-orders'} className="flex-1 flex flex-col">
           <TabsList className="grid w-full grid-cols-3 mb-4">
-            {canViewTaskForm && <TabsTrigger value="create">Create Work Order</TabsTrigger>}
-            <TabsTrigger value="list">My Work Orders</TabsTrigger>
+            {canViewTaskForm && <TabsTrigger value="create">Arbeitsauftrag erstellen</TabsTrigger>}
+            <TabsTrigger value="list">Meine Arbeitsaufträge</TabsTrigger>
           </TabsList>
           {canViewTaskForm && (
             <TabsContent value="create" className="flex-1">

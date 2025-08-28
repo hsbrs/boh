@@ -205,12 +205,12 @@ const DiscussPage = () => {
         setNewMessage('');
         setSuggestions([]);
       } else {
-        alert('You must be logged in to send a message.');
+        alert('Sie müssen angemeldet sein, um eine Nachricht zu senden.');
       }
     } catch (error) {
       console.error("Error sending message: ", error);
       if (error instanceof Error) {
-        alert('Error adding message: ' + error.message);
+        alert('Fehler beim Hinzufügen der Nachricht: ' + error.message);
       }
     }
   };
@@ -228,7 +228,7 @@ const DiscussPage = () => {
     } catch (error) {
       console.error("Error deleting message: ", error);
       if (error instanceof Error) {
-        alert('Error deleting message: ' + error.message);
+        alert('Fehler beim Löschen der Nachricht: ' + error.message);
       }
     }
   };
@@ -241,7 +241,7 @@ const DiscussPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="text-xl font-semibold text-gray-700">Loading...</div>
+        <div className="text-xl font-semibold text-gray-700">Laden...</div>
       </div>
     );
   }
@@ -254,13 +254,13 @@ const DiscussPage = () => {
             Dashboard
           </Link>
           <span>/</span>
-          <span>Discuss</span>
+          <span>Diskutieren</span>
         </div>
-        <h1 className="text-4xl font-bold text-gray-800 mb-6">Discuss</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-6">Diskutieren</h1>
         <div className="flex flex-1 gap-4">
           <Card className="w-64">
             <CardHeader>
-              <CardTitle>Topics</CardTitle>
+              <CardTitle>Themen</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {topics.map(topic => (
@@ -272,7 +272,7 @@ const DiscussPage = () => {
                 >
                   {topic}
                   {unreadTopics[topic] && (
-                    <Badge className="absolute right-2 top-1/2 -translate-y-1/2">Mention</Badge>
+                    <Badge className="absolute right-2 top-1/2 -translate-y-1/2">Erwähnt</Badge>
                   )}
                 </Button>
               ))}
@@ -349,10 +349,10 @@ const DiscussPage = () => {
                 <Input
                   value={newMessage}
                   onChange={handleInputChange}
-                  placeholder="Type your message..."
+                  placeholder="Geben Sie Ihre Nachricht ein..."
                   className="flex-1"
                 />
-                <Button type="submit">Send</Button>
+                <Button type="submit">Senden</Button>
               </form>
             </div>
           </Card>
@@ -362,14 +362,14 @@ const DiscussPage = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>Löschung bestätigen</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this message? This action cannot be undone.
+              Sind Sie sicher, dass Sie diese Nachricht löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={handleCancelDelete}>Cancel</Button>
-            <Button variant="destructive" onClick={() => messageToDeleteId && handleDeleteMessage(messageToDeleteId)}>Delete</Button>
+            <Button variant="outline" onClick={handleCancelDelete}>Abbrechen</Button>
+            <Button variant="destructive" onClick={() => messageToDeleteId && handleDeleteMessage(messageToDeleteId)}>Löschen</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

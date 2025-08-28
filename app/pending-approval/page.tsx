@@ -54,7 +54,7 @@ const PendingApprovalPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading...</div>
+        <div className="text-xl font-semibold text-gray-700">Laden...</div>
       </div>
     );
   }
@@ -67,17 +67,17 @@ const PendingApprovalPage = () => {
             <Clock className="w-8 h-8 text-yellow-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-800">
-            Account Pending Approval
+            Konto wartet auf Genehmigung
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-center text-gray-600">
             <p className="mb-2">
-              Hello <span className="font-semibold">{userEmail}</span>!
+              Hallo <span className="font-semibold">{userEmail}</span>!
             </p>
             <p>
-              Your account has been created successfully, but it's currently pending admin approval.
-              You'll be able to access the dashboard once an administrator approves your account.
+              Ihr Konto wurde erfolgreich erstellt, wartet aber derzeit auf die Genehmigung durch den Administrator.
+              Sie können auf das Dashboard zugreifen, sobald ein Administrator Ihr Konto genehmigt hat.
             </p>
           </div>
 
@@ -85,11 +85,11 @@ const PendingApprovalPage = () => {
             <div className="flex items-start space-x-3">
               <UserCheck className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-blue-800">
-                <p className="font-medium mb-1">What happens next?</p>
+                <p className="font-medium mb-1">Was passiert als nächstes?</p>
                 <ul className="space-y-1 text-blue-700">
-                  <li>• Admin will review your account</li>
-                  <li>• You'll receive access once approved</li>
-                  <li>• Check back later or contact your administrator</li>
+                  <li>• Administrator überprüft Ihr Konto</li>
+                  <li>• Sie erhalten Zugriff nach der Genehmigung</li>
+                  <li>• Schauen Sie später wieder vorbei oder kontaktieren Sie Ihren Administrator</li>
                 </ul>
               </div>
             </div>
@@ -102,13 +102,13 @@ const PendingApprovalPage = () => {
               className="flex-1"
             >
               <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              Abmelden
             </Button>
             <Button 
               onClick={() => window.location.reload()}
               className="flex-1"
             >
-              Check Status
+              Status prüfen
             </Button>
           </div>
         </CardContent>

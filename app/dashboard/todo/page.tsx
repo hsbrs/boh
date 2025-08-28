@@ -193,7 +193,7 @@ const ToDoPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
-        <div className="text-xl font-semibold text-gray-700">Loading...</div>
+        <div className="text-xl font-semibold text-gray-700">Laden...</div>
       </div>
     );
   }
@@ -206,20 +206,20 @@ const ToDoPage = () => {
                 Dashboard
                 </Link>
                 <span>/</span>
-                <span>To Do</span>
+                <span>To-Dos</span>
             </div>
-            <h1 className="text-4xl font-bold text-gray-800 mb-6">My Personal To Do List</h1>
+            <h1 className="text-4xl font-bold text-gray-800 mb-6">Meine persönliche To-Do-Liste</h1>
             
             <Card className="flex flex-col mb-6">
                 <CardHeader>
-                    <CardTitle>Add a New To Do</CardTitle>
+                    <CardTitle>Neues To-Do hinzufügen</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleAddToDo} className="flex flex-col md:flex-row gap-2">
                     <Input
                         value={newToDo}
                         onChange={(e) => setNewToDo(e.target.value)}
-                        placeholder="What do you need to do?"
+                        placeholder="Was müssen Sie tun?"
                         className="flex-1"
                     />
                     <Popover>
@@ -232,7 +232,7 @@ const ToDoPage = () => {
                             )}
                         >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {deadline ? format(deadline, "PPP") : <span>Set a deadline</span>}
+                            {deadline ? format(deadline, "PPP") : <span>Frist setzen</span>}
                         </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
@@ -244,16 +244,16 @@ const ToDoPage = () => {
                         />
                         </PopoverContent>
                     </Popover>
-                    <Button type="submit">Add</Button>
+                    <Button type="submit">Hinzufügen</Button>
                     </form>
                 </CardContent>
             </Card>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {renderToDos(groupedToDos.today, 'Today')}
-                {renderToDos(groupedToDos.thisWeek, 'This Week')}
-                {renderToDos(groupedToDos.thisMonth, 'This Month')}
-                {renderToDos(groupedToDos.later, 'Later / No Deadline')}
+                {renderToDos(groupedToDos.today, 'Heute')}
+                {renderToDos(groupedToDos.thisWeek, 'Diese Woche')}
+                {renderToDos(groupedToDos.thisMonth, 'Diesen Monat')}
+                {renderToDos(groupedToDos.later, 'Später / Keine Frist')}
             </div>
 
         </div>

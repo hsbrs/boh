@@ -74,7 +74,7 @@ const ManageProjectsPage = () => {
       setLoading(false);
     }, (error) => {
       console.error("Error fetching projects: ", error);
-      showNotification('Error fetching projects.', 'error');
+      showNotification('Fehler beim Abrufen der Projekte.', 'error');
       setLoading(false);
     });
 
@@ -393,7 +393,7 @@ const ManageProjectsPage = () => {
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Beschreibung</Label>
               <Input
                 id="description"
                 value={description}
@@ -407,7 +407,7 @@ const ManageProjectsPage = () => {
                 <Label htmlFor="status">Status</Label>
                 <Select value={status} onValueChange={setStatus} required>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select project status" />
+                    <SelectValue placeholder="Projektstatus auswählen" />
                   </SelectTrigger>
                   <SelectContent>
                     {statuses.map((s) => (
@@ -418,10 +418,10 @@ const ManageProjectsPage = () => {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority">Priorität</Label>
                 <Select value={priority} onValueChange={setPriority}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select priority level" />
+                    <SelectValue placeholder="Prioritätsstufe auswählen" />
                   </SelectTrigger>
                   <SelectContent>
                     {priorities.map((p) => (
@@ -434,7 +434,7 @@ const ManageProjectsPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label htmlFor="startDate">Start Date</Label>
+                <Label htmlFor="startDate">Startdatum</Label>
                 <Input
                   id="startDate"
                   type="date"
@@ -444,7 +444,7 @@ const ManageProjectsPage = () => {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="endDate">End Date</Label>
+                <Label htmlFor="endDate">Enddatum</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -461,7 +461,7 @@ const ManageProjectsPage = () => {
                 type="number"
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
-                placeholder="Enter project budget"
+                placeholder="Projektbudget eingeben"
                 min="0"
                 step="0.01"
               />
@@ -469,7 +469,7 @@ const ManageProjectsPage = () => {
 
             <DialogFooter>
               <Button type="submit">
-                Save Changes
+                Änderungen speichern
               </Button>
             </DialogFooter>
           </form>
