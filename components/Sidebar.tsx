@@ -8,19 +8,12 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import {
     LayoutDashboard,
-    ListTodo,
     FileText,
-    MessageSquare,
     Menu,
     MapPin,
     UserCog,
-    ListChecks,
-    Warehouse,
-    ChevronDown,
-    ChevronRight,
     Package, // New icon for Project Management
     BarChart2,
-    Truck,
     Plane, // New icon for Vacation
 } from 'lucide-react';
 
@@ -33,7 +26,6 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isCollapsed, userRole, userName, onToggleCollapse, onLogout }: SidebarProps) {
-    const [isWarehouseExpanded, setIsWarehouseExpanded] = useState(false);
     const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
     const isAdmin = userRole === 'admin';
 
@@ -80,47 +72,6 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                 </Link>
                             </TooltipTrigger>
                             {isCollapsed && <TooltipContent side="right">Startseite</TooltipContent>}
-                        </Tooltip>
-
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link href="/dashboard/tasks" className={cn(
-                                    buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                    isCollapsed ? 'w-full' : 'w-full justify-start',
-                                    'text-gray-700 hover:bg-gray-200'
-                                )}>
-                                    <ListTodo className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'Arbeitsaufträge'}
-                                </Link>
-                            </TooltipTrigger>
-                            {isCollapsed && <TooltipContent side="right">Arbeitsaufträge</TooltipContent>}
-                        </Tooltip>
-                        
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link href="/dashboard/discuss" className={cn(
-                                    buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                    isCollapsed ? 'w-full' : 'w-full justify-start',
-                                    'text-gray-700 hover:bg-gray-200'
-                                )}>
-                                    <MessageSquare className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'Diskutieren'}
-                                </Link>
-                            </TooltipTrigger>
-                            {isCollapsed && <TooltipContent side="right">Diskutieren</TooltipContent>}
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link href="/dashboard/todo" className={cn(
-                                    buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                    isCollapsed ? 'w-full' : 'w-full justify-start',
-                                    'text-gray-700 hover:bg-gray-200'
-                                )}>
-                                    <ListChecks className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'To-Dos'}
-                                </Link>
-                            </TooltipTrigger>
-                            {isCollapsed && <TooltipContent side="right">Persönliche To-Dos</TooltipContent>}
                         </Tooltip>
 
                         {/* Vacation Management - Available to all users */}
@@ -180,49 +131,6 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                     </TooltipTrigger>
                                     {isCollapsed && <TooltipContent side="right">Berichte</TooltipContent>}
                                 </Tooltip>
-                                
-                                <div className="flex flex-col">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => !isCollapsed && setIsWarehouseExpanded(!isWarehouseExpanded)}
-                                        className={cn(
-                                            'w-full justify-start text-gray-700 hover:bg-gray-200',
-                                            isCollapsed && 'w-full'
-                                        )}
-                                    >
-                                        <Warehouse className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                        {!isCollapsed && 'Lager'}
-                                        {!isCollapsed && (
-                                            isWarehouseExpanded ? <ChevronDown className="ml-auto h-4 w-4" /> : <ChevronRight className="ml-auto h-4 w-4" />
-                                        )}
-                                    </Button>
-                                    {isWarehouseExpanded && !isCollapsed && (
-                                        <nav className="flex flex-col pl-4 mt-2 space-y-1">
-                                            <Link href="/dashboard/warehouse-manager/asset-management" className={cn(
-                                                buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                                'w-full justify-start text-gray-700 hover:bg-gray-200'
-                                            )}>
-                                                <Package className="h-5 w-5 mr-2" />
-                                                Anlagenverwaltung
-                                            </Link>
-                                            <Link href="/dashboard/warehouse-manager/reports" className={cn(
-                                                buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                                'w-full justify-start text-gray-700 hover:bg-gray-200'
-                                            )}>
-                                                <BarChart2 className="h-5 w-5 mr-2" />
-                                                Berichte
-                                            </Link>
-                                            <Link href="/dashboard/warehouse-manager/stock-updater" className={cn(
-                                                buttonVariants({ variant: 'ghost', size: 'sm' }),
-                                                'w-full justify-start text-gray-700 hover:bg-gray-200'
-                                            )}>
-                                                <Truck className="h-5 w-5 mr-2" />
-                                                Bestandsaktualisierung
-                                            </Link>
-                                        </nav>
-                                    )}
-                                </div>
                             </>
                         )}
                         {isAdmin && (

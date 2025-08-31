@@ -18,10 +18,9 @@ Broos Project FSM is a comprehensive project management application built with N
 
 **Key Features:**
 - User authentication and authorization
-- Role-based access control (Employee, Manager, Admin)
-- Project management and task tracking
-- Warehouse management
-- Vacation management
+- Role-based access control (Employee, HR, PM, Manager, Admin)
+- Project management and tracking
+- Vacation management with approval workflow
 - WebGIS integration
 - Real-time collaboration tools
 - Responsive dashboard interface
@@ -73,7 +72,7 @@ Broos Project FSM is a comprehensive project management application built with N
 ```typescript
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -103,22 +102,31 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 
 ### User Roles & Permissions
 
-The application supports three user roles with different access levels:
+The application supports five user roles with different access levels:
 
 1. **Employee** (`role: 'employee'`)
    - Basic dashboard access
-   - Task management
-   - Vacation requests
-   - Limited project access
+   - Vacation request submission
+   - Limited project view access
 
-2. **Manager** (`role: 'manager'`)
+2. **HR** (`role: 'hr'`)
    - All employee permissions
-   - Team management
-   - Project oversight
-   - Warehouse management
-   - Report generation
+   - First level vacation approval
+   - User management oversight
 
-3. **Admin** (`role: 'admin'`)
+3. **PM** (`role: 'pm'`)
+   - All HR permissions
+   - Project planning and management
+   - Second level vacation approval
+
+4. **Manager** (`role: 'manager'`)
+   - All PM permissions
+   - Project oversight and management
+   - Final vacation approval
+   - Report generation
+   - WebGIS access
+
+5. **Admin** (`role: 'admin'`)
    - All manager permissions
    - User approval system
    - System configuration
@@ -130,7 +138,7 @@ The application supports three user roles with different access levels:
 interface User {
   uid: string;
   email: string;
-  role: 'employee' | 'manager' | 'admin';
+  role: 'employee' | 'hr' | 'pm' | 'manager' | 'admin';
   fullName: string;
   jobTitle: string;
   phoneNumber: string;
@@ -745,7 +753,6 @@ export default function Sidebar({
   onToggleCollapse, 
   onLogout 
 }: SidebarProps) {
-  const [isWarehouseExpanded, setIsWarehouseExpanded] = useState(false);
   const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
   const isAdmin = userRole === 'admin';
 
@@ -808,14 +815,11 @@ export default function Sidebar({
 
 **Menu Structure:**
 - **Startseite** (Dashboard) - All users
-- **Arbeitsaufträge** (Tasks) - All users
-- **Projekte** (Projects) - All users
-- **Lagerverwaltung** (Warehouse) - Manager/Admin only
-- **Urlaubsverwaltung** (Vacation) - All users
-- **WebGIS** - All users
-- **Diskussion** (Discussion) - All users
+- **Urlaub** (Vacation) - All users
+- **Projektmanagement** (Project Management) - Manager/Admin only
+- **WebGIS** - Manager/Admin only
 - **Berichte** (Reports) - Manager/Admin only
-- **Admin** - Admin only
+- **Admin-Panel** - Admin only
 
 ## API Routes
 
