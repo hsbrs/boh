@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, DocumentData, doc, getDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData, doc, getDoc, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase';
 import Link from 'next/link';
@@ -12,34 +12,55 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-// Import report components
-import ReportCalendar from './reportcalendar';
-import ReportUser from './reportuser';
-
-// Define the type for a task
-type Task = {
+// Define the type for a vacation request
+type VacationRequest = {
   id: string;
-  summary?: string;
-  assignee?: string;
-  assigneeUid?: string;
-  description?: string;
-  serviceType?: string;
-  priority?: string;
-  scheduledTime?: string;
-  estimatedDuration?: number;
-  dueDate?: string;
-  location?: string;
-  locationUrl?: string;
-  customerName?: string;
-  customerContact?: string;
-  status?: string;
+  employeeId: string;
+  employeeName?: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  reason?: string;
+  createdAt: string;
 };
 
-type ReportType = 'overview' | 'calendar' | 'resource';
+// Type guard to validate vacation request data
+const isValidVacationRequest = (data: any): data is VacationRequest => {
+  return (
+    typeof data.employeeId === 'string' &&
+    typeof data.startDate === 'string' &&
+    typeof data.endDate === 'string' &&
+    typeof data.status === 'string' &&
+    typeof data.createdAt === 'string'
+  );
+};
+
+// Define the type for a project
+type Project = {
+  id: string;
+  name: string;
+  city: string;
+  status: string;
+  createdAt: string;
+  description?: string;
+};
+
+// Type guard to validate project data
+const isValidProject = (data: any): data is Project => {
+  return (
+    typeof data.name === 'string' &&
+    typeof data.city === 'string' &&
+    typeof data.status === 'string' &&
+    typeof data.createdAt === 'string'
+  );
+};
+
+type ReportType = 'overview' | 'vacation' | 'projects';
 
 const ReportsPage = () => {
   const router = useRouter();
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [vacationRequests, setVacationRequests] = useState<VacationRequest[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [activeReport, setActiveReport] = useState<ReportType>('overview');
@@ -59,21 +80,33 @@ const ReportsPage = () => {
         }
     });
 
-    const unsubscribeTasks = onSnapshot(query(collection(db, 'tasks')), (snapshot) => {
-      let tasksArray: Task[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...(doc.data() as DocumentData),
-      }));
-      setTasks(tasksArray);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching tasks: ", error);
+    // Fetch vacation requests
+    const unsubscribeVacation = onSnapshot(query(collection(db, 'vacation_requests'), orderBy('createdAt', 'desc')), (snapshot) => {
+      let vacationArray: VacationRequest[] = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...(doc.data() as DocumentData),
+        }))
+        .filter(isValidVacationRequest);
+      setVacationRequests(vacationArray);
+    });
+
+    // Fetch projects
+    const unsubscribeProjects = onSnapshot(query(collection(db, 'projects'), orderBy('createdAt', 'desc')), (snapshot) => {
+      let projectsArray: Project[] = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...(doc.data() as DocumentData),
+        }))
+        .filter(isValidProject);
+      setProjects(projectsArray);
       setLoading(false);
     });
 
     return () => {
         unsubscribeAuth();
-        unsubscribeTasks();
+        unsubscribeVacation();
+        unsubscribeProjects();
     };
   }, [router]);
 
@@ -98,22 +131,15 @@ const ReportsPage = () => {
   }
 
   // Calculate summary statistics
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(task => task.status === 'Done').length;
-  const inProgressTasks = tasks.filter(task => task.status === 'In Progress').length;
-  const plannedTasks = tasks.filter(task => task.status === 'Planned').length;
-  const delayedTasks = tasks.filter(task => task.status === 'Delayed').length;
-  const completionRate = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : '0';
+  const totalVacationRequests = vacationRequests.length;
+  const pendingVacationRequests = vacationRequests.filter(req => req.status === 'pending').length;
+  const approvedVacationRequests = vacationRequests.filter(req => req.status === 'approved').length;
+  const deniedVacationRequests = vacationRequests.filter(req => req.status === 'denied').length;
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Planned': return 'bg-blue-200 text-blue-800 border-blue-400';
-      case 'In Progress': return 'bg-yellow-200 text-yellow-800 border-yellow-400';
-      case 'Done': return 'bg-green-200 text-green-800 border-green-400';
-      case 'Delayed': return 'bg-red-200 text-red-800 border-red-400';
-      default: return 'bg-gray-200 text-gray-800 border-gray-400';
-    }
-  };
+  const totalProjects = projects.length;
+  const activeProjects = projects.filter(project => project.status === 'active').length;
+  const completedProjects = projects.filter(project => project.status === 'completed').length;
+  const plannedProjects = projects.filter(project => project.status === 'planned').length;
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -121,92 +147,192 @@ const ReportsPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-            <Badge variant="outline">{totalTasks}</Badge>
+            <CardTitle className="text-sm font-medium">Urlaubsanträge</CardTitle>
+            <Badge variant="outline">{totalVacationRequests}</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalTasks}</div>
-            <p className="text-xs text-muted-foreground">All work orders</p>
+            <div className="text-2xl font-bold">{totalVacationRequests}</div>
+            <p className="text-xs text-muted-foreground">Alle Anträge</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <Badge className="bg-green-200 text-green-800">Done</Badge>
+            <CardTitle className="text-sm font-medium">Ausstehend</CardTitle>
+            <Badge className="bg-yellow-200 text-yellow-800">Pending</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{completedTasks}</div>
-            <p className="text-xs text-muted-foreground">Successfully completed</p>
+            <div className="text-2xl font-bold text-yellow-600">{pendingVacationRequests}</div>
+            <p className="text-xs text-muted-foreground">Warten auf Genehmigung</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Badge className="bg-yellow-200 text-yellow-800">Active</Badge>
+            <CardTitle className="text-sm font-medium">Genehmigt</CardTitle>
+            <Badge className="bg-green-200 text-green-800">Approved</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{inProgressTasks}</div>
-            <p className="text-xs text-muted-foreground">Currently being worked on</p>
+            <div className="text-2xl font-bold text-green-600">{approvedVacationRequests}</div>
+            <p className="text-xs text-muted-foreground">Erfolgreich genehmigt</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
-            <Badge variant="outline">{completionRate}%</Badge>
+            <CardTitle className="text-sm font-medium">Projekte</CardTitle>
+            <Badge variant="outline">{totalProjects}</Badge>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{completionRate}%</div>
-            <p className="text-xs text-muted-foreground">Of total tasks completed</p>
+            <div className="text-2xl font-bold text-blue-600">{totalProjects}</div>
+            <p className="text-xs text-muted-foreground">Alle Projekte</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Status Breakdown */}
+      {/* Vacation Status Breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle>Aufgabenstatus-Übersicht</CardTitle>
+          <CardTitle>Urlaubsanträge Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-              <span className="font-medium">Geplant</span>
-              <Badge className="bg-blue-200 text-blue-800">{plannedTasks}</Badge>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-              <span className="font-medium">In Bearbeitung</span>
-              <Badge className="bg-yellow-200 text-yellow-800">{inProgressTasks}</Badge>
+              <span className="font-medium">Ausstehend</span>
+              <Badge className="bg-yellow-200 text-yellow-800">{pendingVacationRequests}</Badge>
             </div>
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-              <span className="font-medium">Abgeschlossen</span>
-              <Badge className="bg-green-200 text-green-800">{completedTasks}</Badge>
+              <span className="font-medium">Genehmigt</span>
+              <Badge className="bg-green-200 text-green-800">{approvedVacationRequests}</Badge>
             </div>
             <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-              <span className="font-medium">Verzögert</span>
-              <Badge className="bg-red-200 text-red-800">{delayedTasks}</Badge>
+              <span className="font-medium">Abgelehnt</span>
+              <Badge className="bg-red-200 text-red-800">{deniedVacationRequests}</Badge>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Recent Tasks */}
+      {/* Project Status Breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle>Letzte Aufgaben</CardTitle>
+          <CardTitle>Projekt Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+              <span className="font-medium">Aktiv</span>
+              <Badge className="bg-blue-200 text-blue-800">{activeProjects}</Badge>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+              <span className="font-medium">Abgeschlossen</span>
+              <Badge className="bg-green-200 text-green-800">{completedProjects}</Badge>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+              <span className="font-medium">Geplant</span>
+              <Badge className="bg-purple-200 text-purple-800">{plannedProjects}</Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Vacation Requests */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Letzte Urlaubsanträge</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {tasks.slice(0, 5).map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-3 border rounded-lg">
+            {vacationRequests.slice(0, 5).map((request) => (
+              <div key={request.id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex-1">
-                  <h4 className="font-medium">{task.summary}</h4>
-                  <p className="text-sm text-gray-500">Zugewiesen an: {task.assignee}</p>
+                  <h4 className="font-medium">{request.employeeName || 'Unbekannt'}</h4>
+                  <p className="text-sm text-gray-500">
+                    {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()}
+                  </p>
                 </div>
-                <Badge className={getStatusColor(task.status || '')}>
-                  {task.status || 'Unbekannt'}
+                <Badge className={
+                  request.status === 'approved' ? 'bg-green-200 text-green-800' :
+                  request.status === 'denied' ? 'bg-red-200 text-red-800' :
+                  'bg-yellow-200 text-yellow-800'
+                }>
+                  {request.status === 'approved' ? 'Genehmigt' :
+                   request.status === 'denied' ? 'Abgelehnt' : 'Ausstehend'}
                 </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderVacationReport = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Urlaubsanträge Übersicht</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {vacationRequests.map((request) => (
+              <div key={request.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <h4 className="font-medium">{request.employeeName || 'Unbekannt'}</h4>
+                  <p className="text-sm text-gray-500">
+                    {new Date(request.startDate).toLocaleDateString()} - {new Date(request.endDate).toLocaleDateString()}
+                  </p>
+                  {request.reason && <p className="text-sm text-gray-600 mt-1">{request.reason}</p>}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge className={
+                    request.status === 'approved' ? 'bg-green-200 text-green-800' :
+                    request.status === 'denied' ? 'bg-red-200 text-red-800' :
+                    'bg-yellow-200 text-yellow-800'
+                  }>
+                    {request.status === 'approved' ? 'Genehmigt' :
+                     request.status === 'denied' ? 'Abgelehnt' : 'Ausstehend'}
+                  </Badge>
+                  <span className="text-xs text-gray-500">
+                    {new Date(request.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const renderProjectsReport = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Projekte Übersicht</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {projects.map((project) => (
+              <div key={project.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex-1">
+                  <h4 className="font-medium">{project.name}</h4>
+                  <p className="text-sm text-gray-500">Stadt: {project.city}</p>
+                  {project.description && <p className="text-sm text-gray-600 mt-1">{project.description}</p>}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge className={
+                    project.status === 'active' ? 'bg-blue-200 text-blue-800' :
+                    project.status === 'completed' ? 'bg-green-200 text-green-800' :
+                    'bg-purple-200 text-purple-800'
+                  }>
+                    {project.status === 'active' ? 'Aktiv' :
+                     project.status === 'completed' ? 'Abgeschlossen' : 'Geplant'}
+                  </Badge>
+                  <span className="text-xs text-gray-500">
+                    {new Date(project.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -236,24 +362,24 @@ const ReportsPage = () => {
           Übersicht
         </Button>
         <Button
-          variant={activeReport === 'calendar' ? 'default' : 'outline'}
-          onClick={() => setActiveReport('calendar')}
+          variant={activeReport === 'vacation' ? 'default' : 'outline'}
+          onClick={() => setActiveReport('vacation')}
         >
-          Kalenderansicht
+          Urlaubsanträge
         </Button>
         <Button
-          variant={activeReport === 'resource' ? 'default' : 'outline'}
-          onClick={() => setActiveReport('resource')}
+          variant={activeReport === 'projects' ? 'default' : 'outline'}
+          onClick={() => setActiveReport('projects')}
         >
-          Ressourcenplanung
+          Projekte
         </Button>
       </div>
 
       {/* Report Content */}
       <div className="h-[calc(100vh-200px)]">
         {activeReport === 'overview' && renderOverview()}
-        {activeReport === 'calendar' && <ReportCalendar tasks={tasks} userRole={userRole} />}
-        {activeReport === 'resource' && <ReportUser tasks={tasks} />}
+        {activeReport === 'vacation' && renderVacationReport()}
+        {activeReport === 'projects' && renderProjectsReport()}
       </div>
     </div>
   );

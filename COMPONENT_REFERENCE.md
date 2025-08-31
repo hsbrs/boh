@@ -100,6 +100,11 @@ interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {}
 ```typescript
 <Label htmlFor="email">Email Address</Label>
 <Input id="email" />
+
+// With required indicator
+<Label htmlFor="email">
+  Email <span className="text-red-500">*</span>
+</Label>
 ```
 
 ---
@@ -206,12 +211,14 @@ interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
     <TableRow>
       <TableHead>Name</TableHead>
       <TableHead>Email</TableHead>
+      <TableHead>Role</TableHead>
     </TableRow>
   </TableHeader>
   <TableBody>
     <TableRow>
       <TableCell>John Doe</TableCell>
       <TableCell>john@example.com</TableCell>
+      <TableCell>Manager</TableCell>
     </TableRow>
   </TableBody>
 </Table>
@@ -523,6 +530,48 @@ const className = cn(
 
 ---
 
+## User Roles & Permissions
+
+The application supports five user roles with different access levels:
+
+### Role Hierarchy
+1. **Employee** (`role: 'employee'`)
+   - Basic dashboard access
+   - Vacation request submission
+   - Limited project view access
+
+2. **HR** (`role: 'hr'`)
+   - All employee permissions
+   - First level vacation approval
+   - User management oversight
+
+3. **PM** (`role: 'pm'`)
+   - All HR permissions
+   - Project planning and management
+   - Second level vacation approval
+
+4. **Manager** (`role: 'manager'`)
+   - All PM permissions
+   - Project oversight and management
+   - Final vacation approval
+   - Report generation
+   - WebGIS access
+
+5. **Admin** (`role: 'admin'`)
+   - All manager permissions
+   - User approval system
+   - System configuration
+   - Full access to all modules
+
+### Navigation Access by Role
+- **Startseite** (Dashboard) - All users
+- **Urlaub** (Vacation) - All users
+- **Projektmanagement** (Project Management) - Manager/Admin only
+- **WebGIS** - Manager/Admin only
+- **Berichte** (Reports) - Manager/Admin only
+- **Admin-Panel** - Admin only
+
+---
 ## Best Practices
 
 1. **Always use TypeScript interfaces** for component props
@@ -533,6 +582,8 @@ const className = cn(
 6. **Implement proper keyboard navigation**
 7. **Use consistent spacing** with Tailwind's scale
 8. **Test components** with different screen sizes
+9. **Implement role-based access control** for sensitive features
+10. **Use proper form validation** for user inputs
 
 ---
 

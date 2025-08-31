@@ -7,7 +7,7 @@ import { auth, db } from '@/lib/firebase';
 import Link from 'next/link';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ListTodo, FileText, MessageSquare, MapPin, UserCog, ListChecks, Warehouse, Package, Plane } from 'lucide-react';
+import { FileText, MapPin, UserCog, Package, Plane } from 'lucide-react';
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -147,45 +147,6 @@ const DashboardPage = () => {
             </div>
     
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Work Orders */}
-                <Link href="/dashboard/tasks">
-                    <Card className="hover:shadow-lg transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Arbeitsaufträge</CardTitle>
-                            <ListTodo className="h-8 w-8 text-blue-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-gray-500">Alle Ihre Außendienst-Arbeitsaufträge anzeigen, erstellen und verwalten.</p>
-                            <p className="text-sm font-semibold text-blue-600 mt-2">Zu Arbeitsaufträgen →</p>
-                        </CardContent>
-                    </Card>
-                </Link>
-                {/* Discuss */}
-                <Link href="/dashboard/discuss">
-                    <Card className="hover:shadow-lg transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Diskutieren</CardTitle>
-                            <MessageSquare className="h-8 w-8 text-orange-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-gray-500">Kommunizieren und mit Ihrem Team zusammenarbeiten.</p>
-                            <p className="text-sm font-semibold text-orange-600 mt-2">Zum Diskutieren →</p>
-                        </CardContent>
-                    </Card>
-                </Link>
-                {/* To Do */}
-                <Link href="/dashboard/todo">
-                    <Card className="hover:shadow-lg transition-shadow">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-2xl font-bold">Persönliche To-Dos</CardTitle>
-                            <ListChecks className="h-8 w-8 text-indigo-500" />
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm text-gray-500">Persönliche To-Do-Elemente erstellen und verwalten.</p>
-                            <p className="text-sm font-semibold text-indigo-600 mt-2">Zu To-Dos →</p>
-                        </CardContent>
-                    </Card>
-                </Link>
                 {/* Vacation Management */}
                 <Link href="/dashboard/vacation">
                     <Card className="hover:shadow-lg transition-shadow">
@@ -237,19 +198,6 @@ const DashboardPage = () => {
                                 <CardContent>
                                     <p className="text-sm text-gray-500">Detaillierte Berichte über die Leistung Ihres Teams abrufen.</p>
                                     <p className="text-sm font-semibold text-red-600 mt-2">Zu Berichten →</p>
-                                </CardContent>
-                            </Card>
-                        </Link>
-                         {/* Warehouse */}
-                         <Link href="/dashboard/warehouse-manager">
-                            <Card className="hover:shadow-lg transition-shadow">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                    <CardTitle className="text-2xl font-bold">Lager</CardTitle>
-                                    <Warehouse className="h-8 w-8 text-purple-500" />
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-gray-500">Anlagen verwalten und Inventar verfolgen.</p>
-                                    <p className="text-sm font-semibold text-purple-600 mt-2">Zum Lager →</p>
                                 </CardContent>
                             </Card>
                         </Link>
