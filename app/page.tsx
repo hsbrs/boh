@@ -46,28 +46,28 @@ const LandingPage = () => {
   const features = [
     {
       icon: <FolderOpenIcon className="h-8 w-8" />,
-      title: "Project Management",
-      description: "Streamline your workflow with comprehensive project tracking and management tools."
+      title: "Projektmanagement",
+      description: "Optimieren Sie Ihren Workflow mit umfassenden Projektverfolgungs- und Management-Tools."
     },
     {
       icon: <UsersIcon className="h-8 w-8" />,
-      title: "Team Collaboration",
-      description: "Keep your team connected and productive with real-time updates and communication."
+      title: "Team-Zusammenarbeit",
+      description: "Halten Sie Ihr Team verbunden und produktiv mit Echtzeit-Updates und Kommunikation."
     },
     {
       icon: <BarChart3Icon className="h-8 w-8" />,
-      title: "Analytics & Insights",
-      description: "Make data-driven decisions with powerful analytics and performance metrics."
+      title: "Analysen & Einblicke",
+      description: "Treffen Sie datenbasierte Entscheidungen mit leistungsstarken Analysen und Leistungsmetriken."
     }
   ];
 
   const benefits = [
-    "Real-time project tracking",
-    "Role-based access control",
-    "Mobile-responsive design",
-    "Secure data management",
-    "Customizable workflows",
-    "24/7 system availability"
+    "Echtzeit-Projektverfolgung",
+    "Rollenbasierte Zugriffskontrolle",
+    "Mobile-responsive Design",
+    "Sichere Datenverwaltung",
+    "Anpassbare Workflows",
+    "24/7 Systemverfügbarkeit"
   ];
 
   return (
@@ -90,12 +90,12 @@ const LandingPage = () => {
             <nav className="flex items-center space-x-4">
               <Button variant="ghost" asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
                 <Link href="/login">
-                  {isLoggedIn ? 'Dashboard' : 'Login'}
+                  {isLoggedIn ? 'Dashboard' : 'Anmelden'}
                 </Link>
               </Button>
               {!isLoggedIn && (
                 <Button asChild className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800">
-                  <Link href="/login">Sign Up</Link>
+                  <Link href="/login">Registrieren</Link>
                 </Button>
               )}
             </nav>
@@ -126,22 +126,22 @@ const LandingPage = () => {
               </h1>
               
               <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                Transform your field service operations with our comprehensive project management platform. 
-                Streamline workflows, enhance team collaboration, and drive productivity.
+                Transformieren Sie Ihre Außendienst-Operationen mit unserer umfassenden Projektmanagement-Plattform. 
+                Optimieren Sie Workflows, verbessern Sie die Team-Zusammenarbeit und steigern Sie die Produktivität.
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button asChild size="lg" className="px-8 py-6 text-lg bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 shadow-2xl hover:shadow-red-500/25 transition-all duration-300">
                 <Link href={isLoggedIn ? '/dashboard' : '/login'}>
-                  {isLoggedIn ? 'Go to Dashboard' : 'Get Started Free'}
+                  {isLoggedIn ? 'Zum Dashboard' : 'Kostenlos starten'}
                   <ArrowRightIcon className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               
               {!isLoggedIn && (
                 <Button variant="outline" size="lg" asChild className="px-8 py-6 text-lg border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white">
-                  <Link href="/login">Watch Demo</Link>
+                  <Link href="/login">Demo ansehen</Link>
                 </Button>
               )}
             </div>
@@ -194,14 +194,14 @@ const LandingPage = () => {
             <div className="space-y-8">
               <div>
                 <Badge variant="secondary" className="px-3 py-1 text-sm bg-red-500/20 text-red-400 border-red-500/30 mb-4">
-                  Why Choose Us
+                  Warum uns wählen
                 </Badge>
                 <h2 className="text-4xl font-bold text-white mb-6">
-                  Built for modern field service teams
+                  Entwickelt für moderne Außendienst-Teams
                 </h2>
                 <p className="text-lg text-gray-400 leading-relaxed">
-                  Our platform is designed with field service professionals in mind, providing the tools and insights 
-                  you need to deliver exceptional service and grow your business.
+                  Unsere Plattform wurde mit Außendienst-Profis im Blick entwickelt und bietet die Tools und Einblicke, 
+                  die Sie benötigen, um außergewöhnlichen Service zu liefern und Ihr Geschäft zu erweitern.
                 </p>
               </div>
 
@@ -216,7 +216,7 @@ const LandingPage = () => {
 
               <Button asChild size="lg" className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800">
                 <Link href={isLoggedIn ? '/dashboard' : '/login'}>
-                  Start Your Journey
+                  Starten Sie Ihre Reise
                   <ArrowRightIcon className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -263,33 +263,33 @@ const LandingPage = () => {
                 <span className="text-xl font-bold text-white">Broos Project</span>
               </div>
               <p className="text-gray-400 text-sm">
-                Empowering field service teams with intelligent project management solutions.
+                Stärkung von Außendienst-Teams mit intelligenten Projektmanagement-Lösungen.
               </p>
             </div>
             
             <div className="space-y-4">
-              <h3 className="text-white font-semibold">Product</h3>
+              <h3 className="text-white font-semibold">Produkt</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="#" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Integrations</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Funktionen</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Preise</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Integrationen</Link></li>
               </ul>
             </div>
             
             <div className="space-y-4">
-              <h3 className="text-white font-semibold">Company</h3>
+              <h3 className="text-white font-semibold">Unternehmen</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="#" className="hover:text-white transition-colors">About</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Über uns</Link></li>
                 <li><Link href="#" className="hover:text-white transition-colors">Blog</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Careers</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Karriere</Link></li>
               </ul>
             </div>
             
             <div className="space-y-4">
               <h3 className="text-white font-semibold">Support</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><Link href="#" className="hover:text-white transition-colors">Help Center</Link></li>
-                <li><Link href="#" className="hover:text-white transition-colors">Contact</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Hilfe-Center</Link></li>
+                <li><Link href="#" className="hover:text-white transition-colors">Kontakt</Link></li>
                 <li><Link href="#" className="hover:text-white transition-colors">Status</Link></li>
               </ul>
             </div>
@@ -297,11 +297,11 @@ const LandingPage = () => {
           
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
-              &copy; {new Date().getFullYear()} Broos Project. All rights reserved.
+              &copy; {new Date().getFullYear()} Broos Project. Alle Rechte vorbehalten.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <Link href="#" className="text-gray-400 hover:text-white transition-colors">Privacy</Link>
-              <Link href="#" className="text-gray-400 hover:text-white transition-colors">Terms</Link>
+              <Link href="#" className="text-gray-400 hover:text-white transition-colors">Datenschutz</Link>
+              <Link href="#" className="text-gray-400 hover:text-white transition-colors">AGB</Link>
               <Link href="#" className="text-gray-400 hover:text-white transition-colors">Cookies</Link>
             </div>
           </div>
