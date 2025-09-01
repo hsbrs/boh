@@ -144,11 +144,11 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-xl font-semibold mb-4">Submit Vacation Request</h3>
+    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+      <h3 className="text-lg sm:text-xl font-semibold mb-4">Urlaubsantrag einreichen</h3>
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="startDate">Startdatum</Label>
             <Popover>
@@ -156,11 +156,11 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-full justify-start text-left font-normal text-sm sm:text-base",
                     !startDate && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   {startDate ? format(startDate, "PPP") : "Startdatum wählen"}
                 </Button>
               </PopoverTrigger>
@@ -183,11 +183,11 @@ export default function VacationRequestForm({ onSuccess }: VacationRequestFormPr
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-full justify-start text-left font-normal text-sm sm:text-base",
                     !endDate && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   {endDate ? format(endDate, "PPP") : "Enddatum wählen"}
                 </Button>
               </PopoverTrigger>

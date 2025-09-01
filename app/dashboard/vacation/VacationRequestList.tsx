@@ -212,30 +212,30 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                  </div>
                </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm break-words">
                       {format(request.startDate.toDate(), 'MMM dd, yyyy')} - {format(request.endDate.toDate(), 'MMM dd, yyyy')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">
+                    <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm">
                       {Math.ceil((request.endDate.toDate() - request.startDate.toDate()) / (1000 * 60 * 60 * 24))} Tage
                     </span>
                   </div>
                 </div>
                 
                                  <div className="flex items-start gap-2">
-                   <MessageSquare className="h-4 w-4 text-gray-500 mt-0.5" />
-                   <p className="text-sm text-gray-700">{request.reason}</p>
+                   <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                   <p className="text-xs sm:text-sm text-gray-700 break-words">{request.reason}</p>
                  </div>
 
                  {request.replacementUserName && (
                    <div className="flex items-center gap-2">
-                     <Users className="h-4 w-4 text-gray-500" />
-                     <span className="text-sm">
+                     <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
+                     <span className="text-xs sm:text-sm">
                        <span className="font-medium">Vertretung:</span> {request.replacementUserName}
                      </span>
                    </div>
@@ -243,7 +243,7 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
 
                                  {/* Action buttons for approvers */}
                  {canApprove(request) && (
-                   <div className="flex gap-2 pt-2">
+                   <div className="flex flex-col sm:flex-row gap-2 pt-2">
                      <Dialog>
                        <DialogTrigger asChild>
                          <Button 

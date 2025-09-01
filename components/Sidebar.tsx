@@ -40,11 +40,11 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
     return (
         <div className={cn(
             'flex flex-col min-h-screen bg-white shadow-lg transition-all duration-300 ease-in-out',
-            isCollapsed ? 'w-20 p-2' : 'w-64 p-6'
+            isCollapsed ? 'w-16 sm:w-20 p-2' : 'w-64 p-4 sm:p-6'
         )}>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
                 {!isCollapsed && (
-                    <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
+                    <h2 className="text-lg sm:text-2xl font-bold text-gray-800">Dashboard</h2>
                 )}
                 <Button
                     variant="ghost"
@@ -52,22 +52,22 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                     onClick={onToggleCollapse}
                     className={isCollapsed ? 'w-full' : ''}
                 >
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
             </div>
             <Separator />
             
-            <div className="flex-1 mt-6">
-                <nav className="flex flex-col space-y-2">
+            <div className="flex-1 mt-4 sm:mt-6">
+                <nav className="flex flex-col space-y-1 sm:space-y-2">
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Link href="/dashboard" className={cn(
                                     buttonVariants({ variant: 'ghost', size: 'sm' }),
                                     isCollapsed ? 'w-full' : 'w-full justify-start',
-                                    'text-gray-700 hover:bg-gray-200'
+                                    'text-gray-700 hover:bg-gray-200 text-xs sm:text-sm'
                                 )}>
-                                    <LayoutDashboard className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                    <LayoutDashboard className={cn('h-4 w-4 sm:h-5 sm:w-5', !isCollapsed && 'mr-2')} />
                                     {!isCollapsed && 'Startseite'}
                                 </Link>
                             </TooltipTrigger>

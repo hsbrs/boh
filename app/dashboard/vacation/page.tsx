@@ -96,68 +96,68 @@ export default function VacationPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Urlaubsverwaltung</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Urlaubsverwaltung</h1>
+          <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
             Urlaubsanträge und Genehmigungen verwalten
           </p>
         </div>
-        <Badge variant="outline" className="text-sm">
+        <Badge variant="outline" className="text-xs sm:text-sm w-fit">
           {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
         </Badge>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Gesamtanträge</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Gesamtanträge</CardTitle>
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-lg sm:text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ausstehend</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Ausstehend</CardTitle>
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
+            <div className="text-lg sm:text-2xl font-bold text-yellow-600">{stats.pending}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Genehmigt</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Genehmigt</CardTitle>
+            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
+            <div className="text-lg sm:text-2xl font-bold text-green-600">{stats.approved}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Abgelehnt</CardTitle>
-            <XCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-xs sm:text-sm font-medium">Abgelehnt</CardTitle>
+            <XCircle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.denied}</div>
+            <div className="text-lg sm:text-2xl font-bold text-red-600">{stats.denied}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
       <Tabs defaultValue="requests" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="requests">Urlaubsanträge</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 h-auto">
+          <TabsTrigger value="requests" className="text-xs sm:text-sm py-2 sm:py-3">Urlaubsanträge</TabsTrigger>
           {userRole === 'employee' && (
-            <TabsTrigger value="submit">Antrag einreichen</TabsTrigger>
+            <TabsTrigger value="submit" className="text-xs sm:text-sm py-2 sm:py-3">Antrag einreichen</TabsTrigger>
           )}
         </TabsList>
 
@@ -181,41 +181,41 @@ export default function VacationPage() {
              {/* Role-based Information */}
        {userRole !== 'employee' && (
          <Card className="bg-blue-50 border-blue-200">
-           <CardHeader>
-             <CardTitle className="flex items-center gap-2 text-blue-800">
-               <AlertCircle className="h-5 w-5" />
-               Approval Workflow & Oversight
+           <CardHeader className="pb-3">
+             <CardTitle className="flex items-center gap-2 text-blue-800 text-sm sm:text-base">
+               <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+               Genehmigungsworkflow & Aufsicht
              </CardTitle>
            </CardHeader>
            <CardContent className="text-blue-700">
-             <div className="space-y-2 text-sm">
+             <div className="space-y-2 text-xs sm:text-sm">
                {userRole === 'hr' && (
                  <div>
-                   <p>• You can review and approve/deny initial vacation requests from employees.</p>
-                   <p>• You can see all vacation requests for oversight and tracking.</p>
-                   <p>• Requests requiring your action are highlighted with a blue border.</p>
+                   <p>• Sie können anfängliche Urlaubsanträge von Mitarbeitern überprüfen und genehmigen/ablehnen.</p>
+                   <p>• Sie können alle Urlaubsanträge zur Aufsicht und Verfolgung einsehen.</p>
+                   <p>• Anträge, die Ihre Aktion erfordern, sind mit einem blauen Rahmen hervorgehoben.</p>
                  </div>
                )}
                {userRole === 'pm' && (
                  <div>
-                   <p>• You can review vacation requests that have been approved by HR and approve/deny them for project planning purposes.</p>
-                   <p>• You can see all vacation requests for oversight and tracking.</p>
-                   <p>• Requests requiring your action are highlighted with a blue border.</p>
+                   <p>• Sie können Urlaubsanträge überprüfen, die von der Personalabteilung genehmigt wurden, und sie für Projektplanungszwecke genehmigen/ablehnen.</p>
+                   <p>• Sie können alle Urlaubsanträge zur Aufsicht und Verfolgung einsehen.</p>
+                   <p>• Anträge, die Ihre Aktion erfordern, sind mit einem blauen Rahmen hervorgehoben.</p>
                  </div>
                )}
                {userRole === 'manager' && (
                  <div>
-                   <p>• You have final approval authority for all vacation requests that have passed HR and Project Management reviews.</p>
-                   <p>• When you approve, the request becomes fully approved. When you deny, it becomes denied.</p>
-                   <p>• You can see all vacation requests for oversight and tracking.</p>
-                   <p>• Requests requiring your action are highlighted with a blue border.</p>
+                   <p>• Sie haben die endgültige Genehmigungsbefugnis für alle Urlaubsanträge, die die Überprüfungen der Personalabteilung und des Projektmanagements durchlaufen haben.</p>
+                   <p>• Wenn Sie genehmigen, wird der Antrag vollständig genehmigt. Wenn Sie ablehnen, wird er abgelehnt.</p>
+                   <p>• Sie können alle Urlaubsanträge zur Aufsicht und Verfolgung einsehen.</p>
+                   <p>• Anträge, die Ihre Aktion erfordern, sind mit einem blauen Rahmen hervorgehoben.</p>
                  </div>
                )}
                {userRole === 'admin' && (
                  <div>
-                   <p>• You have full access to all vacation requests and can approve/deny at any level.</p>
-                   <p>• You can see all vacation requests for complete system oversight.</p>
-                   <p>• Requests requiring action are highlighted with a blue border.</p>
+                   <p>• Sie haben vollen Zugriff auf alle Urlaubsanträge und können auf jeder Ebene genehmigen/ablehnen.</p>
+                   <p>• Sie können alle Urlaubsanträge zur vollständigen Systemaufsicht einsehen.</p>
+                   <p>• Anträge, die eine Aktion erfordern, sind mit einem blauen Rahmen hervorgehoben.</p>
                  </div>
                )}
              </div>

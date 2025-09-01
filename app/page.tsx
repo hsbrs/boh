@@ -75,26 +75,26 @@ const LandingPage = () => {
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-gray-900/80 border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
+          <div className="flex justify-between items-center py-3 sm:py-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-700 rounded-lg flex items-center justify-center">
-                  <ZapIcon className="h-6 w-6 text-white" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-red-500 to-red-700 rounded-lg flex items-center justify-center">
+                  <ZapIcon className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full animate-pulse"></div>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
+              <span className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent">
                 Broos Project
               </span>
             </div>
-            <nav className="flex items-center space-x-4">
-              <Button variant="ghost" asChild className="text-gray-300 hover:text-white hover:bg-gray-800">
+            <nav className="flex items-center space-x-2 sm:space-x-4">
+              <Button variant="ghost" asChild className="text-gray-300 hover:text-white hover:bg-gray-800 text-xs sm:text-sm px-2 sm:px-4">
                 <Link href="/login">
                   {isLoggedIn ? 'Dashboard' : 'Anmelden'}
                 </Link>
               </Button>
               {!isLoggedIn && (
-                <Button asChild className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800">
+                <Button asChild className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-xs sm:text-sm px-2 sm:px-4">
                   <Link href="/login">Registrieren</Link>
                 </Button>
               )}
@@ -111,36 +111,36 @@ const LandingPage = () => {
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-          <div className="text-center space-y-8">
-            <div className="space-y-6">
-              <Badge variant="secondary" className="px-4 py-2 text-sm font-medium bg-gray-800/50 text-gray-300 border-gray-700">
-                <StarIcon className="h-4 w-4 mr-2 text-yellow-400" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-20 pb-12 sm:pb-16">
+          <div className="text-center space-y-6 sm:space-y-8">
+            <div className="space-y-4 sm:space-y-6">
+              <Badge variant="secondary" className="px-3 sm:px-4 py-1 sm:py-2 text-xs sm:text-sm font-medium bg-gray-800/50 text-gray-300 border-gray-700">
+                <StarIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 text-yellow-400" />
                 Innovation. Zukunft
               </Badge>
               
-              <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight">
+              <h1 className="text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight">
                 <span className="bg-gradient-to-r from-red-400 via-red-500 to-red-600 bg-clip-text text-transparent">
                   Broos Field Service
                 </span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed px-4 sm:px-0">
                 Transformieren Sie Ihre Außendienst-Operationen mit unserer umfassenden Projektmanagement-Plattform. 
                 Optimieren Sie Workflows, verbessern Sie die Team-Zusammenarbeit und steigern Sie die Produktivität.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button asChild size="lg" className="px-8 py-6 text-lg bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 shadow-2xl hover:shadow-red-500/25 transition-all duration-300">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4 sm:px-0">
+              <Button asChild size="lg" className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 shadow-2xl hover:shadow-red-500/25 transition-all duration-300">
                 <Link href={isLoggedIn ? '/dashboard' : '/login'}>
                   {isLoggedIn ? 'Zum Dashboard' : 'Kostenlos starten'}
-                  <ArrowRightIcon className="ml-2 h-5 w-5" />
+                  <ArrowRightIcon className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Link>
               </Button>
               
               {!isLoggedIn && (
-                <Button variant="outline" size="lg" asChild className="px-8 py-6 text-lg border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white">
+                <Button variant="outline" size="lg" asChild className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white">
                   <Link href="/login">Demo ansehen</Link>
                 </Button>
               )}
@@ -149,9 +149,9 @@ const LandingPage = () => {
         </div>
 
         {/* Features Section */}
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <Card 
                 key={index}
@@ -162,20 +162,20 @@ const LandingPage = () => {
                 }`}
                 onClick={() => setActiveFeature(index)}
               >
-                <CardHeader className="text-center pb-4">
-                  <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 transition-all duration-300 ${
+                <CardHeader className="text-center pb-3 sm:pb-4">
+                  <div className={`mx-auto w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-3 sm:mb-4 transition-all duration-300 ${
                     activeFeature === index 
                       ? 'bg-gradient-to-r from-red-500 to-red-700 text-white shadow-lg' 
                       : 'bg-gray-700 text-gray-400 group-hover:text-red-400'
                   }`}>
                     {feature.icon}
                   </div>
-                  <CardTitle className="text-xl font-semibold text-white">
+                  <CardTitle className="text-lg sm:text-xl font-semibold text-white">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="text-gray-400 text-center leading-relaxed">
+                  <CardDescription className="text-gray-400 text-center leading-relaxed text-sm sm:text-base">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
