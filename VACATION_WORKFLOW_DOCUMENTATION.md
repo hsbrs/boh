@@ -35,6 +35,12 @@ The vacation management system implements a three-tier approval workflow where v
 - **Next Action**: None - request terminated
 - **Dashboard Display**: "Abgelehnt" (Denied)
 
+### 6. Deletion (Request Removed)
+- **Who**: Employee can delete their own request
+- **When**: Only before any approval (status = `pending`)
+- **Result**: Request completely removed from system
+- **Restriction**: Cannot delete once HR has approved
+
 ## Data Structure
 
 ### Vacation Request Document
@@ -99,8 +105,8 @@ This ensures that requests are counted as pending until they reach a final state
 ## User Role Permissions
 
 ### Employee
-- **Can**: Submit vacation requests, view own requests
-- **Cannot**: Approve any requests
+- **Can**: Submit vacation requests, view own requests, delete own pending requests
+- **Cannot**: Approve any requests, delete requests after HR approval
 - **Sees**: Only their own vacation statistics
 
 ### HR
@@ -189,6 +195,35 @@ const getNextStatus = (request: VacationRequest) => {
 };
 ```
 
+#### Delete Logic
+```typescript
+const canDelete = (request: VacationRequest) => {
+  // Only employees can delete their own requests
+  if (userRole !== 'employee') return false;
+  
+  // Only the request owner can delete
+  if (request.employeeId !== userId) return false;
+  
+  // Can only delete if status is 'pending' (no approvals yet)
+  if (request.status !== 'pending') return false;
+  
+  return true;
+};
+
+const handleDelete = async (requestId: string) => {
+  setIsSubmitting(true);
+  try {
+    await deleteDoc(doc(db, 'vacation_requests', requestId));
+    toast.success('Urlaubsantrag erfolgreich gelöscht');
+  } catch (error) {
+    console.error('Error deleting request:', error);
+    toast.error('Fehler beim Löschen des Antrags');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+```
+
 ## Future Improvements
 
 ### Potential Enhancements
@@ -215,16 +250,31 @@ const getNextStatus = (request: VacationRequest) => {
 3. **Data Encryption**: Encrypt sensitive vacation data
 4. **Access Control**: Implement fine-grained access controls
 
+### Firebase Security Rules
+```javascript
+// Vacation Request Delete Rules
+allow delete: if request.auth != null && (
+  // Admin can delete any request
+  get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+  // Employee can delete their own pending requests (before any approval)
+  (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'employee' && 
+   resource.data.employeeId == request.auth.uid && 
+   resource.data.status == 'pending')
+);
+```
+
 ## Testing Scenarios
 
 ### Test Cases
 1. **Employee submits request** → Status: `pending`
-2. **HR approves** → Status: `hr_review`, HR approval recorded
-3. **PM approves** → Status: `pm_review`, PM approval recorded
-4. **Manager approves** → Status: `approved`, Manager approval recorded
-5. **Any role rejects** → Status: `denied`, rejection recorded
-6. **Dashboard statistics** → Correct counts for all statuses
-7. **Approval history** → Shows all roles with correct status
+2. **Employee deletes pending request** → Request removed from system
+3. **HR approves** → Status: `hr_review`, HR approval recorded
+4. **Employee cannot delete after HR approval** → Delete button hidden
+5. **PM approves** → Status: `pm_review`, PM approval recorded
+6. **Manager approves** → Status: `approved`, Manager approval recorded
+7. **Any role rejects** → Status: `denied`, rejection recorded
+8. **Dashboard statistics** → Correct counts for all statuses
+9. **Approval history** → Shows all roles with correct status
 
 ### Edge Cases
 1. **Multiple requests by same employee**
@@ -232,6 +282,8 @@ const getNextStatus = (request: VacationRequest) => {
 3. **Requests spanning multiple months**
 4. **Role changes during approval process**
 5. **System downtime during approval**
+6. **Employee tries to delete approved request**
+7. **Employee tries to delete another employee's request**
 
 ## Troubleshooting
 
@@ -240,6 +292,8 @@ const getNextStatus = (request: VacationRequest) => {
 2. **Missing approval history**: Verify approvals object structure
 3. **Permission errors**: Check user role assignments
 4. **Status not updating**: Verify Firestore update operations
+5. **Delete button not showing**: Check canDelete function logic
+6. **Delete operation fails**: Verify Firestore security rules
 
 ### Debug Steps
 1. Check browser console for JavaScript errors
@@ -252,3 +306,4 @@ const getNextStatus = (request: VacationRequest) => {
 
 *Last Updated: [Current Date]*
 *Version: 1.0*
+

@@ -8,10 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { format } from 'date-fns';
-import { Calendar, Clock, User, MessageSquare, CheckCircle, XCircle, Users } from 'lucide-react';
+import { Calendar, Clock, User, MessageSquare, CheckCircle, XCircle, Users, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -47,6 +47,8 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
   const [comment, setComment] = useState('');
   const [action, setAction] = useState<'approve' | 'deny'>('approve');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     let q;
@@ -136,6 +138,36 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
     } catch (error) {
       console.error('Error updating request:', error);
       toast.error('Fehler beim Aktualisieren des Antrags');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const canDelete = (request: VacationRequest) => {
+    // Only employees can delete their own requests
+    if (userRole !== 'employee') return false;
+    
+    // Only the request owner can delete
+    if (request.employeeId !== userId) return false;
+    
+    // Can only delete if status is 'pending' (no approvals yet)
+    if (request.status !== 'pending') return false;
+    
+    return true;
+  };
+
+  const handleDelete = async () => {
+    if (!requestToDelete) return;
+    
+    setIsSubmitting(true);
+    try {
+      await deleteDoc(doc(db, 'vacation_requests', requestToDelete));
+      toast.success('Urlaubsantrag erfolgreich gelöscht');
+      setDeleteDialogOpen(false);
+      setRequestToDelete(null);
+    } catch (error) {
+      console.error('Error deleting request:', error);
+      toast.error('Fehler beim Löschen des Antrags');
     } finally {
       setIsSubmitting(false);
     }
@@ -323,6 +355,25 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                    </div>
                  )}
 
+                 {/* Delete button for employees on their own pending requests */}
+                 {canDelete(request) && (
+                   <div className="pt-2">
+                     <Button 
+                       size="sm" 
+                       variant="outline"
+                       className="text-red-600 border-red-200 hover:bg-red-50"
+                       disabled={isSubmitting}
+                       onClick={() => {
+                         setRequestToDelete(request.id);
+                         setDeleteDialogOpen(true);
+                       }}
+                     >
+                       <Trash2 className="h-4 w-4 mr-1" />
+                       Antrag löschen
+                     </Button>
+                   </div>
+                 )}
+
                                    {/* Status indicator for requests that can't be acted on */}
                   {!canApprove(request) && userRole !== 'employee' && (
                     <div className="pt-2">
@@ -374,6 +425,42 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Urlaubsantrag löschen</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Sind Sie sicher, dass Sie diesen Urlaubsantrag löschen möchten? 
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleDelete} 
+                variant="destructive" 
+                className="flex-1"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Wird gelöscht...' : 'Löschen'}
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  setDeleteDialogOpen(false);
+                  setRequestToDelete(null);
+                }}
+                disabled={isSubmitting}
+              >
+                Abbrechen
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
