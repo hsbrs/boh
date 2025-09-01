@@ -42,6 +42,5 @@ yarn-error.log*
 next-env.d.ts
 
 # vacation system files (keep local, don't upload to GitHub)
-firestore.rules
-firestore_rules_updated.txt
+firebase_rules.md
 VACATION_SYSTEM.md
