@@ -82,8 +82,8 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       pending: { color: 'bg-yellow-100 text-yellow-800', text: 'Ausstehend' },
-      hr_review: { color: 'bg-blue-100 text-blue-800', text: 'HR-Prüfung' },
-      pm_review: { color: 'bg-purple-100 text-purple-800', text: 'PM-Prüfung' },
+      hr_review: { color: 'bg-blue-100 text-blue-800', text: 'PM-Prüfung' },
+      pm_review: { color: 'bg-purple-100 text-purple-800', text: 'Manager-Prüfung' },
       approved: { color: 'bg-green-100 text-green-800', text: 'Genehmigt' },
       denied: { color: 'bg-red-100 text-red-800', text: 'Abgelehnt' }
     };
@@ -341,19 +341,31 @@ export default function VacationRequestList({ userRole, userId }: VacationReques
                   <div className="pt-2 border-t">
                     <p className="text-xs font-medium text-gray-600 mb-2">Genehmigungsverlauf:</p>
                     <div className="space-y-1">
-                      {Object.entries(request.approvals).map(([role, approval]) => (
-                        approval.date && (
+                      {Object.entries(request.approvals).map(([role, approval]) => {
+                        const roleDisplayName = role === 'hr' ? 'HR' : role === 'pm' ? 'PM' : 'Manager';
+                        const hasActed = approval.date;
+                        const isApproved = approval.approved;
+                        
+                        return (
                           <div key={role} className="flex items-center gap-2 text-xs">
-                            <span className="capitalize font-medium">{role}:</span>
-                            <Badge variant={approval.approved ? "default" : "destructive"} className="text-xs">
-                              {approval.approved ? 'Genehmigt' : 'Abgelehnt'}
-                            </Badge>
-                            {approval.comment && (
-                              <span className="text-gray-600">- {approval.comment}</span>
+                            <span className="capitalize font-medium">{roleDisplayName}:</span>
+                            {hasActed ? (
+                              <>
+                                <Badge variant={isApproved ? "default" : "destructive"} className="text-xs">
+                                  {isApproved ? 'Genehmigt' : 'Abgelehnt'}
+                                </Badge>
+                                {approval.comment && (
+                                  <span className="text-gray-600">- {approval.comment}</span>
+                                )}
+                              </>
+                            ) : (
+                              <Badge variant="outline" className="text-xs text-gray-500">
+                                Ausstehend
+                              </Badge>
                             )}
                           </div>
-                        )
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}

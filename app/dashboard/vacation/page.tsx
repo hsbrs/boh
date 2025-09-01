@@ -67,7 +67,10 @@ export default function VacationPage() {
       const requests = snapshot.docs.map(doc => doc.data());
       
       const stats = {
-        pending: requests.filter((r: any) => r.status === 'pending').length,
+        // Pending includes all non-final statuses (pending, hr_review, pm_review)
+        pending: requests.filter((r: any) => 
+          r.status === 'pending' || r.status === 'hr_review' || r.status === 'pm_review'
+        ).length,
         approved: requests.filter((r: any) => r.status === 'approved').length,
         denied: requests.filter((r: any) => r.status === 'denied').length,
         total: requests.length
