@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeftIcon, SearchIcon, EyeIcon } from 'lucide-react';
+import { ArrowLeftIcon, SearchIcon, EyeIcon, UsersIcon } from 'lucide-react';
 
 // Define the type for a project to provide type safety
 type Project = {
@@ -21,10 +21,24 @@ type Project = {
   description: string;
   city: string;
   status: string;
-  priority: string;
+  priority?: string;
   startDate?: string;
   endDate?: string;
+  budget?: number;
+  tp?: number;
+  udp?: number;
+  projectManager?: {
+    uid: string;
+    name: string;
+    role: string;
+  };
+  employees?: Array<{
+    uid: string;
+    name: string;
+    role: string;
+  }>;
   createdAt?: any;
+  updatedAt?: any;
 };
 
 const ViewProjectsPage = () => {
@@ -56,7 +70,11 @@ const ViewProjectsPage = () => {
     const matchesSearch = 
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.city.toLowerCase().includes(searchTerm.toLowerCase());
+      project.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.projectManager?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (project.tp?.toString() || '').includes(searchTerm) ||
+      (project.udp?.toString() || '').includes(searchTerm) ||
+      (project.employees?.some(emp => emp.name.toLowerCase().includes(searchTerm.toLowerCase())) || false);
     
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
     const matchesCity = cityFilter === 'all' || project.city === cityFilter;
@@ -131,7 +149,7 @@ const ViewProjectsPage = () => {
               <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 id="search"
-                placeholder="Nach Titel, Beschreibung oder Stadt suchen..."
+                placeholder="Search by title, description, city, TP, UDP, manager, or employees..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -167,42 +185,89 @@ const ViewProjectsPage = () => {
       {/* Projects Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Projekte ({filteredProjects.length})</CardTitle>
+          <CardTitle className="flex items-center">
+            <EyeIcon className="h-5 w-5 mr-2" />
+            Projekte ({filteredProjects.length})
+          </CardTitle>
           <p className="text-sm text-gray-600">
             Zeige {filteredProjects.length} von {projects.length} Projekten
           </p>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[600px] w-full">
+          <ScrollArea className="h-[700px] w-full">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Projekttitel</TableHead>
-                  <TableHead>Beschreibung</TableHead>
-                  <TableHead>Stadt</TableHead>
+                  <TableHead>Project Title</TableHead>
+                  <TableHead>TP</TableHead>
+                  <TableHead>UDP</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Project Manager</TableHead>
+                  <TableHead>Employees</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Priorität</TableHead>
-                  <TableHead>Startdatum</TableHead>
-                  <TableHead>Enddatum</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Budget</TableHead>
+                  <TableHead>Start Date</TableHead>
+                  <TableHead>End Date</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredProjects.map(project => (
                   <TableRow key={project.id}>
                     <TableCell className="font-medium">{project.title}</TableCell>
-                    <TableCell className="max-w-xs truncate" title={project.description}>
-                      {project.description}
+                    <TableCell className="text-center">
+                      <Badge variant="outline">
+                        {project.tp?.toString().padStart(2, '0') || '-'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline">
+                        {project.udp?.toString().padStart(2, '0') || '-'}
+                      </Badge>
                     </TableCell>
                     <TableCell>{project.city}</TableCell>
+                    <TableCell className="text-sm">
+                      <div className="flex items-center space-x-2">
+                        <span>{project.projectManager?.name || 'N/A'}</span>
+                        {project.projectManager?.role && (
+                          <Badge variant="secondary" className="text-xs">
+                            {project.projectManager.role}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {project.employees && project.employees.length > 0 ? (
+                          <>
+                            {project.employees.slice(0, 2).map((employee, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {employee.name}
+                              </Badge>
+                            ))}
+                            {project.employees.length > 2 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{project.employees.length - 2} more
+                              </Badge>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-gray-400 text-sm">No employees assigned</span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(project.status)}>
                         {project.status}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getPriorityColor(project.priority)}>
-                        {project.priority}
+                      <Badge className={getPriorityColor(project.priority || 'Medium')}>
+                        {project.priority || 'Medium'}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {project.budget ? `€${project.budget.toLocaleString()}` : '-'}
                     </TableCell>
                     <TableCell>
                       {project.startDate ? new Date(project.startDate).toLocaleDateString() : '-'}

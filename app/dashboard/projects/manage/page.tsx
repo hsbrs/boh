@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, DocumentData, doc, updateDoc, deleteDoc, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
 
@@ -15,7 +15,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PencilIcon, Trash2Icon, PlusCircleIcon, Circle, CircleDashed, CircleCheck, ArrowLeftIcon, SearchIcon } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { PencilIcon, Trash2Icon, PlusCircleIcon, Circle, CircleDashed, CircleCheck, ArrowLeftIcon, SearchIcon, UsersIcon } from 'lucide-react';
 
 // Define the type for a project to provide type safety
 type Project = {
@@ -28,8 +29,28 @@ type Project = {
   startDate?: string;
   endDate?: string;
   budget?: number;
+  tp?: number;
+  udp?: number;
+  projectManager?: {
+    uid: string;
+    name: string;
+    role: string;
+  };
+  employees?: Array<{
+    uid: string;
+    name: string;
+    role: string;
+  }>;
   createdAt?: any;
   updatedAt?: any;
+};
+
+type UserData = {
+  uid: string;
+  fullName?: string;
+  role?: string;
+  email?: string;
+  isApproved?: boolean;
 };
 
 const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
@@ -43,6 +64,8 @@ const ManageProjectsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [cityFilter, setCityFilter] = useState<string>('all');
+  const [employees, setEmployees] = useState<UserData[]>([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
 
   // State for the edit dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -55,6 +78,10 @@ const ManageProjectsPage = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [budget, setBudget] = useState('');
+  const [tp, setTp] = useState('');
+  const [udp, setUdp] = useState('');
+  const [projectManager, setProjectManager] = useState('');
+  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
 
   const showNotification = (message: string, type: string) => {
     setNotification({ message, type });
@@ -78,6 +105,29 @@ const ManageProjectsPage = () => {
       setLoading(false);
     });
 
+    // Fetch employees for assignment
+    const fetchEmployees = async () => {
+      setLoadingEmployees(true);
+      try {
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const employeesData = usersSnapshot.docs
+          .map(doc => ({
+            uid: doc.id,
+            ...doc.data()
+          } as UserData))
+          .filter(employee => employee.isApproved !== false && employee.role !== 'admin')
+          .sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+        
+        setEmployees(employeesData);
+      } catch (error) {
+        console.error('Error fetching employees:', error);
+      } finally {
+        setLoadingEmployees(false);
+      }
+    };
+
+    fetchEmployees();
+
     return () => unsubscribe();
   }, []);
 
@@ -85,7 +135,10 @@ const ManageProjectsPage = () => {
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.city.toLowerCase().includes(searchTerm.toLowerCase());
+                         project.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (project.projectManager?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (project.tp?.toString() || '').includes(searchTerm) ||
+                         (project.udp?.toString() || '').includes(searchTerm);
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
     const matchesCity = cityFilter === 'all' || project.city === cityFilter;
     
@@ -132,6 +185,10 @@ const ManageProjectsPage = () => {
       setStartDate(project.startDate || '');
       setEndDate(project.endDate || '');
       setBudget(project.budget?.toString() || '');
+      setTp(project.tp?.toString() || '');
+      setUdp(project.udp?.toString() || '');
+      setProjectManager(project.projectManager?.name || '');
+      setSelectedEmployees(project.employees?.map(emp => emp.uid) || []);
     } else {
       setCurrentProject(null);
       setTitle('');
@@ -142,6 +199,10 @@ const ManageProjectsPage = () => {
       setStartDate('');
       setEndDate('');
       setBudget('');
+      setTp('');
+      setUdp('');
+      setProjectManager('');
+      setSelectedEmployees([]);
     }
     setIsDialogOpen(true);
   };
@@ -152,6 +213,17 @@ const ManageProjectsPage = () => {
       if (currentProject) {
         // Update an existing project
         const projectDocRef = doc(db, 'projects', currentProject.id);
+        
+        // Get selected employee details
+        const selectedEmployeeDetails = selectedEmployees.map(employeeId => {
+          const employee = employees.find(emp => emp.uid === employeeId);
+          return {
+            uid: employeeId,
+            name: employee?.fullName || employee?.email || 'Unknown',
+            role: employee?.role || 'employee'
+          };
+        });
+        
         await updateDoc(projectDocRef, {
           title: title.trim(),
           description: description.trim(),
@@ -161,26 +233,27 @@ const ManageProjectsPage = () => {
           startDate: startDate || null,
           endDate: endDate || null,
           budget: budget ? parseFloat(budget) : null,
+          employees: selectedEmployeeDetails,
           updatedAt: new Date(),
         });
-        showNotification('Project updated successfully!', 'success');
+        showNotification('Projekt erfolgreich aktualisiert!', 'success');
       }
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Error updating project: ", error);
-      showNotification('Error updating project.', 'error');
+      showNotification('Fehler beim Aktualisieren des Projekts.', 'error');
     }
   };
 
   const handleDeleteProject = async (projectId: string) => {
-    if (window.confirm("Are you sure you want to delete this project?")) {
+    if (window.confirm("Sind Sie sicher, dass Sie dieses Projekt löschen möchten?")) {
       const projectDocRef = doc(db, 'projects', projectId);
       try {
         await deleteDoc(projectDocRef);
-        showNotification('Project deleted successfully!', 'success');
+        showNotification('Projekt erfolgreich gelöscht!', 'success');
       } catch (error) {
         console.error("Error deleting project: ", error);
-        showNotification('Error deleting project.', 'error');
+        showNotification('Fehler beim Löschen des Projekts.', 'error');
       }
     }
   };
@@ -188,7 +261,7 @@ const ManageProjectsPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Loading projects...</div>
+        <div className="text-xl font-semibold text-gray-700">Projekte werden geladen...</div>
       </div>
     );
   }
@@ -236,7 +309,7 @@ const ManageProjectsPage = () => {
                 <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="search"
-                  placeholder="Search by title, description, or city..."
+                  placeholder="Search by title, description, city, TP, UDP, or manager..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -300,8 +373,10 @@ const ManageProjectsPage = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Project Title</TableHead>
-                    <TableHead>Description</TableHead>
+                    <TableHead>TP</TableHead>
+                    <TableHead>UDP</TableHead>
                     <TableHead>City</TableHead>
+                    <TableHead>Project Manager</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Priority</TableHead>
                     <TableHead>Budget</TableHead>
@@ -312,10 +387,27 @@ const ManageProjectsPage = () => {
                   {filteredProjects.map(project => (
                     <TableRow key={project.id}>
                       <TableCell className="font-medium">{project.title}</TableCell>
-                      <TableCell className="text-gray-600 max-w-xs truncate">
-                        {project.description}
+                      <TableCell className="text-center">
+                        <Badge variant="outline">
+                          {project.tp?.toString().padStart(2, '0') || '-'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge variant="outline">
+                          {project.udp?.toString().padStart(2, '0') || '-'}
+                        </Badge>
                       </TableCell>
                       <TableCell>{project.city}</TableCell>
+                      <TableCell className="text-sm">
+                        <div className="flex items-center space-x-2">
+                          <span>{project.projectManager?.name || 'N/A'}</span>
+                          {project.projectManager?.role && (
+                            <Badge variant="secondary" className="text-xs">
+                              {project.projectManager.role}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(project.status)}>
                           {getStatusIcon(project.status)} {project.status}
@@ -358,25 +450,64 @@ const ManageProjectsPage = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
+            <DialogTitle>Projekt bearbeiten</DialogTitle>
             <DialogDescription>
-              Update the project information below.
+              Aktualisieren Sie die Projektinformationen unten.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Project Code Fields - Read-only */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1">
-                <Label htmlFor="title">Project Title</Label>
+                <Label htmlFor="tp">TP</Label>
                 <Input
-                  id="title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  required
+                  id="tp"
+                  value={tp}
+                  readOnly
+                  className="bg-gray-50"
+                  placeholder="N/A"
                 />
               </div>
               
+              <div className="space-y-1">
+                <Label htmlFor="udp">UDP</Label>
+                <Input
+                  id="udp"
+                  value={udp}
+                  readOnly
+                  className="bg-gray-50"
+                  placeholder="N/A"
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="projectManager">Project Manager</Label>
+                <Input
+                  id="projectManager"
+                  value={projectManager}
+                  readOnly
+                  className="bg-gray-50"
+                  placeholder="N/A"
+                />
+              </div>
+            </div>
+
+            {/* Auto-generated Title - Read-only */}
+            <div className="space-y-2">
+              <Label htmlFor="title">Project Title (Auto-generated)</Label>
+              <Input
+                id="title"
+                value={title}
+                readOnly
+                className="bg-gray-50"
+                placeholder="Title will be generated automatically"
+              />
+            </div>
+
+            {/* Editable Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label htmlFor="city">City</Label>
                 <Select value={city} onValueChange={setCity} required>
@@ -465,6 +596,45 @@ const ManageProjectsPage = () => {
                 min="0"
                 step="0.01"
               />
+            </div>
+
+            {/* Employees Selection */}
+            <div className="space-y-4">
+              <Label className="flex items-center space-x-2">
+                <UsersIcon className="h-4 w-4" />
+                <span>Assign Employees to Project</span>
+              </Label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto border rounded-md p-4">
+                {employees.map((employee) => (
+                  <div key={employee.uid} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`employee-${employee.uid}`}
+                      checked={selectedEmployees.includes(employee.uid)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedEmployees(prev => [...prev, employee.uid]);
+                        } else {
+                          setSelectedEmployees(prev => prev.filter(id => id !== employee.uid));
+                        }
+                      }}
+                    />
+                    <Label 
+                      htmlFor={`employee-${employee.uid}`}
+                      className="text-sm font-normal cursor-pointer flex-1"
+                    >
+                      {employee.fullName || employee.email} 
+                      <Badge variant="outline" className="ml-2 text-xs">
+                        {employee.role}
+                      </Badge>
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              {selectedEmployees.length > 0 && (
+                <p className="text-sm text-gray-600">
+                  {selectedEmployees.length} employee{selectedEmployees.length !== 1 ? 's' : ''} selected
+                </p>
+              )}
             </div>
 
             <DialogFooter>
