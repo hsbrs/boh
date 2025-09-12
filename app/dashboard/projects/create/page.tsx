@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { useState, useEffect } from 'react';
+import { collection, addDoc, doc, getDoc, getDocs } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -14,18 +15,33 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeftIcon, PlusCircleIcon, SaveIcon } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ArrowLeftIcon, PlusCircleIcon, SaveIcon, UsersIcon } from 'lucide-react';
 
 const cities = ["Herzogenrath", "Lippstadt", "Emmerich"];
 const statuses = ["Started", "In Process", "Stopped", "Completed"];
+
+interface UserData {
+  uid: string;
+  fullName?: string;
+  role?: string;
+  email?: string;
+  isApproved?: boolean;
+}
 
 const CreateProjectPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: string; } | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const [employees, setEmployees] = useState<UserData[]>([]);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
 
   // Form state
   const [title, setTitle] = useState('');
+  const [tp, setTp] = useState('');
+  const [udp, setUdp] = useState('');
   const [description, setDescription] = useState('');
   const [city, setCity] = useState(cities[0]);
   const [status, setStatus] = useState(statuses[0]);
@@ -34,6 +50,64 @@ const CreateProjectPage = () => {
   const [budget, setBudget] = useState('');
   const [priority, setPriority] = useState('Medium');
 
+  // Auto-generate title when TP, UDP, or City changes
+  useEffect(() => {
+    if (tp && udp && city) {
+      const tpFormatted = tp.padStart(2, '0');
+      const udpFormatted = udp.padStart(2, '0');
+      const generatedTitle = `${city}, TP ${tpFormatted}, UDP ${udpFormatted}`;
+      setTitle(generatedTitle);
+    } else {
+      setTitle('');
+    }
+  }, [tp, udp, city]);
+
+  // Fetch current user and employees
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          // Get current user data
+          const userDocRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(userDocRef);
+          const userData = userDoc.data() as UserData;
+          
+          setCurrentUser({
+            uid: user.uid,
+            ...userData
+          });
+
+          // Check if user has permission to create projects
+          if (!userData || !['pm', 'manager', 'admin'].includes(userData.role || '')) {
+            showNotification('Sie haben keine Berechtigung, Projekte zu erstellen.', 'error');
+            router.push('/dashboard');
+            return;
+          }
+
+          // Fetch all employees
+          const usersSnapshot = await getDocs(collection(db, 'users'));
+          const employeesData = usersSnapshot.docs
+            .map(doc => ({
+              uid: doc.id,
+              ...doc.data()
+            } as UserData))
+            .filter(employee => employee.isApproved !== false && employee.role !== 'admin') // Exclude unapproved users and admins
+            .sort((a, b) => (a.fullName || '').localeCompare(b.fullName || ''));
+          
+          setEmployees(employeesData);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          showNotification('Fehler beim Laden der Benutzerdaten.', 'error');
+        }
+      } else {
+        router.push('/login');
+      }
+      setLoadingUser(false);
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
   const showNotification = (message: string, type: string) => {
     setNotification({ message, type });
     setTimeout(() => {
@@ -41,14 +115,71 @@ const CreateProjectPage = () => {
     }, 3000);
   };
 
+  const handleTpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numValue = parseInt(value);
+    
+    // Allow empty input or numbers between 1 and 1000
+    if (value === '' || (numValue >= 1 && numValue <= 1000)) {
+      setTp(value);
+    }
+  };
+
+  const handleUdpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numValue = parseInt(value);
+    
+    // Allow empty input or numbers between 1 and 1000
+    if (value === '' || (numValue >= 1 && numValue <= 1000)) {
+      setUdp(value);
+    }
+  };
+
+  const handleEmployeeSelection = (employeeId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedEmployees(prev => [...prev, employeeId]);
+    } else {
+      setSelectedEmployees(prev => prev.filter(id => id !== employeeId));
+    }
+  };
+
+  const getSelectedEmployeeNames = () => {
+    return selectedEmployees.map(employeeId => {
+      const employee = employees.find(emp => emp.uid === employeeId);
+      return employee?.fullName || employee?.email || 'Unknown';
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Validate TP and UDP
+      const tpNum = parseInt(tp);
+      const udpNum = parseInt(udp);
+      
+      if (!tpNum || !udpNum || tpNum < 1 || tpNum > 1000 || udpNum < 1 || udpNum > 1000) {
+        showNotification('TP and UDP must be numbers between 1 and 1000.', 'error');
+        setLoading(false);
+        return;
+      }
+
+      // Get selected employee details
+      const selectedEmployeeDetails = selectedEmployees.map(employeeId => {
+        const employee = employees.find(emp => emp.uid === employeeId);
+        return {
+          uid: employeeId,
+          name: employee?.fullName || employee?.email || 'Unknown',
+          role: employee?.role || 'employee'
+        };
+      });
+
       // Create the project object
       const projectData = {
         title: title.trim(),
+        tp: tpNum,
+        udp: udpNum,
         description: description.trim(),
         city,
         status,
@@ -56,6 +187,13 @@ const CreateProjectPage = () => {
         endDate: endDate || null,
         budget: budget ? parseFloat(budget) : null,
         priority,
+        projectManager: {
+          uid: currentUser?.uid,
+          name: currentUser?.fullName || currentUser?.email || 'Unknown',
+          role: currentUser?.role
+        },
+        employees: selectedEmployeeDetails,
+        createdBy: currentUser?.uid,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -66,6 +204,8 @@ const CreateProjectPage = () => {
       showNotification('Projekt erfolgreich erstellt!', 'success');
       
       // Reset form
+      setTp('');
+      setUdp('');
       setTitle('');
       setDescription('');
       setCity(cities[0]);
@@ -74,6 +214,7 @@ const CreateProjectPage = () => {
       setEndDate('');
       setBudget('');
       setPriority('Medium');
+      setSelectedEmployees([]);
 
       // Redirect to projects overview after a short delay
       setTimeout(() => {
@@ -96,6 +237,15 @@ const CreateProjectPage = () => {
       default: return 'bg-gray-200 text-gray-800 border-gray-400';
     }
   };
+
+  // Show loading while checking user permissions
+  if (loadingUser) {
+    return (
+      <div className="flex-1 p-8">
+        <div className="text-center text-gray-500">Überprüfe Berechtigungen...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-8">
@@ -134,15 +284,32 @@ const CreateProjectPage = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Basic Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Project Code Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Project Title *</Label>
+                  <Label htmlFor="tp">TP *</Label>
                   <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter project title"
+                    id="tp"
+                    type="number"
+                    value={tp}
+                    onChange={handleTpChange}
+                    placeholder="1-1000"
+                    min="1"
+                    max="1000"
+                    required
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="udp">UDP *</Label>
+                  <Input
+                    id="udp"
+                    type="number"
+                    value={udp}
+                    onChange={handleUdpChange}
+                    placeholder="1-1000"
+                    min="1"
+                    max="1000"
                     required
                   />
                 </div>
@@ -160,6 +327,18 @@ const CreateProjectPage = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* Auto-generated Title */}
+              <div className="space-y-2">
+                <Label htmlFor="title">Project Title (Auto-generated)</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  readOnly
+                  placeholder="Title will be generated automatically"
+                  className="bg-gray-50"
+                />
               </div>
 
               {/* Description */}
@@ -243,6 +422,51 @@ const CreateProjectPage = () => {
                 />
               </div>
 
+              {/* Project Manager (Auto-filled) */}
+              <div className="space-y-2">
+                <Label htmlFor="projectManager">Project Manager</Label>
+                <Input
+                  id="projectManager"
+                  value={currentUser?.fullName || currentUser?.email || 'Loading...'}
+                  readOnly
+                  className="bg-gray-50"
+                />
+                <p className="text-sm text-gray-500">This field is automatically filled based on your login</p>
+              </div>
+
+              {/* Employees Selection */}
+              <div className="space-y-4">
+                <Label className="flex items-center space-x-2">
+                  <UsersIcon className="h-4 w-4" />
+                  <span>Assign Employees to Project</span>
+                </Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto border rounded-md p-4">
+                  {employees.map((employee) => (
+                    <div key={employee.uid} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`employee-${employee.uid}`}
+                        checked={selectedEmployees.includes(employee.uid)}
+                        onCheckedChange={(checked) => handleEmployeeSelection(employee.uid, checked as boolean)}
+                      />
+                      <Label 
+                        htmlFor={`employee-${employee.uid}`}
+                        className="text-sm font-normal cursor-pointer flex-1"
+                      >
+                        {employee.fullName || employee.email} 
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          {employee.role}
+                        </Badge>
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                {selectedEmployees.length > 0 && (
+                  <p className="text-sm text-gray-600">
+                    {selectedEmployees.length} employee{selectedEmployees.length !== 1 ? 's' : ''} selected
+                  </p>
+                )}
+              </div>
+
               {/* Preview Card */}
               {title && (
                 <Card className="bg-gray-50">
@@ -256,9 +480,38 @@ const CreateProjectPage = () => {
                         <span>{title}</span>
                       </div>
                       <div className="flex items-center justify-between">
+                        <span className="font-medium">TP:</span>
+                        <span>{tp.padStart(2, '0')}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">UDP:</span>
+                        <span>{udp.padStart(2, '0')}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
                         <span className="font-medium">Stadt:</span>
                         <span>{city}</span>
                       </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Projektmanager:</span>
+                        <span>{currentUser?.fullName || currentUser?.email}</span>
+                      </div>
+                      {selectedEmployees.length > 0 && (
+                        <div className="flex items-start justify-between">
+                          <span className="font-medium">Mitarbeiter:</span>
+                          <div className="flex flex-wrap gap-1 max-w-xs justify-end">
+                            {getSelectedEmployeeNames().slice(0, 3).map((name, index) => (
+                              <Badge key={index} variant="secondary" className="text-xs">
+                                {name}
+                              </Badge>
+                            ))}
+                            {getSelectedEmployeeNames().length > 3 && (
+                              <Badge variant="secondary" className="text-xs">
+                                +{getSelectedEmployeeNames().length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="font-medium">Status:</span>
                         <Badge className={status === 'Started' ? 'bg-blue-200 text-blue-800' : 
@@ -286,7 +539,7 @@ const CreateProjectPage = () => {
                     Abbrechen
                   </Button>
                 </Link>
-                <Button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading || !title}>
                   <SaveIcon className="mr-2 h-4 w-4" />
                   {loading ? 'Wird erstellt...' : 'Projekt erstellen'}
                 </Button>
