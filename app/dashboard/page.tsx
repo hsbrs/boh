@@ -20,6 +20,18 @@ const DashboardPage = () => {
         approved: 0,
         denied: 0
     });
+    const [projectStats, setProjectStats] = useState({
+        total: 0,
+        active: 0,
+        completed: 0,
+        cities: 0
+    });
+    const [systemStats, setSystemStats] = useState({
+        totalUsers: 0,
+        pendingApprovals: 0,
+        activeReports: 0,
+        workOrdersToday: 0
+    });
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -55,6 +67,37 @@ const DashboardPage = () => {
                     };
                     setVacationStats(stats);
                 });
+
+                // Fetch project statistics
+                if (userDoc.exists() && ['manager', 'admin', 'pm'].includes(userDoc.data().role)) {
+                    const projectsUnsubscribe = onSnapshot(collection(db, 'projects'), (snapshot) => {
+                        const projects = snapshot.docs.map(doc => doc.data());
+                        const cities = new Set(projects.map((p: any) => p.city)).size;
+                        const stats = {
+                            total: projects.length,
+                            active: projects.filter((p: any) => p.status === 'In Process' || p.status === 'Started').length,
+                            completed: projects.filter((p: any) => p.status === 'Completed').length,
+                            cities: cities
+                        };
+                        setProjectStats(stats);
+                    });
+
+                    // Fetch system statistics
+                    const usersUnsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
+                        const users = snapshot.docs.map(doc => doc.data());
+                        setSystemStats(prev => ({
+                            ...prev,
+                            totalUsers: users.length,
+                            pendingApprovals: users.filter((u: any) => u.isApproved === false).length
+                        }));
+                    });
+                
+                    return () => {
+                        vacationUnsubscribe();
+                        projectsUnsubscribe();
+                        usersUnsubscribe();
+                    };
+                }
                 
                 setLoading(false);
                 
@@ -253,6 +296,27 @@ const DashboardPage = () => {
                                         <p className="text-sm font-semibold text-purple-600 group-hover:text-purple-700 transition-all duration-200">Zu Projekten</p>
                                         <span className="text-purple-600 group-hover:text-purple-700 transition-all duration-200 group-hover:translate-x-1">→</span>
                                     </div>
+                                    {(projectStats.total > 0 || isManagerOrAdmin) && (
+                                        <div className="mt-3 pt-2 border-t border-purple-100">
+                                            <div className="flex justify-between text-xs text-purple-600 mb-1">
+                                                <span>Projekte: {projectStats.total}</span>
+                                                <span>Städte: {projectStats.cities}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-purple-600 mb-2">
+                                                <span>Aktiv: {projectStats.active}</span>
+                                                <span>Abgeschlossen: {projectStats.completed}</span>
+                                            </div>
+                                            <div className="w-full bg-purple-100 rounded-full h-1.5 overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all duration-1000 ease-out"
+                                                    style={{ width: `${projectStats.total > 0 ? (projectStats.completed / projectStats.total) * 100 : 0}%` }}
+                                                />
+                                            </div>
+                                            <div className="text-xs text-purple-500 mt-1">
+                                                Abschlussrate: {projectStats.total > 0 ? Math.round((projectStats.completed / projectStats.total) * 100) : 0}%
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Link>
@@ -269,6 +333,27 @@ const DashboardPage = () => {
                                         <p className="text-sm font-semibold text-green-600 group-hover:text-green-700 transition-all duration-200">Zu WebGIS</p>
                                         <span className="text-green-600 group-hover:text-green-700 transition-all duration-200 group-hover:translate-x-1">→</span>
                                     </div>
+                                    {(projectStats.total > 0 || isManagerOrAdmin) && (
+                                        <div className="mt-3 pt-2 border-t border-green-100">
+                                            <div className="flex justify-between text-xs text-green-600 mb-1">
+                                                <span>Standorte: {projectStats.cities}</span>
+                                                <span>Projekte: {projectStats.total}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-green-600 mb-2">
+                                                <span>Aktiv: {projectStats.active}</span>
+                                                <span>Kartiert: {Math.round((projectStats.cities / Math.max(projectStats.total, 1)) * 100)}%</span>
+                                            </div>
+                                            <div className="w-full bg-green-100 rounded-full h-1.5 overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-green-500 to-green-600 transition-all duration-1000 ease-out"
+                                                    style={{ width: `${projectStats.cities > 0 ? Math.min((projectStats.cities / Math.max(projectStats.cities, 5)) * 100, 100) : 0}%` }}
+                                                />
+                                            </div>
+                                            <div className="text-xs text-green-500 mt-1">
+                                                Geografische Abdeckung: {projectStats.cities} Stadt{projectStats.cities !== 1 ? 'e' : ''}
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Link>
@@ -285,6 +370,27 @@ const DashboardPage = () => {
                                         <p className="text-sm font-semibold text-red-600 group-hover:text-red-700 transition-all duration-200">Zu Berichten</p>
                                         <span className="text-red-600 group-hover:text-red-700 transition-all duration-200 group-hover:translate-x-1">→</span>
                                     </div>
+                                    {isManagerOrAdmin && (
+                                        <div className="mt-3 pt-2 border-t border-red-100">
+                                            <div className="flex justify-between text-xs text-red-600 mb-1">
+                                                <span>Team: {systemStats.totalUsers} Benutzer</span>
+                                                <span>Projekte: {projectStats.total}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-red-600 mb-2">
+                                                <span>Aktiv: {projectStats.active}</span>
+                                                <span>Urlaub: {vacationStats.total}</span>
+                                            </div>
+                                            <div className="w-full bg-red-100 rounded-full h-1.5 overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-1000 ease-out"
+                                                    style={{ width: `${systemStats.totalUsers > 0 ? Math.min((systemStats.totalUsers / Math.max(systemStats.totalUsers, 10)) * 100, 100) : 0}%` }}
+                                                />
+                                            </div>
+                                            <div className="text-xs text-red-500 mt-1">
+                                                System-Performance: {systemStats.totalUsers > 0 ? Math.round(((projectStats.completed + vacationStats.approved) / (projectStats.total + vacationStats.total + 1)) * 100) : 0}% Effizienz
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Link>
@@ -301,6 +407,27 @@ const DashboardPage = () => {
                                         <p className="text-sm font-semibold text-orange-600 group-hover:text-orange-700 transition-all duration-200">Zu Work Orders</p>
                                         <span className="text-orange-600 group-hover:text-orange-700 transition-all duration-200 group-hover:translate-x-1">→</span>
                                     </div>
+                                    {isManagerOrAdmin && (
+                                        <div className="mt-3 pt-2 border-t border-orange-100">
+                                            <div className="flex justify-between text-xs text-orange-600 mb-1">
+                                                <span>Projekte: {projectStats.active} Aktiv</span>
+                                                <span>Team: {systemStats.totalUsers}</span>
+                                            </div>
+                                            <div className="flex justify-between text-xs text-orange-600 mb-2">
+                                                <span>Heute: {systemStats.workOrdersToday} Aufträge</span>
+                                                <span>Städte: {projectStats.cities}</span>
+                                            </div>
+                                            <div className="w-full bg-orange-100 rounded-full h-1.5 overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-orange-500 to-orange-600 transition-all duration-1000 ease-out"
+                                                    style={{ width: `${projectStats.active > 0 ? Math.min((projectStats.active / Math.max(projectStats.total, 1)) * 100, 100) : 0}%` }}
+                                                />
+                                            </div>
+                                            <div className="text-xs text-orange-500 mt-1">
+                                                Arbeitsauslastung: {projectStats.total > 0 ? Math.round((projectStats.active / projectStats.total) * 100) : 0}% Kapazität
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </Link>
@@ -319,6 +446,33 @@ const DashboardPage = () => {
                                     <p className="text-sm font-semibold text-gray-600 group-hover:text-gray-700 transition-all duration-200">Zum Admin-Panel</p>
                                     <span className="text-gray-600 group-hover:text-gray-700 transition-all duration-200 group-hover:translate-x-1">→</span>
                                 </div>
+                                {isAdmin && (
+                                    <div className="mt-3 pt-2 border-t border-gray-100">
+                                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                            <span>Benutzer: {systemStats.totalUsers}</span>
+                                            <span>Wartend: {systemStats.pendingApprovals}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs text-gray-600 mb-2">
+                                            <span>Projekte: {projectStats.total}</span>
+                                            <span>Urlaub: {vacationStats.total}</span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-gray-500 to-gray-600 transition-all duration-1000 ease-out"
+                                                style={{ width: `${systemStats.totalUsers > 0 ? Math.min(((systemStats.totalUsers - systemStats.pendingApprovals) / systemStats.totalUsers) * 100, 100) : 0}%` }}
+                                            />
+                                        </div>
+                                        <div className="text-xs text-gray-500 mt-1">
+                                            System-Status: {systemStats.totalUsers > 0 ? Math.round(((systemStats.totalUsers - systemStats.pendingApprovals) / systemStats.totalUsers) * 100) : 0}% Benutzer aktiv
+                                        </div>
+                                        {systemStats.pendingApprovals > 0 && (
+                                            <div className="text-xs text-amber-600 mt-1 flex items-center">
+                                                <span className="w-2 h-2 bg-amber-400 rounded-full mr-1 animate-pulse"></span>
+                                                {systemStats.pendingApprovals} Benutzer warten auf Genehmigung
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </Link>
