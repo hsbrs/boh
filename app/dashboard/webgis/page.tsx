@@ -37,7 +37,7 @@ const WebGISPage = () => {
     }, [router]);
 
     // Conditional rendering is placed after all hooks are called
-    const canViewWebGIS = userRole === 'admin' || userRole === 'manager';
+    const canViewWebGIS = userRole === 'admin' || userRole === 'manager' || userRole === 'pm';
 
     if (loading) {
         return (
