@@ -26,7 +26,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isCollapsed, userRole, userName, onToggleCollapse, onLogout }: SidebarProps) {
-    const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
+    const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin' || userRole === 'pm';
     const isAdmin = userRole === 'admin';
 
     const getInitials = (name: string) => {
