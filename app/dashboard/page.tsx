@@ -34,79 +34,104 @@ const DashboardPage = () => {
     });
 
     useEffect(() => {
+        let vacationUnsubscribe = () => {};
+        let projectsUnsubscribe = () => {};
+        let usersUnsubscribe = () => {};
+
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 router.push('/login');
-            } else {
+                return;
+            }
+
+            try {
                 const userDocRef = doc(db, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
+                
                 if (userDoc.exists()) {
-                    setUserRole(userDoc.data().role as string);
-                }
-                
-                // Fetch vacation stats
-                let q;
-                if (userDoc.exists() && userDoc.data().role === 'employee') {
-                    // Employees see only their own stats
-                    q = query(collection(db, 'vacation_requests'), where('employeeId', '==', user.uid));
-                } else {
-                    // Managers, HR, and PM see all stats for oversight
-                    q = query(collection(db, 'vacation_requests'));
-                }
-                
-                const vacationUnsubscribe = onSnapshot(q, (snapshot) => {
-                    const requests = snapshot.docs.map(doc => doc.data());
-                    const stats = {
-                        total: requests.length,
-                        // Pending includes all non-final statuses (pending, hr_review, pm_review)
-                        pending: requests.filter((r: any) => 
-                            r.status === 'pending' || r.status === 'hr_review' || r.status === 'pm_review'
-                        ).length,
-                        approved: requests.filter((r: any) => r.status === 'approved').length,
-                        denied: requests.filter((r: any) => r.status === 'denied').length
-                    };
-                    setVacationStats(stats);
-                });
-
-                // Fetch project statistics
-                if (userDoc.exists() && ['manager', 'admin', 'pm'].includes(userDoc.data().role)) {
-                    const projectsUnsubscribe = onSnapshot(collection(db, 'projects'), (snapshot) => {
-                        const projects = snapshot.docs.map(doc => doc.data());
-                        const cities = new Set(projects.map((p: any) => p.city)).size;
+                    const userData = userDoc.data();
+                    setUserRole(userData.role as string);
+                    
+                    // Fetch vacation stats
+                    let q;
+                    if (userData.role === 'employee') {
+                        q = query(collection(db, 'vacation_requests'), where('employeeId', '==', user.uid));
+                    } else {
+                        q = query(collection(db, 'vacation_requests'));
+                    }
+                    
+                    vacationUnsubscribe = onSnapshot(q, (snapshot) => {
+                        console.log('Vacation snapshot received:', snapshot.size, 'documents');
+                        const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         const stats = {
-                            total: projects.length,
-                            active: projects.filter((p: any) => p.status === 'In Process' || p.status === 'Started').length,
-                            completed: projects.filter((p: any) => p.status === 'Completed').length,
-                            cities: cities
+                            total: requests.length,
+                            pending: requests.filter((r: any) => 
+                                r.status === 'pending' || r.status === 'hr_review' || r.status === 'pm_review'
+                            ).length,
+                            approved: requests.filter((r: any) => r.status === 'approved').length,
+                            denied: requests.filter((r: any) => r.status === 'denied').length
                         };
-                        setProjectStats(stats);
+                        console.log('Vacation stats calculated:', stats);
+                        setVacationStats(stats);
+                    }, (error) => {
+                        console.error('Error fetching vacation stats:', error);
+                        setVacationStats({ total: 0, pending: 0, approved: 0, denied: 0 });
                     });
 
-                    // Fetch system statistics
-                    const usersUnsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
-                        const users = snapshot.docs.map(doc => doc.data());
-                        setSystemStats(prev => ({
-                            ...prev,
-                            totalUsers: users.length,
-                            pendingApprovals: users.filter((u: any) => u.isApproved === false).length
-                        }));
-                    });
-                
-                    return () => {
-                        vacationUnsubscribe();
-                        projectsUnsubscribe();
-                        usersUnsubscribe();
-                    };
+                    // Fetch project and system statistics for managers/admins
+                    if (['manager', 'admin', 'pm'].includes(userData.role)) {
+                        console.log('Setting up project and user listeners for role:', userData.role);
+                        
+                        projectsUnsubscribe = onSnapshot(collection(db, 'projects'), (snapshot) => {
+                            console.log('Projects snapshot received:', snapshot.size, 'documents');
+                            const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            const cities = new Set(projects.map((p: any) => p.city).filter(city => city)).size;
+                            const stats = {
+                                total: projects.length,
+                                active: projects.filter((p: any) => p.status === 'In Process' || p.status === 'Started').length,
+                                completed: projects.filter((p: any) => p.status === 'Completed').length,
+                                cities: cities
+                            };
+                            console.log('Project stats calculated:', stats);
+                            setProjectStats(stats);
+                        }, (error) => {
+                            console.error('Error fetching project stats:', error);
+                            setProjectStats({ total: 0, active: 0, completed: 0, cities: 0 });
+                        });
+
+                        usersUnsubscribe = onSnapshot(collection(db, 'users'), (snapshot) => {
+                            console.log('Users snapshot received:', snapshot.size, 'documents');
+                            const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                            const stats = {
+                                totalUsers: users.length,
+                                pendingApprovals: users.filter((u: any) => u.isApproved === false).length,
+                                activeReports: 0,
+                                workOrdersToday: 0
+                            };
+                            console.log('System stats calculated:', stats);
+                            setSystemStats(stats);
+                        }, (error) => {
+                            console.error('Error fetching system stats:', error);
+                            setSystemStats({ totalUsers: 0, pendingApprovals: 0, activeReports: 0, workOrdersToday: 0 });
+                        });
+                    } else {
+                        console.log('User role is employee, skipping project/user stats');
+                    }
                 }
                 
                 setLoading(false);
-                
-                return () => {
-                    vacationUnsubscribe();
-                };
+            } catch (error) {
+                console.error('Error in auth state change:', error);
+                setLoading(false);
             }
         });
-        return () => unsubscribe();
+
+        return () => {
+            unsubscribe();
+            vacationUnsubscribe();
+            projectsUnsubscribe();
+            usersUnsubscribe();
+        };
     }, [router]);
 
     if (loading) {
