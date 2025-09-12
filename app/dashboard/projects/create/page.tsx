@@ -73,10 +73,10 @@ const CreateProjectPage = () => {
           const userData = userDoc.data() as UserData;
           
           setCurrentUser({
-            uid: user.uid,
-            ...userData
+            ...userData,
+            uid: user.uid
           });
-
+          
           // Check if user has permission to create projects
           if (!userData || !['pm', 'manager', 'admin'].includes(userData.role || '')) {
             showNotification('Sie haben keine Berechtigung, Projekte zu erstellen.', 'error');
