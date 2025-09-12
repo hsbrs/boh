@@ -73,7 +73,7 @@ const DashboardPage = () => {
         );
     }
 
-    const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin';
+    const isManagerOrAdmin = userRole === 'manager' || userRole === 'admin' || userRole === 'pm';
     const isAdmin = userRole === 'admin';
 
     return (
