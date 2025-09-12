@@ -7,7 +7,7 @@ import { auth, db } from '@/lib/firebase';
 import Link from 'next/link';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, MapPin, UserCog, Package, Plane } from 'lucide-react';
+import { FileText, MapPin, UserCog, Package, Plane, ClipboardList } from 'lucide-react';
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -201,6 +201,19 @@ const DashboardPage = () => {
                                 <CardContent>
                                     <p className="text-sm text-gray-500">Detaillierte Berichte über die Leistung Ihres Teams abrufen.</p>
                                     <p className="text-sm font-semibold text-red-600 mt-2">Zu Berichten →</p>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                        {/* Work Orders */}
+                        <Link href="/dashboard/work-orders">
+                            <Card className="hover:shadow-lg transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-2xl font-bold">Work Orders</CardTitle>
+                                    <ClipboardList className="h-8 w-8 text-orange-500" />
+                                </CardHeader>
+                                <CardContent>
+                                    <p className="text-sm text-gray-500">Create and manage work orders for your projects.</p>
+                                    <p className="text-sm font-semibold text-orange-600 mt-2">Zu Work Orders →</p>
                                 </CardContent>
                             </Card>
                         </Link>

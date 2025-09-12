@@ -15,6 +15,7 @@ import {
     Package, // New icon for Project Management
     BarChart2,
     Plane, // New icon for Vacation
+    ClipboardList, // New icon for Work Orders
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -130,6 +131,19 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                         </Link>
                                     </TooltipTrigger>
                                     {isCollapsed && <TooltipContent side="right">Berichte</TooltipContent>}
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Link href="/dashboard/work-orders" className={cn(
+                                            buttonVariants({ variant: 'ghost', size: 'sm' }),
+                                            isCollapsed ? 'w-full' : 'w-full justify-start',
+                                            'text-gray-700 hover:bg-gray-200'
+                                        )}>
+                                            <ClipboardList className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
+                                            {!isCollapsed && 'Work Orders'}
+                                        </Link>
+                                    </TooltipTrigger>
+                                    {isCollapsed && <TooltipContent side="right">Work Orders</TooltipContent>}
                                 </Tooltip>
                             </>
                         )}
