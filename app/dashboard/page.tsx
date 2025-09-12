@@ -168,112 +168,9 @@ const DashboardPage = () => {
     return (
         <div className="flex-1 p-8">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-4xl font-bold text-gray-800">Willkommen zu Ihrem Dashboard!</h1>
+                <h1 className="text-4xl font-bold text-gray-800">Broos Project Operations Hub</h1>
             </div>
             
-            <p className="text-gray-600 mb-8">Wählen Sie eine Option aus der Seitenleiste, um zu beginnen.</p>
-            
-            {/* Vacation Status Preview */}
-            <div className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Urlaubsstatus</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Card className="bg-blue-50 border-blue-200 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer group">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-blue-800 group-hover:text-blue-900 transition-colors duration-200">Gesamtanträge</p>
-                                    <div className="flex items-center space-x-2">
-                                        <p className="text-2xl font-bold text-blue-900 transition-all duration-300 ease-in-out group-hover:scale-110">{vacationStats.total}</p>
-                                        {vacationStats.total > 0 && (
-                                            <div className="w-16 bg-blue-200 rounded-full h-1.5 overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-blue-500 transition-all duration-1000 ease-out"
-                                                    style={{ width: `${Math.min((vacationStats.total / Math.max(vacationStats.total, 10)) * 100, 100)}%` }}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <Plane className="h-6 w-6 text-blue-500 transition-all duration-300 ease-in-out group-hover:rotate-12 group-hover:scale-110" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-yellow-50 border-yellow-200 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer group">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-yellow-800 group-hover:text-yellow-900 transition-colors duration-200">Ausstehend</p>
-                                    <div className="flex items-center space-x-2">
-                                        <p className="text-2xl font-bold text-yellow-900 transition-all duration-300 ease-in-out group-hover:scale-110">{vacationStats.pending}</p>
-                                        {vacationStats.pending > 0 && (
-                                            <div className="w-16 bg-yellow-200 rounded-full h-1.5 overflow-hidden">
-                                                <div className="h-full bg-yellow-500 animate-pulse transition-all duration-500"/>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="h-6 w-6 rounded-full bg-yellow-400 transition-all duration-300 ease-in-out group-hover:animate-bounce"></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-green-50 border-green-200 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer group">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-green-800 group-hover:text-green-900 transition-colors duration-200">Genehmigt</p>
-                                    <div className="flex items-center space-x-2">
-                                        <p className="text-2xl font-bold text-green-900 transition-all duration-300 ease-in-out group-hover:scale-110">{vacationStats.approved}</p>
-                                        {vacationStats.approved > 0 && (
-                                            <div className="w-16 bg-green-200 rounded-full h-1.5 overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-green-500 transition-all duration-1000 ease-out"
-                                                    style={{ width: `${vacationStats.total > 0 ? (vacationStats.approved / vacationStats.total) * 100 : 0}%` }}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="h-6 w-6 rounded-full bg-green-400 transition-all duration-300 ease-in-out group-hover:animate-ping"></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-red-50 border-red-200 hover:shadow-lg hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer group">
-                        <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-red-800 group-hover:text-red-900 transition-colors duration-200">Abgelehnt</p>
-                                    <div className="flex items-center space-x-2">
-                                        <p className="text-2xl font-bold text-red-900 transition-all duration-300 ease-in-out group-hover:scale-110">{vacationStats.denied}</p>
-                                        {vacationStats.denied > 0 && (
-                                            <div className="w-16 bg-red-200 rounded-full h-1.5 overflow-hidden">
-                                                <div 
-                                                    className="h-full bg-red-500 transition-all duration-1000 ease-out"
-                                                    style={{ width: `${vacationStats.total > 0 ? (vacationStats.denied / vacationStats.total) * 100 : 0}%` }}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="h-6 w-6 rounded-full bg-red-400 transition-all duration-300 ease-in-out group-hover:animate-pulse"></div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-                <div className="mt-4 text-center">
-                    {vacationStats.total === 0 ? (
-                        <div className="text-gray-600 mb-2">
-                            <p>Noch keine Urlaubsanträge. Bereit für etwas Zeit?</p>
-                        </div>
-                    ) : (
-                        <div className="text-gray-600 mb-2">
-                            <p>Sie haben {vacationStats.pending} ausstehende Anfrage{vacationStats.pending !== 1 ? 'n' : ''}</p>
-                        </div>
-                    )}
-                    <Link href="/dashboard/vacation" className="text-teal-600 hover:text-teal-800 font-medium">
-                        Vollständiges Urlaubs-Dashboard anzeigen →
-                    </Link>
-                </div>
-            </div>
     
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Vacation Management */}
@@ -284,22 +181,29 @@ const DashboardPage = () => {
                             <Plane className="h-8 w-8 text-teal-500 transition-all duration-300 ease-in-out group-hover:rotate-12 group-hover:scale-110 group-hover:text-teal-600" />
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-200">Urlaubsanträge einreichen und mit Genehmigungsworkflow verwalten.</p>
+                            <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-200">Urlaubsantrag: einreichen und verwalten</p>
                             <div className="flex items-center mt-2 space-x-2">
                                 <p className="text-sm font-semibold text-teal-600 group-hover:text-teal-700 transition-all duration-200">Zum Urlaub</p>
                                 <span className="text-teal-600 group-hover:text-teal-700 transition-all duration-200 group-hover:translate-x-1">→</span>
                             </div>
-                            {vacationStats.total > 0 && (
+                            {(vacationStats.total > 0 || userRole) && (
                                 <div className="mt-3 pt-2 border-t border-teal-100">
                                     <div className="flex justify-between text-xs text-teal-600 mb-1">
-                                        <span>Aktuelle Anträge: {vacationStats.total}</span>
+                                        <span>Gesamtanträge: {vacationStats.total}</span>
                                         <span>Ausstehend: {vacationStats.pending}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-teal-600 mb-2">
+                                        <span>Genehmigt: {vacationStats.approved}</span>
+                                        <span>Abgelehnt: {vacationStats.denied}</span>
                                     </div>
                                     <div className="w-full bg-teal-100 rounded-full h-1.5 overflow-hidden">
                                         <div 
                                             className="h-full bg-gradient-to-r from-teal-500 to-teal-600 transition-all duration-1000 ease-out"
                                             style={{ width: `${vacationStats.total > 0 ? Math.min((vacationStats.approved / vacationStats.total) * 100, 100) : 0}%` }}
                                         />
+                                    </div>
+                                    <div className="text-xs text-teal-500 mt-1">
+                                        Genehmigungsrate: {vacationStats.total > 0 ? Math.round((vacationStats.approved / vacationStats.total) * 100) : 0}%
                                     </div>
                                 </div>
                             )}
@@ -353,7 +257,7 @@ const DashboardPage = () => {
                                     <MapPin className="h-8 w-8 text-green-500 transition-all duration-300 ease-in-out group-hover:rotate-12 group-hover:scale-110 group-hover:text-green-600" />
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-200">Aufgabendaten auf einer interaktiven Karte visualisieren.</p>
+                                    <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-200">Daten visualisieren</p>
                                     <div className="flex items-center mt-2 space-x-2">
                                         <p className="text-sm font-semibold text-green-600 group-hover:text-green-700 transition-all duration-200">Zu WebGIS</p>
                                         <span className="text-green-600 group-hover:text-green-700 transition-all duration-200 group-hover:translate-x-1">→</span>
@@ -390,7 +294,7 @@ const DashboardPage = () => {
                                     <FileText className="h-8 w-8 text-red-500 transition-all duration-300 ease-in-out group-hover:rotate-12 group-hover:scale-110 group-hover:text-red-600" />
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-200">Detaillierte Berichte über die Leistung Ihres Teams abrufen.</p>
+                                    <p className="text-sm text-gray-500 group-hover:text-gray-600 transition-colors duration-200">Berichte abrufen</p>
                                     <div className="flex items-center mt-2 space-x-2">
                                         <p className="text-sm font-semibold text-red-600 group-hover:text-red-700 transition-all duration-200">Zu Berichten</p>
                                         <span className="text-red-600 group-hover:text-red-700 transition-all duration-200 group-hover:translate-x-1">→</span>
