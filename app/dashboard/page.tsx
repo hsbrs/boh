@@ -8,6 +8,7 @@ import Link from 'next/link';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, MapPin, UserCog, Package, Plane, ClipboardList } from 'lucide-react';
+import { VacationStatsSkeleton, DashboardCardSkeleton } from '@/components/LoadingSkeletons';
 
 const DashboardPage = () => {
     const router = useRouter();
@@ -67,8 +68,28 @@ const DashboardPage = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="text-xl font-semibold text-gray-700">Laden...</div>
+            <div className="flex-1 p-8">
+                <div className="flex justify-between items-center mb-6">
+                    <div className="h-10 bg-gray-200 rounded-md animate-pulse w-80"></div>
+                </div>
+                <div className="h-4 bg-gray-200 rounded-md animate-pulse w-96 mb-8"></div>
+                
+                {/* Vacation Status Loading */}
+                <div className="mb-8">
+                    <div className="h-8 bg-gray-200 rounded-md animate-pulse w-48 mb-4"></div>
+                    <VacationStatsSkeleton />
+                    <div className="mt-4 text-center">
+                        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-64 mx-auto mb-2"></div>
+                        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-48 mx-auto"></div>
+                    </div>
+                </div>
+        
+                {/* Dashboard Cards Loading */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <DashboardCardSkeleton key={i} />
+                    ))}
+                </div>
             </div>
         );
     }

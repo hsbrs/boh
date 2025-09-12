@@ -40,20 +40,29 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
 
     return (
         <div className={cn(
-            'flex flex-col min-h-screen bg-white shadow-lg transition-all duration-300 ease-in-out',
+            'flex flex-col min-h-screen bg-white shadow-lg transition-all duration-500 ease-in-out transform',
             isCollapsed ? 'w-16 sm:w-20 p-2' : 'w-64 p-4 sm:p-6'
         )}>
             <div className="flex justify-between items-center mb-4 sm:mb-6">
-                {!isCollapsed && (
-                    <h2 className="text-lg sm:text-2xl font-bold text-gray-800">Dashboard</h2>
-                )}
+                <div className={cn(
+                    'transition-all duration-300 ease-in-out overflow-hidden',
+                    isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                )}>
+                    <h2 className="text-lg sm:text-2xl font-bold text-gray-800 whitespace-nowrap">Dashboard</h2>
+                </div>
                 <Button
                     variant="ghost"
                     size="sm"
                     onClick={onToggleCollapse}
-                    className={isCollapsed ? 'w-full' : ''}
+                    className={cn(
+                        'transition-all duration-300 ease-in-out transform hover:scale-110 hover:bg-gray-100',
+                        isCollapsed ? 'w-full' : ''
+                    )}
                 >
-                    <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <Menu className={cn(
+                        'h-4 w-4 sm:h-5 sm:w-5 transition-transform duration-300 ease-in-out',
+                        isCollapsed ? 'rotate-180' : 'rotate-0'
+                    )} />
                 </Button>
             </div>
             <Separator />
@@ -66,10 +75,18 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                 <Link href="/dashboard" className={cn(
                                     buttonVariants({ variant: 'ghost', size: 'sm' }),
                                     isCollapsed ? 'w-full' : 'w-full justify-start',
-                                    'text-gray-700 hover:bg-gray-200 text-xs sm:text-sm'
+                                    'text-gray-700 hover:bg-gray-200 text-xs sm:text-sm transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-sm'
                                 )}>
-                                    <LayoutDashboard className={cn('h-4 w-4 sm:h-5 sm:w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'Startseite'}
+                                    <LayoutDashboard className={cn(
+                                        'h-4 w-4 sm:h-5 sm:w-5 transition-all duration-200 ease-in-out',
+                                        !isCollapsed && 'mr-2'
+                                    )} />
+                                    <span className={cn(
+                                        'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap',
+                                        isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                                    )}>
+                                        Startseite
+                                    </span>
                                 </Link>
                             </TooltipTrigger>
                             {isCollapsed && <TooltipContent side="right">Startseite</TooltipContent>}
@@ -81,10 +98,18 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                 <Link href="/dashboard/vacation" className={cn(
                                     buttonVariants({ variant: 'ghost', size: 'sm' }),
                                     isCollapsed ? 'w-full' : 'w-full justify-start',
-                                    'text-gray-700 hover:bg-gray-200'
+                                    'text-gray-700 hover:bg-gray-200 transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-sm'
                                 )}>
-                                    <Plane className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                    {!isCollapsed && 'Urlaub'}
+                                    <Plane className={cn(
+                                        'h-5 w-5 transition-all duration-200 ease-in-out',
+                                        !isCollapsed && 'mr-2'
+                                    )} />
+                                    <span className={cn(
+                                        'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap',
+                                        isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                                    )}>
+                                        Urlaub
+                                    </span>
                                 </Link>
                             </TooltipTrigger>
                             {isCollapsed && <TooltipContent side="right">Urlaubsverwaltung</TooltipContent>}
@@ -98,10 +123,18 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                         <Link href="/dashboard/projects" className={cn(
                                             buttonVariants({ variant: 'ghost', size: 'sm' }),
                                             isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
+                                            'text-gray-700 hover:bg-gray-200 transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-sm'
                                         )}>
-                                            <Package className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Projektmanagement'}
+                                            <Package className={cn(
+                                                'h-5 w-5 transition-all duration-200 ease-in-out',
+                                                !isCollapsed && 'mr-2'
+                                            )} />
+                                            <span className={cn(
+                                                'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap',
+                                                isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                                            )}>
+                                                Projektmanagement
+                                            </span>
                                         </Link>
                                     </TooltipTrigger>
                                     {isCollapsed && <TooltipContent side="right">Projektmanagement</TooltipContent>}
@@ -111,10 +144,18 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                         <Link href="/dashboard/webgis" className={cn(
                                             buttonVariants({ variant: 'ghost', size: 'sm' }),
                                             isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
+                                            'text-gray-700 hover:bg-gray-200 transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-sm'
                                         )}>
-                                            <MapPin className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'WebGIS'}
+                                            <MapPin className={cn(
+                                                'h-5 w-5 transition-all duration-200 ease-in-out',
+                                                !isCollapsed && 'mr-2'
+                                            )} />
+                                            <span className={cn(
+                                                'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap',
+                                                isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                                            )}>
+                                                WebGIS
+                                            </span>
                                         </Link>
                                     </TooltipTrigger>
                                     {isCollapsed && <TooltipContent side="right">WebGIS</TooltipContent>}
@@ -124,10 +165,18 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                         <Link href="/dashboard/reports" className={cn(
                                             buttonVariants({ variant: 'ghost', size: 'sm' }),
                                             isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
+                                            'text-gray-700 hover:bg-gray-200 transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-sm'
                                         )}>
-                                            <FileText className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Reports'}
+                                            <FileText className={cn(
+                                                'h-5 w-5 transition-all duration-200 ease-in-out',
+                                                !isCollapsed && 'mr-2'
+                                            )} />
+                                            <span className={cn(
+                                                'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap',
+                                                isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                                            )}>
+                                                Reports
+                                            </span>
                                         </Link>
                                     </TooltipTrigger>
                                     {isCollapsed && <TooltipContent side="right">Berichte</TooltipContent>}
@@ -137,10 +186,18 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                         <Link href="/dashboard/work-orders" className={cn(
                                             buttonVariants({ variant: 'ghost', size: 'sm' }),
                                             isCollapsed ? 'w-full' : 'w-full justify-start',
-                                            'text-gray-700 hover:bg-gray-200'
+                                            'text-gray-700 hover:bg-gray-200 transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-sm'
                                         )}>
-                                            <ClipboardList className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                            {!isCollapsed && 'Work Orders'}
+                                            <ClipboardList className={cn(
+                                                'h-5 w-5 transition-all duration-200 ease-in-out',
+                                                !isCollapsed && 'mr-2'
+                                            )} />
+                                            <span className={cn(
+                                                'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap',
+                                                isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                                            )}>
+                                                Work Orders
+                                            </span>
                                         </Link>
                                     </TooltipTrigger>
                                     {isCollapsed && <TooltipContent side="right">Work Orders</TooltipContent>}
@@ -153,10 +210,18 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                                     <Link href="/dashboard/admin" className={cn(
                                         buttonVariants({ variant: 'ghost', size: 'sm' }),
                                         isCollapsed ? 'w-full' : 'w-full justify-start',
-                                        'text-gray-700 hover:bg-gray-200'
+                                        'text-gray-700 hover:bg-gray-200 transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-sm'
                                     )}>
-                                        <UserCog className={cn('h-5 w-5', !isCollapsed && 'mr-2')} />
-                                        {!isCollapsed && 'Admin-Panel'}
+                                        <UserCog className={cn(
+                                            'h-5 w-5 transition-all duration-200 ease-in-out',
+                                            !isCollapsed && 'mr-2'
+                                        )} />
+                                        <span className={cn(
+                                            'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap',
+                                            isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                                        )}>
+                                            Admin-Panel
+                                        </span>
                                     </Link>
                                 </TooltipTrigger>
                                 {isCollapsed && <TooltipContent side="right">Admin-Panel</TooltipContent>}
@@ -167,7 +232,7 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
             </div>
 
             <div className={cn(
-                "mt-auto space-y-4 px-2 py-4 border-t",
+                "mt-auto space-y-4 px-2 py-4 border-t transition-all duration-300 ease-in-out",
                 isCollapsed && "flex flex-col items-center justify-center space-y-2 py-2"
             )}>
                 {userName && (
@@ -175,18 +240,21 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div className={cn(
-                                    'flex items-center gap-4 py-2 px-3 rounded-md transition-colors w-full',
+                                    'flex items-center gap-4 py-2 px-3 rounded-md transition-all duration-200 ease-in-out hover:bg-gray-50 cursor-default w-full',
                                     isCollapsed ? 'justify-center' : 'justify-start'
                                 )}>
-                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white font-bold text-sm shrink-0">
+                                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-white font-bold text-sm shrink-0 transition-all duration-200 ease-in-out hover:bg-blue-600 hover:scale-110">
                                         {getInitials(userName)}
                                     </div>
-                                    {!isCollapsed && (
+                                    <div className={cn(
+                                        'transition-all duration-300 ease-in-out overflow-hidden',
+                                        isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                                    )}>
                                         <div className="flex flex-col items-start leading-tight min-w-0">
-                                            <span className="font-semibold truncate">{userName}</span>
-                                            <span className="text-xs text-gray-500 truncate">{userRole}</span>
+                                            <span className="font-semibold truncate whitespace-nowrap">{userName}</span>
+                                            <span className="text-xs text-gray-500 truncate whitespace-nowrap">{userRole}</span>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             </TooltipTrigger>
                             {isCollapsed && <TooltipContent side="right">{userName}</TooltipContent>}
@@ -194,8 +262,17 @@ export default function Sidebar({ isCollapsed, userRole, userName, onToggleColla
                     </TooltipProvider>
                 )}
                 
-                <Button onClick={onLogout} variant="destructive" className="w-full">
-                    {!isCollapsed && 'Abmelden'}
+                <Button 
+                    onClick={onLogout} 
+                    variant="destructive" 
+                    className="w-full transition-all duration-200 ease-in-out hover:scale-105 hover:shadow-md transform"
+                >
+                    <span className={cn(
+                        'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap',
+                        isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'
+                    )}>
+                        Abmelden
+                    </span>
                     {isCollapsed && <Menu className="h-5 w-5" />}
                 </Button>
             </div>

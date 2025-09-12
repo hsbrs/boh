@@ -7,6 +7,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import React from 'react';
 import Sidebar from '@/components/Sidebar';
+import { SidebarLoadingSkeleton } from '@/components/LoadingSkeletons';
 
 export default function DashboardLayout({
     children,
@@ -76,8 +77,33 @@ export default function DashboardLayout({
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center min-h-screen bg-gray-100">
-                <div className="text-xl font-semibold text-gray-700">Laden...</div>
+            <div className="flex min-h-screen bg-gray-100">
+                <SidebarLoadingSkeleton />
+                <div className="flex-1 p-8">
+                    <div className="space-y-6">
+                        {/* Header Loading */}
+                        <div className="flex justify-between items-center">
+                            <div className="h-10 bg-gray-200 rounded-md animate-pulse w-80"></div>
+                            <div className="h-10 bg-gray-200 rounded-md animate-pulse w-32"></div>
+                        </div>
+                        
+                        {/* Content Loading */}
+                        <div className="h-4 bg-gray-200 rounded-md animate-pulse w-96"></div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className="bg-white rounded-lg border p-6 space-y-3">
+                                    <div className="flex justify-between items-start">
+                                        <div className="h-6 bg-gray-200 rounded-md animate-pulse w-32"></div>
+                                        <div className="h-8 bg-gray-200 rounded-full animate-pulse w-8"></div>
+                                    </div>
+                                    <div className="h-4 bg-gray-200 rounded-md animate-pulse w-full"></div>
+                                    <div className="h-4 bg-gray-200 rounded-md animate-pulse w-24"></div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

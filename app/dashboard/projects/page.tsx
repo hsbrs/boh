@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PlusCircleIcon, FolderOpenIcon, ClockIcon, CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
+import { ProjectStatsSkeleton } from '@/components/LoadingSkeletons';
 
 // Define the type for a project to provide type safety
 type Project = {
@@ -47,8 +48,29 @@ const ProjectOverviewPage = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Projekte werden geladen...</div>
+      <div className="flex-1 p-8">
+        <div className="flex items-center space-x-2 text-gray-500 text-sm mb-4">
+          <div className="h-4 bg-gray-200 rounded-md animate-pulse w-20"></div>
+          <span>/</span>
+          <div className="h-4 bg-gray-200 rounded-md animate-pulse w-16"></div>
+        </div>
+        
+        <div className="flex justify-between items-center mb-6">
+          <div className="h-10 bg-gray-200 rounded-md animate-pulse w-64"></div>
+          <div className="h-10 bg-gray-200 rounded-md animate-pulse w-40"></div>
+        </div>
+        
+        {/* Tab Navigation Loading */}
+        <div className="flex space-x-2 mb-6">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-10 bg-gray-200 rounded-md animate-pulse w-24"></div>
+          ))}
+        </div>
+        
+        {/* Content Loading */}
+        <div className="h-[calc(100vh-200px)]">
+          <ProjectStatsSkeleton />
+        </div>
       </div>
     );
   }
