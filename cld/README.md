@@ -74,14 +74,14 @@ This directory contains comprehensive documentation for migrating the BOH Manage
 ## 🛠️ Technical Stack After Migration
 
 ### Authentication
-- **Azure AD B2C**: User authentication and management
+- **Microsoft Entra ID**: Organizational identity management (not B2C)
 - **NextAuth.js**: Next.js authentication library
-- **MSAL.js**: Microsoft Authentication Library
+- **MSAL.js**: Microsoft Authentication Library (if needed)
 
 ### Data Storage
-- **SharePoint Lists**: Structured data storage
-- **Azure SQL** (Optional): Complex queries and reporting
-- **OneDrive**: File storage and sharing
+- **Azure Cosmos DB**: Primary database for structured data
+- **SharePoint**: File storage and collaboration
+- **Azure SQL** (Optional): Complex reporting queries
 
 ### APIs & Integration
 - **Microsoft Graph**: Unified API for M365 services
@@ -97,10 +97,11 @@ This directory contains comprehensive documentation for migrating the BOH Manage
 - **Total**: ~$50-100/month
 
 ### Microsoft 365 (Target)
-- Azure AD B2C: ~$0.50-2.00/1000 users
+- Microsoft Entra ID: Included in M365 subscription
+- Azure Cosmos DB: ~$25-50/month (scales with usage)
 - SharePoint: Included in M365 subscription
 - Teams: Included in M365 subscription
-- **Total**: ~$25-50/month (with existing M365)
+- **Total**: ~$50-75/month (with existing M365)
 
 ## ⚠️ Migration Considerations
 
@@ -181,6 +182,32 @@ SHAREPOINT_SITE_URL="https://yourtenant.sharepoint.com/sites/boh-management"
 - Consider running pilot with small user group before full migration
 - Regular backups recommended during transition period
 
+## 🔧 Critical Corrections Applied
+
+⚠️ **Important**: The following corrections were made based on full-stack developer feedback:
+
+1. **Authentication Service**: Changed from Azure AD B2C to **Microsoft Entra ID**
+   - B2C is for customer-facing apps; Entra ID is for internal employees
+   - Use organizational tenant, not B2C tenant
+
+2. **Primary Database**: Changed from SharePoint Lists to **Azure Cosmos DB**
+   - SharePoint Lists not suitable for 20,000+ records
+   - Cosmos DB provides better performance and scalability
+   - Direct Firestore equivalent with < 10ms query times
+
+3. **Teams Security**: Added comprehensive webhook authentication
+   - Action.Http buttons require complex security implementation
+   - Signature validation and JWT token verification required
+   - Alternative: Simple notifications without action buttons
+
+4. **Migration Timeline**: Adjusted for realistic expectations
+   - 20,000+ records may take 4-6 weeks, not 2-3 weeks
+   - Mandatory dual-operation period for safety
+   - Comprehensive testing and validation phases
+
+---
+
 **Last Updated**: January 2025
-**Version**: 1.0
+**Version**: 1.1 (Corrected)
 **Author**: Claude Code Assistant
+**Reviewed**: Full-stack developer corrections applied

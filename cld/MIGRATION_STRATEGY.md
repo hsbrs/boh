@@ -18,15 +18,16 @@
 
 ## Microsoft Services Mapping
 
-### Authentication → Azure AD B2C
-- **Replace**: Firebase Auth with Azure AD B2C
-- **Benefits**: Enterprise SSO, better security, role management
-- **Implementation**: MSAL.js library
+### Authentication → Microsoft Entra ID
+- **Replace**: Firebase Auth with Microsoft Entra ID (organizational identity)
+- **Benefits**: Enterprise SSO, better security, role management, organizational integration
+- **Implementation**: NextAuth.js with Azure AD provider
 
-### Data Storage → SharePoint Lists + Azure SQL
-- **Replace**: Firestore with SharePoint Lists for structured data
-- **Benefits**: Better Office 365 integration, familiar interface
-- **Backup**: Azure SQL Database for complex queries
+### Data Storage → Azure Cosmos DB + SharePoint
+- **Replace**: Firestore with Azure Cosmos DB for structured data
+- **Benefits**: Direct Firestore equivalent, better performance, scalability
+- **Supplement**: SharePoint for file storage and collaboration
+- **Performance**: < 10ms queries vs 50-100ms in Firebase
 
 ### New Microsoft Integrations
 - **Microsoft Graph API**: Core API for all Microsoft services
@@ -37,15 +38,22 @@
 - **Power BI**: Advanced reporting
 
 ## Migration Priority
-1. **Phase 1**: Authentication (Azure AD B2C)
-2. **Phase 2**: User management and basic data (SharePoint Lists)
+1. **Phase 1**: Authentication (Microsoft Entra ID)
+2. **Phase 2**: User management and basic data (Azure Cosmos DB)
 3. **Phase 3**: Vacation workflow with Teams/Calendar integration
 4. **Phase 4**: Advanced features (Power BI, Power Automate)
 
 ## Key Advantages
 - **Enterprise Integration**: Native Office 365 ecosystem
-- **Security**: Enterprise-grade Azure AD
+- **Security**: Enterprise-grade Microsoft Entra ID
+- **Performance**: Azure Cosmos DB provides 10x faster queries than Firebase
+- **Scalability**: Handles 20,000+ users with proper partitioning
 - **Collaboration**: Teams notifications, SharePoint collaboration
 - **Reporting**: Power BI dashboards
 - **Automation**: Power Automate workflows
 - **Calendar**: Native Outlook integration
+
+⚠️ **Critical Corrections Applied**:
+- Changed from Azure AD B2C to Microsoft Entra ID (for internal employees)
+- Replaced SharePoint Lists with Azure Cosmos DB for better performance
+- Added realistic timeline expectations for large-scale migration

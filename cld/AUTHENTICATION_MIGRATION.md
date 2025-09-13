@@ -1,4 +1,4 @@
-# Authentication Migration: Firebase → Azure AD
+# Authentication Migration: Firebase → Microsoft Entra ID
 
 ## Migration Overview
 
@@ -8,25 +8,41 @@
 - User approval workflow
 - Custom claims for roles
 
-### Target Azure AD B2C
-- Enterprise single sign-on (SSO)
+### Target Microsoft Entra ID (formerly Azure AD)
+- Enterprise single sign-on (SSO) with organizational accounts
 - Multi-factor authentication (MFA)
-- Social logins (optional)
-- Role-based access with Azure AD groups
+- Conditional access policies
+- Role-based access with Entra ID groups and app roles
+- Seamless integration with existing organizational identity
 
 ## Implementation Steps
 
 ### 1. Install Required Packages
 ```bash
-npm install @azure/msal-browser @azure/msal-react
+# NextAuth.js handles MSAL internally, so we primarily need:
 npm install next-auth
-npm install @next-auth/azure-ad-provider
+npm install @azure/cosmos  # For Azure Cosmos DB
+# MSAL packages only needed for direct Graph API calls if required:
+# npm install @azure/msal-browser @azure/msal-react
 ```
 
 ### 2. Create Azure AD Configuration
 
 **File: `lib/azure-config.js`**
 ```javascript
+// Configuration for NextAuth.js with Microsoft Entra ID
+export const azureConfig = {
+  clientId: process.env.AZURE_AD_CLIENT_ID,
+  clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
+  tenantId: process.env.AZURE_AD_TENANT_ID, // Your organizational tenant ID
+  authorization: {
+    params: {
+      scope: "openid profile email User.Read"
+    }
+  }
+};
+
+// Only needed if using MSAL directly for Graph API calls
 export const msalConfig = {
   auth: {
     clientId: process.env.AZURE_AD_CLIENT_ID,
@@ -38,10 +54,6 @@ export const msalConfig = {
     storeAuthStateInCookie: false,
   },
 };
-
-export const loginRequest = {
-  scopes: ["User.Read", "Sites.ReadWrite.All"],
-};
 ```
 
 ### 3. Replace Firebase Auth with NextAuth
@@ -50,26 +62,30 @@ export const loginRequest = {
 ```javascript
 import NextAuth from 'next-auth'
 import AzureADProvider from 'next-auth/providers/azure-ad'
+import { azureConfig } from '@/lib/azure-config'
 
 const handler = NextAuth({
   providers: [
     AzureADProvider({
-      clientId: process.env.AZURE_AD_CLIENT_ID,
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
-      tenantId: process.env.AZURE_AD_TENANT_ID,
+      clientId: azureConfig.clientId,
+      clientSecret: azureConfig.clientSecret,
+      tenantId: azureConfig.tenantId, // Organizational tenant, not B2C
+      authorization: azureConfig.authorization
     })
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
       if (account) {
         token.accessToken = account.access_token
-        token.role = await getUserRole(profile.email)
+        token.azureObjectId = profile.oid // Azure AD Object ID
+        token.role = await getUserRole(profile.email, profile.oid)
       }
       return token
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken
       session.user.role = token.role
+      session.user.azureObjectId = token.azureObjectId
       return session
     }
   }
@@ -82,16 +98,18 @@ export { handler as GET, handler as POST }
 
 **File: `lib/azure-users.js`**
 ```javascript
-import { GraphService } from './graph-service';
+import CosmosService from './cosmos-service';
 
 export class UserService {
-  static async getUserRole(email) {
+  static async getUserRole(email, azureObjectId) {
     try {
-      // Get user from SharePoint Users list
-      const user = await GraphService.getListItem('users',
-        `fields/Email eq '${email}'`);
+      // Get user from Azure Cosmos DB using Azure Object ID as primary identifier
+      const user = await CosmosService.getUser({
+        azureObjectId: azureObjectId,
+        email: email
+      });
 
-      return user?.fields?.Role || 'employee';
+      return user?.role || 'employee';
     } catch (error) {
       console.error('Error getting user role:', error);
       return 'employee';
@@ -100,22 +118,22 @@ export class UserService {
 
   static async createUserProfile(userInfo) {
     const userProfile = {
-      Title: userInfo.name,
-      Email: userInfo.email,
-      Role: 'employee',
-      IsApproved: false,
-      Department: '',
-      HireDate: new Date().toISOString()
+      id: userInfo.azureObjectId, // Use Azure Object ID as primary key
+      azureObjectId: userInfo.azureObjectId,
+      email: userInfo.email,
+      fullName: userInfo.name,
+      role: 'employee',
+      isApproved: false,
+      department: '',
+      createdAt: new Date().toISOString()
     };
 
-    return await GraphService.createListItem('users', userProfile);
+    return await CosmosService.createUser(userProfile);
   }
 
-  static async isUserApproved(email) {
-    const user = await GraphService.getListItem('users',
-      `fields/Email eq '${email}'`);
-
-    return user?.fields?.IsApproved || false;
+  static async isUserApproved(azureObjectId) {
+    const user = await CosmosService.getUser({ azureObjectId });
+    return user?.isApproved || false;
   }
 }
 ```
@@ -146,8 +164,8 @@ export default function DashboardLayout({
       return;
     }
 
-    if (session?.user?.email) {
-      UserService.isUserApproved(session.user.email)
+    if (session?.user?.azureObjectId) {
+      UserService.isUserApproved(session.user.azureObjectId)
         .then(setIsApproved);
     }
   }, [status, session, router]);
@@ -169,68 +187,80 @@ export default function DashboardLayout({
 }
 ```
 
-### 6. Create Graph Service for API Calls
+### 6. Create Cosmos DB Service for Data Operations
 
-**File: `lib/graph-service.js`**
+**File: `lib/cosmos-service.js`**
 ```javascript
-import { Client } from '@microsoft/microsoft-graph-client';
+import { CosmosClient } from '@azure/cosmos';
 
-export class GraphService {
-  static getClient(accessToken) {
-    return Client.init({
-      authProvider: (done) => {
-        done(null, accessToken);
-      }
+class CosmosService {
+  constructor() {
+    this.client = new CosmosClient({
+      endpoint: process.env.COSMOS_DB_ENDPOINT,
+      key: process.env.COSMOS_DB_KEY
     });
+    this.database = this.client.database('BOH_Management');
   }
 
-  static async getListItem(listName, filter = '') {
-    const client = this.getClient(process.env.GRAPH_ACCESS_TOKEN);
-
+  async getUser(query) {
     try {
-      const response = await client
-        .api(`/sites/${process.env.SHAREPOINT_SITE_ID}/lists/${listName}/items`)
-        .filter(filter)
-        .expand('fields')
-        .get();
+      const container = this.database.container('users');
+      const { resources } = await container.items
+        .query({
+          query: 'SELECT * FROM c WHERE c.azureObjectId = @objectId OR c.email = @email',
+          parameters: [
+            { name: '@objectId', value: query.azureObjectId },
+            { name: '@email', value: query.email }
+          ]
+        })
+        .fetchAll();
 
-      return response.value[0] || null;
+      return resources[0] || null;
     } catch (error) {
-      console.error(`Error getting ${listName} item:`, error);
+      console.error('Error getting user:', error);
       throw error;
     }
   }
 
-  static async createListItem(listName, fields) {
-    const client = this.getClient(process.env.GRAPH_ACCESS_TOKEN);
-
+  async createUser(userData) {
     try {
-      const response = await client
-        .api(`/sites/${process.env.SHAREPOINT_SITE_ID}/lists/${listName}/items`)
-        .post({
-          fields
-        });
-
-      return response;
+      const container = this.database.container('users');
+      const { resource } = await container.items.create(userData);
+      return resource;
     } catch (error) {
-      console.error(`Error creating ${listName} item:`, error);
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  }
+
+  async updateUser(userId, updateData) {
+    try {
+      const container = this.database.container('users');
+      const { resource } = await container.item(userId).replace(updateData);
+      return resource;
+    } catch (error) {
+      console.error('Error updating user:', error);
       throw error;
     }
   }
 }
+
+export default new CosmosService();
+```
 ```
 
 ### 7. Migration Checklist
 
-**Firebase → Azure AD Migration Tasks:**
-- [ ] Set up Azure AD B2C tenant
-- [ ] Register application in Azure AD
+**Firebase → Microsoft Entra ID Migration Tasks:**
+- [ ] Set up Microsoft Entra ID (use existing organizational tenant)
+- [ ] Register application in Microsoft Entra ID
 - [ ] Configure redirect URIs and permissions
-- [ ] Install and configure NextAuth.js
-- [ ] Create user role management system
-- [ ] Migrate user data to SharePoint Users list
+- [ ] Set up Azure Cosmos DB for application data
+- [ ] Install and configure NextAuth.js with Entra ID provider
+- [ ] Create user role management system with Cosmos DB
+- [ ] Migrate user data to Cosmos DB with Azure Object IDs
 - [ ] Update all authentication checks in components
-- [ ] Test authentication flow
+- [ ] Test authentication flow with organizational accounts
 - [ ] Update environment variables
 - [ ] Deploy and test in production
 
@@ -239,12 +269,16 @@ export class GraphService {
 During migration, maintain both systems:
 ```javascript
 // Dual authentication support
-const getUser = async () => {
-  // Try Azure AD first
-  const azureUser = await getAzureUser();
-  if (azureUser) return azureUser;
+const getUser = async (session) => {
+  // Try Microsoft Entra ID first
+  if (session?.user?.azureObjectId) {
+    const entraUser = await CosmosService.getUser({
+      azureObjectId: session.user.azureObjectId
+    });
+    if (entraUser) return entraUser;
+  }
 
-  // Fallback to Firebase
+  // Fallback to Firebase during transition
   return await getFirebaseUser();
 };
 ```
@@ -261,7 +295,16 @@ const getUser = async () => {
 
 If issues occur:
 1. Switch environment variables back to Firebase
-2. Disable Azure AD authentication
+2. Disable Microsoft Entra ID authentication in NextAuth config
 3. Re-enable Firebase auth
 4. Monitor for issues
 5. Fix problems and retry migration
+6. Ensure Cosmos DB rollback plan if data was migrated
+
+## Important Notes
+
+⚠️ **Critical Correction**: This migration uses **Microsoft Entra ID** (organizational identity), NOT Azure AD B2C. B2C is for customer-facing applications, while Entra ID is for internal employee identity management.
+
+⚠️ **Database Choice**: Azure Cosmos DB is recommended over SharePoint Lists for application data due to better performance, scalability, and query capabilities for high-volume operations.
+
+⚠️ **Azure Object ID**: Always use the Azure AD Object ID (`profile.oid`) as the primary user identifier, as it's immutable and unique across the organization.

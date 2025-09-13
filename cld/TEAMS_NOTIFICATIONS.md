@@ -14,6 +14,8 @@ Use Microsoft Graph to send activity feed notifications.
 ### 3. Adaptive Cards (Enhanced UX)
 Use Adaptive Cards for rich, actionable notifications.
 
+⚠️ **Important Security Consideration**: Adaptive Cards with Action.Http buttons require secure webhook authentication and proper token validation to ensure requests originate from legitimate Teams clients. This adds significant complexity compared to simple notifications.
+
 ## Teams Bot Setup
 
 ### Bot Registration
@@ -490,18 +492,205 @@ describe('TeamsNotificationService', () => {
 });
 ```
 
+### Security Testing
+- **Signature Validation**: Test webhook signature verification
+- **Token Validation**: Verify JWT token authentication
+- **Permission Testing**: Test role-based action permissions
+- **Replay Attack Prevention**: Verify timestamp validation
+- **Rate Limiting**: Test API endpoint throttling
+
 ### Integration Tests
 - Test bot responses
 - Test adaptive card rendering
-- Test approval workflow
-- Test fallback to email
+- Test secure approval workflow
+- Test fallback to email when Teams unavailable
+- Test webhook authentication
+- Test error handling for invalid tokens
+
+## Security Implementation for Webhook Actions
+
+⚠️ **Critical Security Warning**: The developer correctly identified that Action.Http buttons in Teams require complex webhook authentication. Here's the secure implementation:
+
+### Webhook Authentication Service
+
+**File: `lib/teams-auth.js`**
+```javascript
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+
+export class TeamsAuthService {
+  static validateTeamsSignature(request, body) {
+    const signature = request.headers['x-teams-signature'];
+    const timestamp = request.headers['x-teams-timestamp'];
+
+    if (!signature || !timestamp) {
+      throw new Error('Missing Teams signature or timestamp');
+    }
+
+    // Check timestamp is within 5 minutes
+    const now = Math.floor(Date.now() / 1000);
+    const requestTime = parseInt(timestamp);
+
+    if (Math.abs(now - requestTime) > 300) {
+      throw new Error('Request timestamp too old');
+    }
+
+    // Validate signature
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.TEAMS_BOT_SECRET)
+      .update(timestamp + body)
+      .digest('hex');
+
+    if (signature !== expectedSignature) {
+      throw new Error('Invalid Teams signature');
+    }
+
+    return true;
+  }
+
+  static async validateTeamsToken(authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      throw new Error('Missing or invalid authorization header');
+    }
+
+    const token = authHeader.substring(7);
+
+    try {
+      // Verify JWT token from Microsoft
+      const decoded = jwt.verify(token, process.env.MICROSOFT_JWT_SECRET, {
+        algorithms: ['RS256'],
+        audience: process.env.AZURE_AD_CLIENT_ID,
+        issuer: `https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID}/v2.0`
+      });
+
+      return decoded;
+    } catch (error) {
+      throw new Error('Invalid Teams token: ' + error.message);
+    }
+  }
+}
+```
+
+### Secure API Endpoints
+
+**File: `app/api/teams/vacation/approve/route.js`**
+```javascript
+import { NextResponse } from 'next/server';
+import { VacationService } from '@/lib/vacation-service';
+import { TeamsAuthService } from '@/lib/teams-auth';
+
+export async function POST(request) {
+  try {
+    const rawBody = await request.text();
+    const body = JSON.parse(rawBody);
+
+    // 1. Validate Teams signature for security
+    TeamsAuthService.validateTeamsSignature(request, rawBody);
+
+    // 2. Validate and decode Teams token
+    const authHeader = request.headers.get('authorization');
+    const tokenPayload = await TeamsAuthService.validateTeamsToken(authHeader);
+
+    // 3. Get user information from Teams context
+    const user = await CosmosService.getUser({ azureObjectId: tokenPayload.sub });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // 4. Verify user has permission to approve
+    const { requestId, action, comment } = body;
+    const vacationRequest = await VacationService.getRequest(requestId);
+
+    if (!VacationService.canUserApprove(user, vacationRequest)) {
+      return NextResponse.json({
+        error: 'Insufficient permissions to approve this request'
+      }, { status: 403 });
+    }
+
+    // 5. Process approval
+    const result = await VacationService.processApproval(
+      requestId,
+      action,
+      user.azureObjectId,
+      comment
+    );
+
+    // 6. Return success response
+    return NextResponse.json({
+      type: 'message',
+      text: `✅ Vacation request ${action}d successfully by ${user.fullName}!`
+    });
+
+  } catch (error) {
+    console.error('Teams webhook error:', error);
+
+    if (error.message.includes('signature') || error.message.includes('token')) {
+      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
+    }
+
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+```
+
+## Security Best Practices
+
+### Webhook Security Requirements
+1. **Always validate signatures** from Teams using HMAC-SHA256
+2. **Check timestamps** to prevent replay attacks (5-minute window)
+3. **Validate JWT tokens** from Microsoft identity platform
+4. **Use HTTPS only** for all webhook endpoints
+5. **Rate limiting** on webhook endpoints (100 requests/hour per user)
+6. **Audit logging** for all approval actions
+7. **Input validation** on all webhook payloads
+
+### Environment Variables Required
+```env
+# Teams Security
+TEAMS_BOT_SECRET="your-teams-bot-secret-from-app-registration"
+MICROSOFT_JWT_SECRET="microsoft-public-key-for-jwt-verification"
+TEAMS_WEBHOOK_URL="https://your-domain.com/api/teams/webhook"
+
+# Rate Limiting
+TEAMS_RATE_LIMIT_REQUESTS=100
+TEAMS_RATE_LIMIT_WINDOW=3600  # 1 hour
+```
+
+### Alternative Approach: Simpler Notifications
+If webhook security complexity is too high, consider simpler approaches:
+1. **Deep Links**: Open app in Teams instead of HTTP actions
+2. **Notification Only**: Send notifications without action buttons
+3. **Redirect to Web**: Action buttons open web interface
 
 ## Benefits Over Firebase Push Notifications
 
 1. **Native Integration**: Works seamlessly with Microsoft 365
 2. **Rich UI**: Adaptive cards with interactive buttons
-3. **Action Buttons**: Direct approval/denial from notification
+3. **Action Buttons**: Direct approval/denial from notification (with proper security)
 4. **Chat Integration**: Two-way communication
-5. **Enterprise Security**: Azure AD authentication
+5. **Enterprise Security**: Azure AD authentication + webhook validation
 6. **Mobile Support**: Native Teams mobile app
 7. **Offline Support**: Teams handles offline message delivery
+8. **Enhanced Security**: Signature validation and JWT authentication
+9. **Audit Trail**: Complete logging of all approval actions via Teams
+
+## Implementation Complexity Warning
+
+⚠️ **Developer Assessment Confirmed**: The full stack developer correctly identified that implementing secure Teams webhooks with Action.Http buttons is significantly more complex than simple notifications. Consider the trade-offs:
+
+**Simple Notifications (Low Complexity):**
+- Send notifications without action buttons
+- Users click to open web interface
+- Standard Microsoft Graph API calls
+- No webhook authentication required
+
+**Interactive Cards (High Complexity):**
+- Action buttons in notifications
+- Webhook signature validation required
+- JWT token validation required
+- Rate limiting and security hardening
+- Comprehensive error handling
+- Audit logging implementation
+
+**Recommendation**: Start with simple notifications and upgrade to interactive cards in Phase 2 if the security implementation can be properly managed.

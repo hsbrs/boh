@@ -12,21 +12,30 @@
 
 ## Step 2: Required Azure Services
 
-### Azure Active Directory B2C (Authentication)
-1. Search for "Azure AD B2C" in Azure Portal
-2. Click "Create" and select:
-   - Subscription: Your Azure subscription
-   - Resource Group: Create new (e.g., "boh-migration-rg")
-   - Organization name: Your company name
-   - Initial domain name: Choose unique name (e.g., "boh-company")
-   - Country/Region: Your location
-3. Click "Create and link to subscription"
+### Microsoft Entra ID (Authentication)
+**Note**: Use your existing organizational Entra ID tenant, don't create B2C
+1. Go to "Microsoft Entra ID" in Azure Portal
+2. Navigate to "App registrations"
+3. Verify your organizational tenant is active
+4. Note your Tenant ID for app registration
 
-### Azure SQL Database (Optional - for complex queries)
+### Azure Cosmos DB (Primary Database)
+1. Search for "Azure Cosmos DB" in Azure Portal
+2. Click "Create" → "Azure Cosmos DB for NoSQL"
+3. Configure:
+   - Resource Group: Use "boh-migration-rg"
+   - Account Name: "boh-cosmos-db" (globally unique)
+   - Location: Choose closest to your users
+   - Capacity mode: Provisioned throughput
+   - Apply Free Tier Discount: Yes (if available)
+   - Backup Policy: Locally redundant
+4. Click "Review + create"
+
+### Azure SQL Database (Optional - for reporting)
 1. Search for "SQL databases" in Azure Portal
 2. Click "Create"
 3. Configure:
-   - Database name: "boh-database"
+   - Database name: "boh-reporting-db"
    - Server: Create new server
    - Pricing tier: Basic (for development)
    - Backup storage redundancy: Locally-redundant
@@ -60,14 +69,20 @@
    - Default language: German (if needed)
 
 ## Step 5: Cost Estimates (Monthly)
-- **Azure AD B2C**: ~$0.50-2.00 per 1000 users
-- **Azure SQL Basic**: ~$5
+- **Microsoft Entra ID**: Included with Microsoft 365
+- **Azure Cosmos DB**: ~$25-50/month (400-1000 RU/s)
+- **Azure SQL Basic**: ~$5 (optional)
 - **Azure App Service Basic**: ~$13
 - **Microsoft 365**: Existing subscription
-- **Total estimated**: ~$20-25/month for small team
+- **Total estimated**: ~$45-70/month
+
+**Note**: Cosmos DB costs scale with usage. Monitor Request Units (RU) consumption.
 
 ## Next Steps
 After setup, proceed to:
 1. App Registration (see AZURE_APP_REGISTRATION.md)
 2. Graph API permissions configuration
-3. SharePoint Lists setup
+3. Azure Cosmos DB database and container setup
+4. SharePoint site setup for file storage
+
+⚠️ **Important**: Azure Cosmos DB is now the primary database instead of SharePoint Lists for better performance and scalability with your 20,000+ records.
